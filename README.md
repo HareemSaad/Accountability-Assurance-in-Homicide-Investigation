@@ -6,5 +6,5 @@ This is the code for our project "Accountability Assurance in Homicide Investiga
 
 | Name         | Seat Number |
 | ------------ | ----------- |
-| Hareem Saad  | B19104019   |
+| Hareem Saad  | B19103019   |
 | Amaim Shaikh | B19103008   |
