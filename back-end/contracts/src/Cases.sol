@@ -14,7 +14,7 @@ contract Cases is Access, EIP712 {
     event NewCase(uint caseId, address indexed initiator);
     event CaseStatusUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
     event AddOfficer(uint caseId, address indexed initiator, address indexed officer);
-    event NewFigureInCase(uint caseId, address indexed initiator, uint48 suspectId, ParticipantCategory category, bytes32 data);
+    event NewParticipantInCase(uint caseId, address indexed initiator, uint48 suspectId, ParticipantCategory category, bytes32 data);
     event NewEvidenceInCase(uint caseId, address indexed initiator, uint48 evidenceId, EvidenceCategory category, bytes32 data);
     
     enum CaseStatus {
@@ -29,7 +29,7 @@ contract Cases is Access, EIP712 {
         WEAPON, PHYSICAL, DRUG, DOCUMENTARY, DEMONSTRATIVE, HEARSAY, MURDER_WEAPON
     }
 
-    struct Figure {
+    struct Participant {
         uint48 suspectId;
         ParticipantCategory category;
         bytes data;
@@ -46,7 +46,7 @@ contract Cases is Access, EIP712 {
     struct Case {
         CaseStatus status;
         address[] officers;
-        Figure[] figures;
+        Participant[] participants;
         Evidence[] evidences;   
     }
 
@@ -56,11 +56,11 @@ contract Cases is Access, EIP712 {
 
     mapping (uint => Case) _case;
 
-    function addCase(uint _caseId, Figure[] calldata _figures) external onlyRole(CAPTAIN_ROLE) {
+    function addCase(uint _caseId, Participant[] calldata _participants) external onlyRole(CAPTAIN_ROLE) {
 
         Case storage newCase = _case[_caseId];
         newCase.status = CaseStatus.OPEN;
-        newCase.figures = _figures;
+        newCase.participants = _participants;
 
         emit NewCase(_caseId, msg.sender);
     }
@@ -85,17 +85,17 @@ contract Cases is Access, EIP712 {
     /**
      * @dev add a modifier or something
      */
-    function addFigure(uint _caseId, Figure calldata _figure, bytes32 _dataHash) external {
+    function addParticipant(uint _caseId, Participant calldata _participant, bytes32 _dataHash) external {
 
-        bytes32 calculatedHash = _getHash(_figure.data);
+        bytes32 calculatedHash = _getHash(_participant.data);
 
         if (_dataHash != calculatedHash) { revert InvalidHash(); }
 
-        _validateSignature(_figure.signature, _hashTypedDataV4(calculatedHash));
+        _validateSignature(_participant.signature, _hashTypedDataV4(calculatedHash));
 
-        _case[_caseId].figures.push(_figure);
+        _case[_caseId].participants.push(_participant);
 
-        emit NewFigureInCase(_caseId, msg.sender, _figure.suspectId, _figure.category, calculatedHash);
+        emit NewParticipantInCase(_caseId, msg.sender, _participant.suspectId, _participant.category, calculatedHash);
     }
 
     /**
