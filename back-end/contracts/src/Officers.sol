@@ -4,7 +4,7 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./Access.sol";
 
-contract Officers is Access{
+contract Officers is Access {
 
     using Strings for string;
 

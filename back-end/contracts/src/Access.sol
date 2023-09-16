@@ -11,7 +11,7 @@ contract Access is AccessControl {
     bytes32 public constant OFFICER_ROLE = keccak256(abi.encodePacked("OFFICER_ROLE"));
 
     constructor() {
-        grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     function setRoleAdmin(bytes32 role, bytes32 adminRole) external {

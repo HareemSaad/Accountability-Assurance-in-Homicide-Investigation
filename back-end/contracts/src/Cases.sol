@@ -56,11 +56,10 @@ contract Cases is Access, EIP712 {
 
     mapping (uint => Case) _case;
 
-    function addCase(uint _caseId, Participant[] calldata _participants) external onlyRole(CAPTAIN_ROLE) {
+    function addCase(uint _caseId) external onlyRole(CAPTAIN_ROLE) {
 
         Case storage newCase = _case[_caseId];
         newCase.status = CaseStatus.OPEN;
-        newCase.participants = _participants;
 
         emit NewCase(_caseId, msg.sender);
     }
@@ -85,7 +84,7 @@ contract Cases is Access, EIP712 {
     /**
      * @dev add a modifier or something
      */
-    function addParticipant(uint _caseId, Participant calldata _participant, bytes32 _dataHash) external {
+    function addParticipant(uint _caseId, Participant memory _participant, bytes32 _dataHash) external {
 
         bytes32 calculatedHash = _getHash(_participant.data);
 
@@ -101,7 +100,7 @@ contract Cases is Access, EIP712 {
     /**
      * @dev add a modifier or something
      */
-    function addEvidence(uint _caseId, Evidence calldata _evidence, bytes32 _dataHash) external {
+    function addEvidence(uint _caseId, Evidence memory _evidence, bytes32 _dataHash) external {
 
         bytes32 calculatedHash = _getHash(_evidence.data);
 
