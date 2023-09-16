@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 const dotenv = require('dotenv').config()
-import { fetchOfficerInfo, validateOfficr } from "../scripts/OfficerInfo";
+import { fetchOfficerInfo, validateOfficer } from "../scripts/OfficerInfo";
 
 
 
@@ -9,7 +9,7 @@ const router = express.Router();
 router.use(cors());
 
 router.post("/fetchOfficerInfo", fetchOfficerInfo);
-router.get('/validateOfficer', validateOfficr);
+router.get('/validateOfficer', validateOfficer);
 
 module.exports = {
   routes: router

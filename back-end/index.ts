@@ -3,7 +3,7 @@ import cors from 'cors';
 import bodyParser from "body-parser"; //import body parser
 import path from 'path';
 import { Console } from 'console';
-import { fetchOfficerInfo } from "./scripts/OfficerInfo";
+import { validateOfficer } from "./scripts/OfficerInfo";
 import dotenv from 'dotenv';
 dotenv.config()
 let poolRoutes = require('./routes/routes');
@@ -24,7 +24,7 @@ main().catch(err => console.log(err));
 
 async function main() {
 
-  fetchOfficerInfo('0x86D5cA9d24ecE1d8c35a45b83Ba15B1B9e11BD50');
+  validateOfficer('0x86D5cA9d24ecE1d8c35a45b83Ba15B1B9e11BD50');
 
 }
 
