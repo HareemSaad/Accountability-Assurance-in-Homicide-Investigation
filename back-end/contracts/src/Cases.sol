@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
+import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./Access.sol";
 import "./Officers.sol";
 
-contract Cases is Access {
+contract Cases is Access, EIP712 {
 
     using Strings for string;
 
@@ -13,7 +14,8 @@ contract Cases is Access {
     event NewCase(uint caseId, address indexed initiator);
     event CaseStatusUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
     event AddOfficer(uint caseId, address indexed initiator, address indexed officer);
-    event NewFigureInCase(uint caseId, address indexed initiator, uint48 suspectId, bytes data);
+    event NewFigureInCase(uint caseId, address indexed initiator, uint48 suspectId, ParticipantCategory category, bytes32 data);
+    event NewEvidenceInCase(uint caseId, address indexed initiator, uint48 evidenceId, EvidenceCategory category, bytes32 data);
     
     enum CaseStatus {
         OPEN, CLOSED, COLD
@@ -31,14 +33,14 @@ contract Cases is Access {
         uint48 suspectId;
         ParticipantCategory category;
         bytes data;
-        bytes32 signature;
+        bytes signature;
     }
 
     struct Evidence {
         uint48 evidenceId;
         EvidenceCategory category;
         bytes data;
-        bytes32 signature;
+        bytes signature;
     }
 
     struct Case {
@@ -48,7 +50,7 @@ contract Cases is Access {
         Evidence[] evidences;   
     }
 
-    constructor(address _officersContract) {
+    constructor(address _officersContract) EIP712("Cases", "1") {
         officersContract = Officers(_officersContract);
     }
 
@@ -83,11 +85,47 @@ contract Cases is Access {
     /**
      * @dev add a modifier or something
      */
-    function addFigure(uint _caseId, Figure calldata _figure) external {
+    function addFigure(uint _caseId, Figure calldata _figure, bytes32 _dataHash) external {
+
+        bytes32 calculatedHash = _getHash(_figure.data);
+
+        if (_dataHash != calculatedHash) { revert InvalidHash(); }
+
+        _validateSignature(_figure.signature, _hashTypedDataV4(calculatedHash));
 
         _case[_caseId].figures.push(_figure);
 
-        emit NewFigureInCase(_caseId, msg.sender, _figure.suspectId, _figure.data);
+        emit NewFigureInCase(_caseId, msg.sender, _figure.suspectId, _figure.category, calculatedHash);
+    }
+
+    /**
+     * @dev add a modifier or something
+     */
+    function addEvidence(uint _caseId, Evidence calldata _evidence, bytes32 _dataHash) external {
+
+        bytes32 calculatedHash = _getHash(_evidence.data);
+
+        if (_dataHash != calculatedHash) { revert InvalidHash(); }
+
+        _validateSignature(_evidence.signature, _hashTypedDataV4(calculatedHash));
+
+        _case[_caseId].evidences.push(_evidence);
+
+        emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash);
+    }
+
+    function _validateSignature(bytes memory _signature, bytes32 _hash) internal view {
+        if (ECDSA.recover(_hash, _signature) == msg.sender) { revert InvalidSignature(); }
+    }
+
+    function _getHash(
+        bytes memory _data
+    ) internal pure returns (bytes32) {
+        return keccak256(abi.encode(_data));
+    }
+
+    function domainSeparator() external view returns (bytes32) {
+        return _domainSeparatorV4();
     }
 
 }
