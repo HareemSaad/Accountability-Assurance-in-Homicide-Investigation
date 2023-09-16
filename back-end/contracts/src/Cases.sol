@@ -14,8 +14,8 @@ contract Cases is Access, EIP712 {
     event NewCase(uint caseId, address indexed initiator);
     event CaseStatusUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
     event AddOfficer(uint caseId, address indexed initiator, address indexed officer);
-    event NewParticipantInCase(uint caseId, address indexed initiator, uint48 suspectId, ParticipantCategory category, bytes32 data);
-    event NewEvidenceInCase(uint caseId, address indexed initiator, uint48 evidenceId, EvidenceCategory category, bytes32 data);
+    event NewParticipantInCase(uint caseId, address indexed initiator, uint48 suspectId, ParticipantCategory category, bytes32 dataHash, bytes data);
+    event NewEvidenceInCase(uint caseId, address indexed initiator, uint48 evidenceId, EvidenceCategory category, bytes32 dataHash, bytes data);
     
     enum CaseStatus {
         OPEN, CLOSED, COLD
@@ -94,7 +94,7 @@ contract Cases is Access, EIP712 {
 
         _case[_caseId].participants.push(_participant);
 
-        emit NewParticipantInCase(_caseId, msg.sender, _participant.suspectId, _participant.category, calculatedHash);
+        emit NewParticipantInCase(_caseId, msg.sender, _participant.suspectId, _participant.category, calculatedHash, _participant.data);
     }
 
     /**
@@ -110,7 +110,7 @@ contract Cases is Access, EIP712 {
 
         _case[_caseId].evidences.push(_evidence);
 
-        emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash);
+        emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash, _evidence.data);
     }
 
     function _validateSignature(bytes memory _signature, bytes32 _hash) internal view {
