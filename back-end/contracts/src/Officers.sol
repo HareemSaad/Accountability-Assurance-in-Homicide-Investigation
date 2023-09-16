@@ -33,7 +33,7 @@ contract Officers is Access {
     }
 
     function isValidOfficer(address _officer) external view returns (bool) {
-        return officers[_officer].badge.equal("");
+        return !officers[_officer].badge.equal("");
     }
 
     function onboard(address _officer, string memory name, string memory badge, Rank rank) external onlyRole(CAPTAIN_ROLE) {
