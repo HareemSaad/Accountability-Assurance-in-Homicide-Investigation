@@ -13,6 +13,7 @@ contract Cases is Access {
     event NewCase(uint caseId, address indexed initiator);
     event CaseStatusUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
     event AddOfficer(uint caseId, address indexed initiator, address indexed officer);
+    event NewFigureInCase(uint caseId, address indexed initiator, uint48 suspectId, bytes data);
     
     enum CaseStatus {
         OPEN, CLOSED, COLD
@@ -79,12 +80,15 @@ contract Cases is Access {
         emit AddOfficer(_caseId, msg.sender, _officer);
     }
 
-    // function addFigure(uint _caseId, Figure _figure) external onlyRole(CAPTAIN_ROLE) {
+    /**
+     * @dev add a modifier or something
+     */
+    function addFigure(uint _caseId, Figure calldata _figure) external {
 
-    //     _case[_caseId].figures.push(_figure);
+        _case[_caseId].figures.push(_figure);
 
-    //     emit NewFigureInCase(_caseId, msg.sender, _figure.);
-    // }
+        emit NewFigureInCase(_caseId, msg.sender, _figure.suspectId, _figure.data);
+    }
 
 }
 
