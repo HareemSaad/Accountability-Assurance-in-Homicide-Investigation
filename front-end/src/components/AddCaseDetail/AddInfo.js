@@ -2,17 +2,25 @@ import React, { useState } from 'react'
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import { ethers } from 'ethers';
+import CasesABI from './../CasesABI.json';
 
-const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, caseId }) => {
+const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, caseId, name }) => {
 
   const [selectedValue, setSelectedValue] = useState(null);
-  const [formInfo, setFormInfo] = useState({name: '', detail: '', category: ''});
+  const [formInfo, setFormInfo] = useState({ Id: '', detail: '', category: '' });
+  const casesContractAddress = '0x6F928D56055AE74886376D9302f214a1CEB2028B';
+
+  const { ethereum } = window;
+  const provider = new ethers.providers.Web3Provider(window.ethereum);
+  const signer = provider.getSigner();
+  const contract = new ethers.Contract(casesContractAddress, CasesABI.abi, signer);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormInfo({ ...formInfo, [name]: value });
   };
-  
+
   // Function to handle dropdown item selection
   const handleDropdownSelect = (categoryValue) => {
     setSelectedValue(categoryValue);
@@ -20,9 +28,65 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
     setFormInfo({ ...formInfo, [name]: categoryValue });
   };
 
-  const handleSubmit = () => {
-    console.log("state: ", formInfo);
-    console.log("selectedValue: ", selectedValue);
+  const handleSubmit = async () => {
+    try {
+      console.log("state: ", formInfo);
+      console.log("selectedValue: ", selectedValue);
+
+      // converting the details field from formInfo into bytes32
+      const detailBytes32 = ethers.utils.formatBytes32String(formInfo.detail);
+      console.log("detailBytes32: ", detailBytes32);
+
+      // converting entire formInfo use state into JSON
+      // const formInfoAllJSON = JSON.stringify(formInfo);
+      // console.log("formInfoAllJSON: ", formInfoAllJSON);
+
+      // converting formInfo use state into JSON excluding detail because in contract participant and evidence struct doesnt require detail
+      const { detail, ...formInfoWithoutDetail } = formInfo; // javaScript object
+      console.log("formInfoWithoutDetail: ", formInfoWithoutDetail);
+
+      const formInfoWithoutDetailJSON = JSON.stringify(formInfoWithoutDetail); // json
+      console.log("formInfoWithoutDetailJSON: ", formInfoWithoutDetailJSON);
+
+      // Convert the JSON string to bytes
+      const formInfoBytes = ethers.utils.toUtf8Bytes(formInfoWithoutDetailJSON);
+
+      // Now you have formInfoBytes as bytes, you can use it as needed
+      console.log("formInfoBytes:", formInfoBytes);
+
+      // signing the transaction
+      const signature = await signer.signMessage(formInfoBytes);
+
+      // creating the JSON of formInfo(no detail field), bytes of the data and signature
+      const formInfoJSON = {
+        ...formInfoWithoutDetail,
+        data: formInfoBytes,
+        signature: signature
+      };
+
+      console.log("formInfoJSON: ", formInfoJSON);
+
+      // calling the functions from contract
+      if (name === "Participant") {
+        try {
+          const result = await contract.addParticipant(caseId, formInfoJSON, detailBytes32);
+          console.log("Transaction result:", result);
+        } catch (error) {
+          console.error("Error calling contract function:", error);
+        }
+      }
+      else if (name === "Evidence") {
+        try {
+          const result = await contract.addParticipant(caseId, formInfoJSON, detailBytes32);
+          console.log("Transaction result:", result);
+        } catch (error) {
+          console.error("Error calling contract function:", error);
+        }
+      }
+    }
+    catch (error) {
+      console.error(error);
+    }
   };
 
   return (

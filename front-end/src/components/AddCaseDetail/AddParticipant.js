@@ -10,7 +10,7 @@ const AddParticipant = () => {
 
   return (
     <div>
-      <AddInfo heading={`Add Participant for Case# ${caseId}`} IdPlaceholder="Participant's Id" detailPlaceholder="Participant's Details" categoryArray={categoryArray} caseId={caseId}/>
+      <AddInfo heading={`Add Participant for Case# ${caseId}`} IdPlaceholder="Participant's Id" detailPlaceholder="Participant's Details" categoryArray={categoryArray} caseId={caseId} name="Participant"/>
     </div>
   );
 };

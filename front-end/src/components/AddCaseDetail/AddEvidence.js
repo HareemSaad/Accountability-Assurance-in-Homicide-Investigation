@@ -14,7 +14,7 @@ export const AddEvidence = () => {
 
   return (
     <div>
-      <AddInfo heading={`Add Evidence for Case# ${caseId}`} IdPlaceholder="Evidence's Id" detailPlaceholder="Evidence's Details" categoryArray={categoryArray} caseId={caseId}/>
+      <AddInfo heading={`Add Evidence for Case# ${caseId}`} IdPlaceholder="Evidence's Id" detailPlaceholder="Evidence's Details" categoryArray={categoryArray} caseId={caseId} name="Evidence"/>
     </div>
   )
 }
