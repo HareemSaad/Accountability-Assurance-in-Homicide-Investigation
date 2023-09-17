@@ -131,9 +131,9 @@ function App() {
         <Routes>
           <Route path="/" element={ <Home/> } /> 
           <Route path="/cases" element={ <CaseCard /> } />
-          <Route path="/case-detail" element={ <CaseDetails /> } />
-          <Route path="/add-evidence" element={ <AddEvidence /> } />
-          <Route path="/add-participant" element={ <AddParticipant /> } />
+          <Route path="/case-detail/:caseId" element={ <CaseDetails /> } />
+          <Route path="/add-evidence/:caseId" element={ <AddEvidence /> } />
+          <Route path="/add-participant/:caseId" element={ <AddParticipant /> } />
         </Routes>
       </Global.Provider>
     </div>

@@ -1,25 +1,18 @@
 import React from 'react';
-import AddVictim from '../AddCaseDetail/AddParticipant';
-import AddCulprit from '../AddCaseDetail/AddCulprit.js';
-import AddEvidence from '../AddCaseDetail/AddEvidence';
-import AddWitness from '../AddCaseDetail/AddWitness';
-import CreateReport from '../AddCaseDetail/CreateReport';
 import Form from 'react-bootstrap/Form';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import { Button } from 'bootstrap';
+import { useParams } from 'react-router-dom';
 
 const CaseDetailsPage = () => {
+  const { caseId } = useParams();
   return (
     <div className=''>
       <div className='m-4 d-flex flex-row justify-content-between'>
-        <h2>Case Number</h2>
+        <h2>Case Number: {caseId}</h2>
         <DropdownButton id="edit-case-detail" title="Edit Case Detail" className='me-5'>
-          <Dropdown.Item href="/add-evidence">Add Evidence</Dropdown.Item>
-          <Dropdown.Item href="/add-participant">Add Participant</Dropdown.Item>
+          <Dropdown.Item href={`/add-evidence/${caseId}`}>Add Evidence</Dropdown.Item>
+          <Dropdown.Item href={`/add-participant/${caseId}`}>Add Participant</Dropdown.Item>
         </DropdownButton>
       </div>
 

@@ -17,10 +17,10 @@ export const CaseCard = (props) => {
     setCard(cards)
   }, []);
 
-  function print() {
+  function print(cardId) {
     console.log(stateGlobal.address);
     console.log(stateGlobal);
-    navigate('/case-detail');
+    navigate(`/case-detail/${cardId}`);
   }
 
   return (
@@ -31,7 +31,7 @@ export const CaseCard = (props) => {
           card.map((card, index) => (
             <Card className='case-card'>
               <h2 className='mb-3 mt-3 pb-5'>Case# {card}</h2>
-              <button className='card-btn' onClick={print}>View</button>
+              <button className='card-btn' onClick={() => print(card)}>View</button>
             </Card>
           ))
         }

@@ -20,7 +20,7 @@ export const Login = (props) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum);
   const signer = provider.getSigner();
   console.log(signer);
-  const contract = new ethers.Contract(officerContractAddress, OfficersABI, signer);
+  const contract = new ethers.Contract(officerContractAddress, OfficersABI.abi, signer);
 
   const connectWallet = async () => {
     try {

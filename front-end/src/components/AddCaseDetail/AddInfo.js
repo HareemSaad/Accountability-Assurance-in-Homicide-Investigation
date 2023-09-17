@@ -3,7 +3,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-const AddInfo = ({ heading, namePlaceholder, detailPlaceholder, categoryArray }) => {
+const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, caseId }) => {
 
   const [selectedValue, setSelectedValue] = useState(null);
   const [formInfo, setFormInfo] = useState({name: '', detail: '', category: ''});
@@ -31,10 +31,10 @@ const AddInfo = ({ heading, namePlaceholder, detailPlaceholder, categoryArray })
       <form>
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
-            <label htmlFor={namePlaceholder} className="col-form-label">{namePlaceholder}</label>
+            <label htmlFor={IdPlaceholder} className="col-form-label">{IdPlaceholder}</label>
           </div>
           <div class="col-9">
-            <input type="text" name='name' id={namePlaceholder} className="form-control" onChange={handleChange} />
+            <input type="text" name='Id' id={IdPlaceholder} className="form-control" onChange={handleChange} />
           </div>
         </div>
 
