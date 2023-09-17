@@ -1,5 +1,5 @@
 import React from 'react';
-import AddVictim from '../AddCaseDetail/AddVictim';
+import AddVictim from '../AddCaseDetail/AddParticipant';
 import AddCulprit from '../AddCaseDetail/AddCulprit.js';
 import AddEvidence from '../AddCaseDetail/AddEvidence';
 import AddWitness from '../AddCaseDetail/AddWitness';
@@ -19,9 +19,7 @@ const CaseDetailsPage = () => {
         <h2>Case Number</h2>
         <DropdownButton id="edit-case-detail" title="Edit Case Detail" className='me-5'>
           <Dropdown.Item href="/add-evidence">Add Evidence</Dropdown.Item>
-          <Dropdown.Item href="/add-victim">Add Victim</Dropdown.Item>
-          <Dropdown.Item href="/add-culprit">Add Culprit</Dropdown.Item>
-          <Dropdown.Item href="/add-witness">Add Witness</Dropdown.Item>
+          <Dropdown.Item href="/add-participant">Add Participant</Dropdown.Item>
         </DropdownButton>
       </div>
 

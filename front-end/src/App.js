@@ -7,10 +7,8 @@ import { NavbarComponent } from './components/Navbar/Navbar';
 import { CaseCard } from './components/CaseCard/CaseCard';
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
-import AddVictim from './components/AddCaseDetail/AddVictim';
-import AddCulprit from './components/AddCaseDetail/AddCulprit';
+import AddParticipant from './components/AddCaseDetail/AddParticipant';
 import AddEvidence from './components/AddCaseDetail/AddEvidence.js';
-import AddWitness from './components/AddCaseDetail/AddWitness';
 
 import { hexToDec } from 'hex2dec';
 
@@ -135,9 +133,7 @@ function App() {
           <Route path="/cases" element={ <CaseCard /> } />
           <Route path="/case-detail" element={ <CaseDetails /> } />
           <Route path="/add-evidence" element={ <AddEvidence /> } />
-          <Route path="/add-culprit" element={ <AddCulprit /> } />
-          <Route path="/add-victim" element={ <AddVictim /> } />
-          <Route path="/add-witness" element={ <AddWitness /> } />
+          <Route path="/add-participant" element={ <AddParticipant /> } />
         </Routes>
       </Global.Provider>
     </div>
