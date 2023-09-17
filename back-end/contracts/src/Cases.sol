@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./Access.sol";
 import "./Officers.sol";
 
-contract Cases is Access, EIP712 {
+contract Cases is EIP712 {
 
     using Strings for string;
 
@@ -56,7 +56,9 @@ contract Cases is Access, EIP712 {
 
     mapping (uint => Case) _case;
 
-    function addCase(uint _caseId) external onlyRole(CAPTAIN_ROLE) {
+    function addCase(uint _caseId) external {
+
+        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
 
         Case storage newCase = _case[_caseId];
         newCase.status = CaseStatus.OPEN;
@@ -64,7 +66,9 @@ contract Cases is Access, EIP712 {
         emit NewCase(_caseId, msg.sender);
     }
 
-    function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRole(CAPTAIN_ROLE) {
+    function updateCaseStatus(uint _caseId, CaseStatus _status) external {
+
+        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
 
         CaseStatus oldStatus = _case[_caseId].status;
         _case[_caseId].status = _status;
@@ -72,7 +76,9 @@ contract Cases is Access, EIP712 {
         emit CaseStatusUpdated(_caseId, msg.sender, oldStatus, _status);
     }
 
-    function addOfficerInCase(uint _caseId, address _officer) external onlyRole(CAPTAIN_ROLE) {
+    function addOfficerInCase(uint _caseId, address _officer) external {
+
+        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
 
         if(officersContract.isValidOfficer(_officer)) { revert InvalidOfficer(); }
 
