@@ -1,0 +1,19 @@
+/*---------------navbar css------------------*/
+.nav {
+    background-color: rgba(7, 11, 29, 0.8);
+    background-color: #0D003F;
+}
+
+.navLogo {
+    color: white;   
+}
+
+.navAccount {
+    background-color: #0D003F;
+    width: auto;
+    border-radius: 10px;
+    box-shadow: inset 0px 0px 10px aliceblue;
+    padding: 10px 17px;
+    overflow: hidden;
+    
+}
