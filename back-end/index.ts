@@ -2,8 +2,10 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from "body-parser"; //import body parser
 import path from 'path';
+import mongoose from "mongoose";
 import { Console } from 'console';
 import { validateOfficer } from "./scripts/OfficerInfo";
+import { insert } from "./scripts/newCase"
 import dotenv from 'dotenv';
 import { ethers } from 'ethers';
 const officerABI = require("./contracts/out/Officers.sol/Officers.json");
@@ -36,10 +38,11 @@ main().catch(err => console.log(err));
 
 async function main() {
 
+  const x = await mongoose.connect('mongodb+srv://hareemsaad:rJFaQFBXzXNFiVRF@cluster0.mhwju6z.mongodb.net/');
   // await validateOfficer('0x86D5cA9d24ecE1d8c35a45b83Ba15B1B9e11BD50');
 
   try {
-    wscontract.on(wscontract.filters.NewOfficer, (officer, newRank, when, from, event) => {
+    wscontract.on(wscontract.filters.NewOfficer, async (officer, newRank, when, from, event) => {
       const eventData = {
         officer: officer,
         newRank: newRank.toString(),
@@ -48,15 +51,18 @@ async function main() {
       };
       console.log('NewOfficer event detected:');
       console.log(eventData);
+      
     });
 
-    wscasecontract.on(wscasecontract.filters.NewCase, (caseId, initiator, event) => {
+    wscasecontract.on(wscasecontract.filters.NewCase, async (caseId, initiator, event) => {
       const eventData = {
         caseId: caseId.toString(),
         initiator: initiator
       };
       console.log('NewCase event detected:');
       console.log(eventData);
+
+      await insert(eventData);
     });
 
     wscasecontract.on(wscasecontract.filters.CaseStatusUpdated, (caseId, initiator, oldStatus, newStatus, event) => {
@@ -126,7 +132,7 @@ async function main() {
   // console.log(casecontract)
   
   // try {
-  //   await casecontract.addCase('122');
+  //   await casecontract.addCase('142');
   // } catch (err) {
   //   console.error("Error adding case:", err);
   // }

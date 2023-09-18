@@ -6,9 +6,7 @@ const officerContractAddress = process.env.OFFICER_CONTRACT_ADDRESS;
 const privateKey = process.env.WALLET_KEY;
 const rpc = process.env.RPC_URL;
 
-const provider = ethers.getDefaultProvider(11155111, {
-    alchemy: rpc
-});
+const provider = ethers.getDefaultProvider(rpc);
 const signer = new ethers.Wallet(privateKey, provider);
 const contract = new ethers.Contract(officerContractAddress, officerABI.abi, signer);
 
