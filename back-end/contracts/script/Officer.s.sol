@@ -9,7 +9,9 @@ contract OfficerScript is Script {
 
     function run() public {
         uint256 deployer = vm.envUint("WALLET_KEY");
-        vm.broadcast(deployer);
-        new Officers();
+        vm.startBroadcast(deployer);
+        Officers officers = new Officers();
+        officers.grantRole(officers.CAPTAIN_ROLE(), 0x86D5cA9d24ecE1d8c35a45b83Ba15B1B9e11BD50);
+        vm.stopBroadcast();
     }
 }
