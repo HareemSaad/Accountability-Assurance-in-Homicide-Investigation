@@ -133,6 +133,10 @@ contract Cases is EIP712 {
         return _domainSeparatorV4();
     }
 
+    function hashTypedDataV4(bytes32 calculatedHash) external view returns (bytes32) {
+        return _hashTypedDataV4(calculatedHash);
+    }
+
 }
 
 
