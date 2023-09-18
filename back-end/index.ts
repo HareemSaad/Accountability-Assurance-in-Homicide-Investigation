@@ -22,9 +22,7 @@ const officerContractAddress = process.env.OFFICER_CONTRACT_ADDRESS;
 const caseContractAddress = process.env.CASE_CONTRACT_ADDRESS;
 const privateKey = process.env.WALLET_KEY;
 const rpc = process.env.RPC_URL;
-const provider = ethers.getDefaultProvider(11155111, {
-  alchemy: rpc
-});
+const provider = ethers.getDefaultProvider(rpc as string);
 const signer = new ethers.Wallet(privateKey as string, provider);
 const contract = new ethers.Contract(officerContractAddress as string, officerABI.abi, signer);
 const casecontract = new ethers.Contract(caseContractAddress as string, caseABI.abi, signer);
@@ -42,52 +40,73 @@ async function main() {
 
   try {
     wscontract.on(wscontract.filters.NewOfficer, (officer, newRank, when, from, event) => {
+      const eventData = {
+        officer: officer,
+        newRank: newRank.toString(),
+        when: when.toString(),
+        from: from
+      };
       console.log('NewOfficer event detected:');
-      console.log('Officer:', officer);
-      console.log('New Rank:', newRank.toString());
-      console.log('When:', when.toString());
-      console.log('From:', from);
+      console.log(eventData);
     });
 
     wscasecontract.on(wscasecontract.filters.NewCase, (caseId, initiator, event) => {
+      const eventData = {
+        caseId: caseId.toString(),
+        initiator: initiator
+      };
       console.log('NewCase event detected:');
-      console.log('Case ID:', caseId.toString());
-      console.log('Initiator:', initiator);
+      console.log(eventData);
     });
 
     wscasecontract.on(wscasecontract.filters.CaseStatusUpdated, (caseId, initiator, oldStatus, newStatus, event) => {
+      const eventData = {
+        caseId: caseId.toString(),
+        initiator: initiator,
+        oldStatus: oldStatus.toString(),
+        newStatus: newStatus.toString()
+      };
       console.log('CaseStatusUpdated event detected:');
-      console.log('Case ID:', caseId.toString());
-      console.log('Initiator:', initiator);
-      console.log('Old Status:', oldStatus.toString());
-      console.log('New Status:', newStatus.toString());
+      console.log(eventData);
     });
 
     wscasecontract.on(wscasecontract.filters.AddOfficer, (caseId, initiator, officer, event) => {
+      const eventData = {
+        caseId: caseId.toString(),
+        initiator: initiator,
+        officer: officer,
+        event: event
+      };
       console.log('AddOfficer event detected:');
-      console.log('Case ID:', caseId.toString());
-      console.log('Initiator:', initiator);
-      console.log('Officer:', officer);
+      console.log(eventData);
     });
 
     wscasecontract.on(wscasecontract.filters.NewParticipantInCase, (caseId, initiator, suspectId, category, dataHash, data, event) => {
+      const eventData = {
+        caseId: caseId.toString(),
+        initiator: initiator,
+        suspectId: suspectId.toString(),
+        category: category.toString(),
+        dataHash: dataHash,
+        data: data,
+        event: event
+      };
       console.log('NewParticipantInCase event detected:');
-      console.log('Case ID:', caseId.toString());
-      console.log('Initiator:', initiator);
-      console.log('Suspect ID:', suspectId.toString());
-      console.log('Category:', category.toString());
-      console.log('Data Hash:', dataHash);
-      console.log('Data:', data);
+      console.log(eventData);
     });
 
     wscasecontract.on(wscasecontract.filters.NewEvidenceInCase, (caseId, initiator, evidenceId, category, dataHash, data, event) => {
+      const eventData = {
+        caseId: caseId.toString(),
+        initiator: initiator,
+        evidenceId: evidenceId.toString(),
+        category: category.toString(),
+        dataHash: dataHash,
+        data: data,
+        event: event
+      };
       console.log('NewEvidenceInCase event detected:');
-      console.log('Case ID:', caseId.toString());
-      console.log('Initiator:', initiator);
-      console.log('Evidence ID:', evidenceId.toString());
-      console.log('Category:', category.toString());
-      console.log('Data Hash:', dataHash);
-      console.log('Data:', data);
+      console.log(eventData);
     });
   } catch (error) {
     console.error('Error subscribing to the NewOfficer event:', error);
@@ -104,7 +123,13 @@ async function main() {
   // console.log(await contract.CAPTAIN_ROLE(), signer.address)
 
   // console.log(await contract.grantRole(await contract.CAPTAIN_ROLE(), signer.address))
-  await casecontract.addCase(129);
+  // console.log(casecontract)
+  
+  // try {
+  //   await casecontract.addCase('122');
+  // } catch (err) {
+  //   console.error("Error adding case:", err);
+  // }
 
 }
 
