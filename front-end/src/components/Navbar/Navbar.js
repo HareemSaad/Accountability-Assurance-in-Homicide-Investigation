@@ -1,22 +1,28 @@
 import React, { useContext, useState, useEffect } from 'react'
 import './Navbar.css'
-import { Global } from './../../global/GlobalContext';
+import { Navigate, useNavigate } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
+import {
+  useAccount,
+  useConnect,
+  useDisconnect,
+  useEnsAvatar,
+  useEnsName,
+} from 'wagmi'
 
 export const NavbarComponent = () => {
 
-  const [stateGlobal, setGlobal] = useContext(Global);
-  const [message, setMessage] = useState("");
+  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
+  const { disconnect } = useDisconnect()
+  const { address, connector, isConnected } = useAccount()
+  let navigate = useNavigate();
 
   useEffect(() => {
-    if (stateGlobal.address == null || stateGlobal.address.length == 0) {
-      setMessage("Connect to Account");
-    } else {
-      setMessage(stateGlobal.address);
+    if(!isConnected) {
+      navigate("/")
     }
-  }, [stateGlobal.address]);
-
+  }, [isConnected]);
 
   return (
     <Navbar className="nav">
@@ -26,9 +32,10 @@ export const NavbarComponent = () => {
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
           <Navbar.Text className='text-light navAccount'>
-            {message}
+            {isConnected ? address : "0x00"}
           </Navbar.Text>
         </Navbar.Collapse>
+        <button className='logout-button' onClick={disconnect}>Disconnect</button>
       </Container>
     </Navbar>
   )

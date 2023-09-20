@@ -1,7 +1,6 @@
 import './App.css';
 import React, { useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
-import { Global } from'./global/GlobalContext';
 import { Route, Routes} from "react-router-dom";
 import { NavbarComponent } from './components/Navbar/Navbar';
 import { CaseCard } from './components/CaseCard/CaseCard';
@@ -13,120 +12,35 @@ import AddEvidence from './components/AddCaseDetail/AddEvidence.js';
 import { hexToDec } from 'hex2dec';
 
 import CaseDetails from './components/CaseDetails/CaseDetails';
+import { WagmiConfig, createConfig, configureChains, mainnet, sepolia} from 'wagmi'
+ 
+import { alchemyProvider } from 'wagmi/providers/alchemy'
+import { publicProvider } from 'wagmi/providers/public'
+import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
+ 
+// Configure chains & providers with the Alchemy provider.
+// Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
+const { chains, publicClient, webSocketPublicClient } = configureChains(
+  [sepolia],
+  [alchemyProvider({ apiKey: 'yourAlchemyApiKey' }), publicProvider()],
+)
+ 
+// Set up wagmi config
+const config = createConfig({
+  autoConnect: true,
+  connectors: [
+    new MetaMaskConnector({ chains }),
+  ],
+  publicClient,
+  webSocketPublicClient,
+})
 
 
 function App() {
 
-  const global = useContext(Global);
-  const [stateGlobal, setGlobal] = useState(global)
-
-  const { ethereum } = window;
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-  useEffect(() => {
-    if (window.ethereum) {
-      window.ethereum.on("accountsChanged", accountsChanged);
-      window.ethereum.on("chainChanged", chainChanged);
-      // window.ethereum.on("disconnect", updateConnection);
-      // window.ethereum.on("connect", updateConnection);
-    }
-  }, []);
-
-  useEffect(() => {
-    const { ethereum } = window;
-    const checkMetamaskAvailability = async () => {
-      if (!ethereum) {
-        updateMetamaskConnection(false);
-      }
-      updateMetamaskConnection(true);
-    };
-    checkMetamaskAvailability();
-  }, []);
-
-  useEffect(() => {
-    console.log("from app.js useEffect");
-    console.log("context dddress: ", stateGlobal.address);
-  }, [stateGlobal.address]);
-
-  const accountsChanged = async (newAccount) => {
-    console.log(111);
-    updateAccount(newAccount);
-    try {
-      const balance = await window.ethereum.request({
-        method: "eth_getBalance",
-        params: [newAccount.toString(), "latest"],
-      });
-      // setAccountBalance(ethers.utils.formatEther(balance));
-    } catch (err) {
-      console.error(err);
-      // setErrorMessage("There was a problem connecting to MetaMask");
-    }
-  };
-
-  const chainChanged = (chain) => {
-    // console.log("CHAIN CHANGED", chain);
-    try {
-      chain = hexToDec(chain);
-      console.log("CHAIN CHANGED", chain);
-      updateChain(chain)
-    } catch (error) {
-      console.log(error);
-      updateChain(0)
-    }
-  };
-
-  const updateAccount = async (accountAddress) => {
-    try {
-      console.log("from updated account");
-      console.log("Connected Account: ", accountAddress);
-      if (accountAddress.length == 0) {
-        updateConnection(false);
-        updateMetamaskConnection(false);
-        updateChain(0);
-      } else {
-        let chain = await provider.getNetwork()
-        updateConnection(true);
-        updateMetamaskConnection(true);
-        updateChain(chain.chainId);
-      }
-      // const updatedGlobalState = { ...stateGlobal, address: accountAddress };
-      // console.log("Updated global state:", updatedGlobalState);
-      // setGlobal(updatedGlobalState);
-      setGlobal(prevGlobalState => ({ ...prevGlobalState, address: accountAddress }));
-    } catch (error) {
-      console.log(error);
-      updateConnection(false);
-    }
-  };
-
-  const updateConnection = (connection) => {
-    console.log(connection);
-    console.log("from updated Connection");
-    console.log("Connection: ", connection);
-    // const updatedGlobalState = { ...stateGlobal, connected: connection };
-    // console.log("Updated global state:", updatedGlobalState);
-    // setGlobal(updatedGlobalState);
-    setGlobal(prevGlobalState => ({ ...prevGlobalState, connected: connection }));
-    console.log(stateGlobal);
-  }
-  
-  const updateMetamaskConnection = (connection) => {
-    console.log("from updated Metamask Connection");
-    console.log("Metamask Connection: ", connection);
-    setGlobal(prevGlobalState => ({ ...prevGlobalState, metamask: connection }));
-    // console.log(stateGlobal);
-  }
-  
-  const updateChain = (chain) => {
-    console.log("from updated Chain");
-    console.log("Chain: ", chain);
-    setGlobal(prevGlobalState => ({ ...prevGlobalState, chainId: chain }));
-    // console.log(stateGlobal);
-  };
-
   return (
     <div>
-      <Global.Provider value={[stateGlobal, setGlobal]}> 
+      <WagmiConfig config={config}> 
         <NavbarComponent />
         <Routes>
           <Route path="/" element={ <Home/> } /> 
@@ -135,7 +49,7 @@ function App() {
           <Route path="/add-evidence/:caseId" element={ <AddEvidence /> } />
           <Route path="/add-participant/:caseId" element={ <AddParticipant /> } />
         </Routes>
-      </Global.Provider>
+      </WagmiConfig>
     </div>
   );
 }

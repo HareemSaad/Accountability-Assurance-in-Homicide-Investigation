@@ -1,5 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react'
-import { Global } from '../../global/GlobalContext';
+import React, { useState, useEffect } from 'react'
 import './CaseCard.css'
 import CaseDetailsPage from '../CaseDetails/CaseDetails';
 import Card from 'react-bootstrap/Card';
@@ -8,7 +7,6 @@ import { Route, Routes, useNavigate } from "react-router-dom";
 
 export const CaseCard = (props) => {
 
-  const [stateGlobal, setGlobal] = useContext(Global);
   const [card, setCard] = useState([]);
   let navigate = useNavigate();
 
@@ -18,8 +16,6 @@ export const CaseCard = (props) => {
   }, []);
 
   function print(cardId) {
-    console.log(stateGlobal.address);
-    console.log(stateGlobal);
     navigate(`/case-detail/${cardId}`);
   }
 

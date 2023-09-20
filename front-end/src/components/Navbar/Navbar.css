@@ -10,10 +10,36 @@
 
 .navAccount {
     background-color: #0D003F;
-    width: auto;
+    width: 20vh;
     border-radius: 10px;
     box-shadow: inset 0px 0px 10px aliceblue;
     padding: 10px 17px;
     overflow: hidden;
     
 }
+
+.logout-button {
+    display: block;
+    width: auto;
+    padding: 0.5rem 1rem;
+    font-size: 16px;
+    border-radius: 3px;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+    /* background-color: #6600cc; */
+    background-color: white;
+    box-shadow: 0px 0px 15px #6600cc;
+    transition: all 0.3s ease 0s;
+    cursor: pointer;
+    outline: none;
+    margin-left: 5%;
+  }
+
+  .logout-button:hover {
+    background-color: #ffffff;
+    box-shadow: 0px 15px 20px #6600cc;
+    color: #110000;
+    transform: translateY(-7px);
+  
+  }

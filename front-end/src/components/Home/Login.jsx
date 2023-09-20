@@ -1,76 +1,37 @@
 import React from 'react'
 import './Home.css'
-import '../../global/GlobalContext.js'
-import { useState, useEffect, useContext } from 'react';
-import { ethers } from 'ethers';
+import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { Global } from '../../global/GlobalContext.js';
-import OfficersABI from './OfficersABI.json';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
+import { useConnect, useAccount } from 'wagmi'
 
 export const Login = (props) => {
 
-  const [stateGlobal, setGlobal] = useContext(Global);
-  const officerContractAddress = '0xC0D7dD9c349646FD00F8A0284e71f4CbaCBeD866';
-
+  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
+  const { address, connector, isConnected } = useAccount()
   let navigate = useNavigate();
-
-  const { ethereum } = window;
-  const provider = new ethers.providers.Web3Provider(window.ethereum);
-  const signer = provider.getSigner();
-  console.log(signer);
-  const contract = new ethers.Contract(officerContractAddress, OfficersABI.abi, signer);
-
-  const connectWallet = async () => {
-    try {
-      if (!ethereum) {
-        updateMetamaskConnection(false);
-      }
-      const accounts = await ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-      let balance = await provider.getBalance(accounts[0]);
-      let bal = ethers.utils.formatEther(balance);
-
-      // updateConnection(true);
-
-      // let chain = await provider.getNetwork()
-      // updateChain(chain.chainId)
-      navigate('/cases');
-    } catch (error) {
-      updateConnection(false);
-    }
-  };
-
-  const updateConnection = (connection) => {
-    console.log("from login updated Connection");
-    console.log("Connection: ", connection);
-    // const updatedGlobalState = { ...stateGlobal, connected: connection };
-    // console.log("Updated global state:", updatedGlobalState);
-    // setGlobal(updatedGlobalState);
-    setGlobal(prevGlobalState => ({ ...prevGlobalState, connected: connection }));
-  }
-
-  const updateMetamaskConnection = (connection) => {
-    console.log("from login updated Metamask Connection");
-    console.log("Metamask Connection: ", connection);
-    setGlobal(prevGlobalState => ({ ...prevGlobalState, metamask: connection }));
-  }
-
-  const updateChain = (chain) => {
-    console.log("from updated Chain");
-    console.log("Chain: ", chain);
-    setGlobal(prevGlobalState => ({ ...prevGlobalState, chainId: chain }));
-    // console.log(stateGlobal);
-  };
-
   const [selectedValue, setSelectedValue] = useState(null);
 
   // Function to handle dropdown item selection
   const handleDropdownSelect = async (value) => {
     setSelectedValue(value);
   };
+
+   // Function to handle successful login
+  const handleLoginSuccess = () => {
+    navigate('/cases')
+  };
+
+  const handleLogin = (connector) => {
+    connect({ connector });
+  };
+
+  useEffect(() => {
+    if (isConnected) {
+      handleLoginSuccess();
+    }
+  }, [isConnected]);
 
   return (
     <div className='login'>
@@ -81,7 +42,27 @@ export const Login = (props) => {
           <Dropdown.Item onClick={() => handleDropdownSelect('Officer')}>Officer</Dropdown.Item>
           <Dropdown.Item onClick={() => handleDropdownSelect('Detective')}>Detective</Dropdown.Item>
         </DropdownButton>
-        <button className='login-button' onClick={connectWallet}> Connect </button>
+        <div>
+          {connectors.map((connector) => (
+            <button
+              disabled={!connector.ready}
+              key={connector.id}
+              onClick={() => {
+                handleLogin(connector)
+              }}
+              className='login-button'
+            >
+              {"Login"}
+              {!connector.ready && ' (unsupported)'}
+              {isLoading &&
+                connector.id === pendingConnector?.id &&
+                ' (connecting)'}
+              {/* {console.log("ID:: ", isConnected)} */}
+            </button>
+          ))}
+    
+          {/* {error && <div>{error.message}</div>} */}
+        </div>
       </div>
     </div>
   )
