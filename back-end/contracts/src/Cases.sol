@@ -92,11 +92,11 @@ contract Cases is EIP712 {
      */
     function addParticipant(uint _caseId, Participant memory _participant, bytes32 _dataHash) external {
 
-        bytes32 calculatedHash = _getHash(_participant.data);
+        bytes32 calculatedHash = _hashTypedDataV4(_getHash(_participant.data));
 
         if (_dataHash != calculatedHash) { revert InvalidHash(); }
 
-        _validateSignature(_participant.signature, _hashTypedDataV4(calculatedHash));
+        _validateSignature(_participant.signature, calculatedHash);
 
         _case[_caseId].participants.push(_participant);
 
