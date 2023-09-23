@@ -4,9 +4,7 @@ import { useParams } from 'react-router-dom';
 
 const AddParticipant = () => {
   const {caseId} = useParams();
-  // const [participantInfo, setParticipantInfo] = useState({ name: '', detail: '',  category: ''});
-  const categoryArray = ['Suspect', 'Witness', 'Perpetrator', 'Victim']
-
+  const categoryArray = ['Select a Category', 'Suspect', 'Witness', 'Perpetrator', 'Victim']
 
   return (
     <div>

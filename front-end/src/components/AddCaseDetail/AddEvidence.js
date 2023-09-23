@@ -2,15 +2,10 @@ import React, {useState} from 'react'
 import AddInfo from './AddInfo'
 import { useParams } from 'react-router-dom';
 
-// id, detail, type
-// participant -> id, category/type, data/detail, signature
-
-// submit -> onclick - data in bytes and signature
-
 export const AddEvidence = () => {
   const {caseId} = useParams();
   // const [evidenceInfo, setEvidenceInfo] = useState({name: '', contact: '', category: ''});
-  const categoryArray = ['Weapon', 'Physical', 'Drug', 'Documentary', 'Hearsay', 'Murder Weapon']
+  const categoryArray = ['Select a Category', 'Weapon', 'Physical', 'Drug', 'Documentary', 'Hearsay', 'Murder Weapon']
 
   return (
     <div>

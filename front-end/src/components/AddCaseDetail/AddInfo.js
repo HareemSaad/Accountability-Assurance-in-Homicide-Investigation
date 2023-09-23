@@ -1,34 +1,29 @@
 import React, { useState } from 'react'
 import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ethers } from 'ethers';
 import CasesABI from '../CasesABI.json';
-import { useSignMessage } from 'wagmi'
-import { recoverMessageAddress, parseEther } from 'viem'
-import { sendTransaction, prepareSendTransaction, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
+import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
 
 const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, caseId, name }) => {
 
   // const { data: signMessageData, error, isLoading, signMessage, variables } = useSignMessage()
 
   const [selectedValue, setSelectedValue] = useState(null);
-  const [formInfo, setFormInfo] = useState({ evidenceId: '', category: '', detail: '' });
-  const casesContractAddress = '0xC7134892CCfbbeBAC31675D91F239Fcd03E609de';
-
-  // const { ethereum } = window;
-  const _provider = new ethers.getDefaultProvider('https://eth-sepolia.g.alchemy.com/v2/CQE6KMqsDb-cXFzKjTK1RWNWp0fVnO41');
-  const _signer = new ethers.Wallet('0x62f724df34d4310ce079f34ccfb378a652891de7741e24a703af4b33b9be1f07', _provider);
-  const _contract = new ethers.Contract(casesContractAddress, CasesABI.abi, _signer);
+  const [formInfo, setFormInfo] = useState({ 
+    id: '', 
+    category: '', 
+    detail: '' ,
+  });
+  const casesContractAddress = process.env.REACT_APP_CASE_CONTRACT;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormInfo({ ...formInfo, [name]: value });
-  };
-
-  const handleIdChange = (e) => {
-    const { name, value } = e.target;
-    setFormInfo({ ...formInfo, [name]: parseInt(value) });
+    if(name==="id") {
+      setFormInfo({ ...formInfo, [name]: parseInt(value) });
+    } else {
+      setFormInfo({ ...formInfo, [name]: value });
+    }
   };
 
   // Function to handle dropdown item selection
@@ -42,42 +37,33 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
     try {
 
       // converting the details field from formInfo into bytes
-      const detailBytes = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)).toString()
-      console.log("detailBytes: ", detailBytes);
-
-      // converting formInfo use state into JSON excluding detail because in contract participant and evidence struct doesnt require detail
-      const { detail, ...formInfoWithoutDetail } = formInfo; // javaScript object
-      // console.log("formInfoWithoutDetail: ", formInfoWithoutDetail);
+      const message = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)).toString()
+      // console.log("message: ", message);
 
       // signing the transaction
-      const message = detailBytes
       const signature = await signMessage({ message })
-      console.log("SIG :: ", signature)
-
-      // creating the JSON of formInfo(no detail field), bytes of the data and signature
-      const formInfoJSON = {
-        ...formInfoWithoutDetail,
-        data: detailBytes,
-        signature: signature.toString()
-      };
-
-      console.log("formInfoJSON: ", formInfoJSON);
+      // console.log("SIG :: ", signature)
 
       // calling the functions from contract
       if (name === "Evidence") {
         try {
 
           // get typed hash data
-          const hashTypedData = await _contract.hashTypedDataV4(ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [detailBytes])));
+          const hashTypedData = await readContract({
+            address: casesContractAddress,
+            abi: CasesABI.abi,
+            functionName: 'hashTypedDataV4',
+            args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
+            chainId: 11155111
+          })
           // console.log("hashTypedData: ", hashTypedData);
-          // console.log("struct: ", formInfoJSON);
     
           // create evidence struct
           const evidence = {
-            evidenceId: formInfoJSON.evidenceId,
-            category: formInfoJSON.category,
-            data: formInfoJSON.data,
-            signature: formInfoJSON.signature
+            evidenceId: formInfo.id,
+            category: formInfo.category - 1,
+            data: message,
+            signature: signature
           }
           // console.log("evidence :: ", evidence)
 
@@ -102,23 +88,40 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
       }
       else if (name === "Participant") {
         try {
-          const res = await fetch("http://localhost:3000/addEvidence", {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                caseId: caseId,
-                formInfoJSON: formInfoJSON,
-                detailBytes: detailBytes
-            })
-            //above variables should be same in const {Username, Password, Email} = req.body when loading this function (in express file)
+          // get typed hash data
+          const hashTypedData = await readContract({
+            address: casesContractAddress,
+            abi: CasesABI.abi,
+            functionName: 'hashTypedDataV4',
+            args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
+            chainId: 11155111
           })
-          // const result = await _contract.addParticipant(
-          //   caseId, 
-          //   formInfoJSON, 
-          //   detailBytes);
-          console.log("Transaction result:", res);
+          // console.log("hashTypedData: ", hashTypedData);
+    
+          // create evidence struct
+          const participant = {
+            suspectId: formInfo.id,
+            category: formInfo.category - 1,
+            data: message,
+            signature: signature
+          }
+          console.log("participant :: ", participant)
+
+          // call contract
+          const { hash } = await writeContract({
+            address: casesContractAddress,
+            abi: CasesABI.abi,
+            functionName: 'addParticipant',
+            args: [caseId, participant, hashTypedData],
+            chainId: 11155111
+          })
+          console.log("hash :: ", hash)
+
+          // wait for txn
+          const result = await waitForTransaction({
+            hash: hash,
+          })
+          console.log("Transaction result:", result);
         } catch (error) {
           console.error("Error calling contract function:", error);
         }
@@ -138,7 +141,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
             <label htmlFor={IdPlaceholder} className="col-form-label">{IdPlaceholder}</label>
           </div>
           <div class="col-9">
-            <input type="text" name='evidenceId' id={IdPlaceholder} className="form-control" onChange={handleIdChange} />
+            <input type="text" name='id' id={IdPlaceholder} className="form-control" onChange={handleChange} />
           </div>
         </div>
 
@@ -159,7 +162,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
 
           <div class="col-9">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="category-type"> {selectedValue ? selectedValue : 'Select a category'} </Dropdown.Toggle>
+              <Dropdown.Toggle variant="secondary" id="category-type"> {selectedValue ? categoryArray[selectedValue] : 'Select a Category'} </Dropdown.Toggle>
 
               <Dropdown.Menu>
                 {categoryArray.map((category, index) => (
