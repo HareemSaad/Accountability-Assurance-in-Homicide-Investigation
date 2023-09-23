@@ -3,11 +3,11 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ethers } from 'ethers';
 import CasesABI from '../CasesABI.json';
+import { notify } from "./../utils/error-box/notify";
+import "react-toastify/dist/ReactToastify.css";
 import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
 
 const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, caseId, name }) => {
-
-  // const { data: signMessageData, error, isLoading, signMessage, variables } = useSignMessage()
 
   const [selectedValue, setSelectedValue] = useState(null);
   const [formInfo, setFormInfo] = useState({ 
@@ -84,6 +84,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
           console.log("Transaction result:", result);
         } catch (error) {
           console.error("Error calling contract function:", error);
+          notify("error", `Transaction Failed`);
         }
       }
       else if (name === "Participant") {
@@ -124,11 +125,13 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
           console.log("Transaction result:", result);
         } catch (error) {
           console.error("Error calling contract function:", error);
+          notify("error", `Transaction Failed`);
         }
       }
     }
     catch (error) {
       console.error(error);
+      notify("error", `Submission Failed`);
     }
   };
 
