@@ -22,7 +22,7 @@ import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
 const { chains, publicClient, webSocketPublicClient } = configureChains(
   [sepolia],
-  [alchemyProvider({ apiKey: 'yourAlchemyApiKey' }), publicProvider()],
+  [alchemyProvider({ apiKey: process.env.REACT_APP_ALCHEMY_SEPOLIA_KEY }), publicProvider()],
 )
  
 // Set up wagmi config
