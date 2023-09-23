@@ -40,30 +40,20 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
 
   const handleSubmit = async () => {
     try {
-      console.log("state: ", formInfo);
-      console.log("selectedValue: ", selectedValue);
 
-      // converting the details field from formInfo into bytes32
+      // converting the details field from formInfo into bytes
       const detailBytes = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)).toString()
       console.log("detailBytes: ", detailBytes);
 
       // converting formInfo use state into JSON excluding detail because in contract participant and evidence struct doesnt require detail
       const { detail, ...formInfoWithoutDetail } = formInfo; // javaScript object
-      console.log("formInfoWithoutDetail: ", formInfoWithoutDetail);
-
-      const formInfoWithoutDetailJSON = JSON.stringify(formInfoWithoutDetail); // json
-      console.log("formInfoWithoutDetailJSON: ", formInfoWithoutDetailJSON);
-
-      // Convert the JSON string to bytes
-      // const formInfoBytes = ethers.utils.toUtf8Bytes(formInfoWithoutDetailJSON);
-
-      // Now you have formInfoBytes as bytes, you can use it as needed
-      // console.log("formInfoBytes:", formInfoBytes);
+      // console.log("formInfoWithoutDetail: ", formInfoWithoutDetail);
 
       // signing the transaction
       const message = detailBytes
       const signature = await signMessage({ message })
-      console.log("SIG :: ", signature) //0x355b1d51542608bed19c98d6181d14a64a6dadf33c15d622eca5d475146eb9d53b98bb4ba64f4d9bd5d6a0b95591c3d17188842095604bf69b2362ed6ba19aaa1b
+      console.log("SIG :: ", signature)
+
       // creating the JSON of formInfo(no detail field), bytes of the data and signature
       const formInfoJSON = {
         ...formInfoWithoutDetail,
@@ -77,26 +67,31 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
       if (name === "Evidence") {
         try {
 
-          // const domainSeparator = "0x6470b53cb3e4258c83fa400dca28fab95f0facac27bbeb0dbfdb4854a4ac12f0";
-          const tdh = await _contract.hashTypedDataV4(ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [detailBytes])));
-          console.log("tdh: ", tdh);
-          console.log("struct: ", formInfoJSON);
+          // get typed hash data
+          const hashTypedData = await _contract.hashTypedDataV4(ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [detailBytes])));
+          // console.log("hashTypedData: ", hashTypedData);
+          // console.log("struct: ", formInfoJSON);
     
-          const temp = {
+          // create evidence struct
+          const evidence = {
             evidenceId: formInfoJSON.evidenceId,
             category: formInfoJSON.category,
             data: formInfoJSON.data,
             signature: formInfoJSON.signature
           }
-          console.log("temp :: ", temp)
+          // console.log("evidence :: ", evidence)
+
+          // call contract
           const { hash } = await writeContract({
             address: casesContractAddress,
             abi: CasesABI.abi,
             functionName: 'addEvidence',
-            args: [caseId, temp, tdh],
+            args: [caseId, evidence, hashTypedData],
             chainId: 11155111
           })
           console.log("hash :: ", hash)
+
+          // wait for txn
           const result = await waitForTransaction({
             hash: hash,
           })
