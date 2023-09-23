@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react'
 import './CaseCard.css'
 import CaseDetailsPage from '../CaseDetails/CaseDetails';
 import Card from 'react-bootstrap/Card';
-
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export const CaseCard = (props) => {
 
