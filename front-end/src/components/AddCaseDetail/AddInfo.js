@@ -140,16 +140,16 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
           <div className="col-2">
             <label htmlFor={IdPlaceholder} className="col-form-label">{IdPlaceholder}</label>
           </div>
-          <div class="col-9">
+          <div className="col-9">
             <input type="text" name='id' id={IdPlaceholder} className="form-control" onChange={handleChange} />
           </div>
         </div>
 
         <div className="row g-3 align-items-center m-3">
-          <div class="col-2">
+          <div className="col-2">
             <label htmlFor={detailPlaceholder} className="col-form-label">{detailPlaceholder}</label>
           </div>
-          <div class="col-9">
+          <div className="col-9">
             <input type="text" name='detail' id={detailPlaceholder} className="form-control" onChange={handleChange} />
           </div>
         </div>
@@ -160,7 +160,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
             <label htmlFor="category-type" className="col-form-label">Select Category</label>
           </div>
 
-          <div class="col-9">
+          <div className="col-9">
             <Dropdown>
               <Dropdown.Toggle variant="secondary" id="category-type"> {selectedValue ? categoryArray[selectedValue] : 'Select a Category'} </Dropdown.Toggle>
 
