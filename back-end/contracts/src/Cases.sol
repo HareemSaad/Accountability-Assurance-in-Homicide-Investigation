@@ -108,11 +108,11 @@ contract Cases is EIP712 {
      */
     function addEvidence(uint _caseId, Evidence memory _evidence, bytes32 _dataHash) external {
 
-        bytes32 calculatedHash = _getHash(_evidence.data);
+        bytes32 calculatedHash = _hashTypedDataV4(_getHash(_evidence.data));
 
         if (_dataHash != calculatedHash) { revert InvalidHash(); }
 
-        _validateSignature(_evidence.signature, _hashTypedDataV4(calculatedHash));
+        _validateSignature(_evidence.signature, calculatedHash);
 
         _case[_caseId].evidences.push(_evidence);
 
