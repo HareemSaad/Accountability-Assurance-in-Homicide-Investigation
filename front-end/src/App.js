@@ -17,7 +17,8 @@ import { WagmiConfig, createConfig, configureChains, mainnet, sepolia} from 'wag
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
- 
+import { ToastContainer } from "react-toastify";
+
 // Configure chains & providers with the Alchemy provider.
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
 const { chains, publicClient, webSocketPublicClient } = configureChains(
@@ -39,7 +40,8 @@ const config = createConfig({
 function App() {
 
   return (
-    <div>
+    <>
+      <ToastContainer />
       <WagmiConfig config={config}> 
         <NavbarComponent />
         <Routes>
@@ -50,7 +52,7 @@ function App() {
           <Route path="/add-participant/:caseId" element={ <AddParticipant /> } />
         </Routes>
       </WagmiConfig>
-    </div>
+    </>
   );
 }
 
