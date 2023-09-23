@@ -4,12 +4,17 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
-import { useConnect, useAccount } from 'wagmi'
+import { useConnect, useAccount, useDisconnect } from 'wagmi'
+import { readContract } from '@wagmi/core'
+import { notify } from "./../utils/error-box/notify";
+import "react-toastify/dist/ReactToastify.css";
+import OfficersABI from "./../OfficersABI.json"
 
-export const Login = (props) => {
+export const Login = () => {
 
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
   const { address, connector, isConnected } = useAccount()
+  const { disconnect } = useDisconnect()
   let navigate = useNavigate();
   const [selectedValue, setSelectedValue] = useState(null);
 
@@ -19,12 +24,40 @@ export const Login = (props) => {
   };
 
    // Function to handle successful login
-  const handleLoginSuccess = () => {
-    navigate('/cases')
-  };
+  const handleLoginSuccess = async () => {
+
+    if (isConnected) {
+
+      const validity = await readContract({
+        address: process.env.REACT_APP_OFFICER_CONTRACT,
+        abi: OfficersABI.abi,
+        functionName: 'isValidOfficer',
+        args: [address],
+        chainId: 11155111
+      })
+      console.log("validity ::", validity)
+
+      if (validity) {
+        navigate("/cases");
+      } else {
+        handleValidationFail();
+      }
+    };
+  }
 
   const handleLogin = (connector) => {
-    connect({ connector });
+    if (selectedValue == null) {
+      notify("error", "Rank is required");
+    } else {
+      connect({ connector });
+    }
+  };
+
+  const handleValidationFail = () => {
+    if(isConnected) {
+      disconnect()
+    }
+    notify("error", "Rank validation failed");
   };
 
   useEffect(() => {
