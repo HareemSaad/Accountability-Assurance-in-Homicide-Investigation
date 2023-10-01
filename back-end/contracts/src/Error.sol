@@ -7,3 +7,5 @@ error InvalidAddress();
 error InvalidString();
 error InvalidHash();
 error InvalidSignature();
+error InvalidRank();
+error InvalidStatus();
