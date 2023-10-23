@@ -78,8 +78,13 @@ contract Officers is Access {
 
     function updateRank(address _officer, Rank rank) external onlyRole(CAPTAIN_ROLE) {
         Rank prevRank = officers[_officer].rank;
+
+        //call is valid rank
+        if (officers[_officer].rank != prevRank) { revert InvalidOfficer(); }
         if (rank == prevRank) { revert InvalidRank(); }
+
         officers[_officer].rank = rank;
+
         emit RankUpdate(_officer, prevRank, rank, block.timestamp, msg.sender);
     }
 

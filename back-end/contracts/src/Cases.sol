@@ -13,12 +13,13 @@ contract Cases is EIP712 {
 
     event NewCase(uint caseId, address indexed initiator);
     event CaseStatusUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
-    event AddOfficer(uint caseId, address indexed initiator, address indexed officer);
+    event AddOfficer(uint caseId, address indexed initiator, address indexed officer, uint256 _caseSpecificOfficerId);
+    event RemoveOfficer(uint caseId, address indexed initiator, address indexed officer, uint256 _caseSpecificOfficerId);
     event NewParticipantInCase(uint caseId, address indexed initiator, uint48 suspectId, ParticipantCategory category, bytes32 dataHash, bytes data);
     event NewEvidenceInCase(uint caseId, address indexed initiator, uint48 evidenceId, EvidenceCategory category, bytes32 dataHash, bytes data);
     
     enum CaseStatus {
-        OPEN, CLOSED, COLD
+        NULL, OPEN, CLOSED, COLD
     }
 
     enum ParticipantCategory {
@@ -56,19 +57,30 @@ contract Cases is EIP712 {
 
     mapping (uint => Case) _case;
 
-    function addCase(uint _caseId) external {
+    modifier onlyRole(bytes32 role) {
+        _onlyRole(role);
+        _;
+    }
 
-        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
+    function _onlyRole(bytes32 role) internal view {
+        require(officersContract.hasRole(role, msg.sender));
+    }
+
+    function addCase(uint _caseId) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+
+        require(_case[_caseId].status == CaseStatus.NULL);
 
         Case storage newCase = _case[_caseId];
         newCase.status = CaseStatus.OPEN;
+        newCase.officers.push(msg.sender); //case.officers[0] is always the captain
 
         emit NewCase(_caseId, msg.sender);
     }
 
-    function updateCaseStatus(uint _caseId, CaseStatus _status) external {
+    function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRole(officersContract.CAPTAIN_ROLE()) {
 
-        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
+        require(_case[_caseId].status == CaseStatus.NULL);
+        require(_status != CaseStatus.NULL);
 
         CaseStatus oldStatus = _case[_caseId].status;
         _case[_caseId].status = _status;
@@ -76,21 +88,42 @@ contract Cases is EIP712 {
         emit CaseStatusUpdated(_caseId, msg.sender, oldStatus, _status);
     }
 
-    function addOfficerInCase(uint _caseId, address _officer) external {
+    function addOfficerInCase(uint _caseId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
 
-        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
-
+        Case storage newCase = _case[_caseId];
+        
+        require(officersContract.isValidOfficer(_officer));
+        require(newCase.status == CaseStatus.NULL);
         if(officersContract.isValidOfficer(_officer)) { revert InvalidOfficer(); }
 
-        _case[_caseId].officers.push(_officer); 
+       newCase.officers.push(_officer); 
 
-        emit AddOfficer(_caseId, msg.sender, _officer);
+        emit AddOfficer(_caseId, msg.sender, _officer, newCase.officers.length - 1);
+    }
+
+    function removeOfficerInCase(uint _caseId, uint256 _caseSpecificOfficerId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+
+        Case storage newCase = _case[_caseId];
+        
+        require(newCase.officers[_caseSpecificOfficerId] == msg.sender); //check if officer is assigned this case
+        require(newCase.status == CaseStatus.NULL);
+        if(officersContract.isValidOfficer(_officer)) { revert InvalidOfficer(); }
+
+        delete(newCase.officers[_caseSpecificOfficerId]);
+
+        emit RemoveOfficer(_caseId, msg.sender, _officer, _caseSpecificOfficerId);
     }
 
     /**
      * @dev add a modifier or something
      */
-    function addParticipant(uint _caseId, Participant memory _participant, bytes32 _dataHash) external {
+    function addParticipant(uint _caseId, uint256 _caseSpecificOfficerId, Participant memory _participant, bytes32 _dataHash) external {
+
+        Case storage newCase = _case[_caseId];
+
+        require(newCase.officers[_caseSpecificOfficerId] == msg.sender); //check if officer is assigned this case
+        
+        require(newCase.status == CaseStatus.NULL);
 
         bytes32 calculatedHash = _hashTypedDataV4(_getHash(_participant.data));
 
@@ -98,7 +131,7 @@ contract Cases is EIP712 {
 
         _validateSignature(_participant.signature, calculatedHash);
 
-        _case[_caseId].participants.push(_participant);
+        newCase.participants.push(_participant);
 
         emit NewParticipantInCase(_caseId, msg.sender, _participant.suspectId, _participant.category, calculatedHash, _participant.data);
     }
@@ -106,7 +139,11 @@ contract Cases is EIP712 {
     /**
      * @dev add a modifier or something
      */
-    function addEvidence(uint _caseId, Evidence memory _evidence, bytes32 _dataHash) external {
+    function addEvidence(uint _caseId, uint256 _caseSpecificOfficerId, Evidence memory _evidence, bytes32 _dataHash) external {
+
+        Case storage newCase = _case[_caseId];
+        require(newCase.officers[_caseSpecificOfficerId] == msg.sender); //check if officer is assigned this case
+        require(newCase.status == CaseStatus.NULL);
 
         bytes32 calculatedHash = _hashTypedDataV4(_getHash(_evidence.data));
 
@@ -114,7 +151,7 @@ contract Cases is EIP712 {
 
         _validateSignature(_evidence.signature, calculatedHash);
 
-        _case[_caseId].evidences.push(_evidence);
+       newCase.evidences.push(_evidence);
 
         emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash, _evidence.data);
     }
