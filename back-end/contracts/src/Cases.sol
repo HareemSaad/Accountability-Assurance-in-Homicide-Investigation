@@ -68,7 +68,7 @@ contract Cases is EIP712 {
 
     function addCase(uint _caseId) external onlyRole(officersContract.CAPTAIN_ROLE()) {
 
-        require(_case[_caseId].status == CaseStatus.NULL);
+        if(_case[_caseId].status != CaseStatus.NULL) { revert InvalidCase(); }
 
         Case storage newCase = _case[_caseId];
         newCase.status = CaseStatus.OPEN;
@@ -78,12 +78,13 @@ contract Cases is EIP712 {
     }
 
     function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+        Case storage newCase = _case[_caseId];
 
-        require(_case[_caseId].status == CaseStatus.NULL);
-        require(_status != CaseStatus.NULL);
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
 
-        CaseStatus oldStatus = _case[_caseId].status;
-        _case[_caseId].status = _status;
+        CaseStatus oldStatus = newCase.status;
+        newCase.status = _status;
 
         emit CaseStatusUpdated(_caseId, msg.sender, oldStatus, _status);
     }
@@ -92,9 +93,8 @@ contract Cases is EIP712 {
 
         Case storage newCase = _case[_caseId];
         
-        require(officersContract.isValidOfficer(_officer));
-        require(newCase.status == CaseStatus.NULL);
-        if(officersContract.isValidOfficer(_officer)) { revert InvalidOfficer(); }
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
 
        newCase.officers.push(_officer); 
 
@@ -105,9 +105,8 @@ contract Cases is EIP712 {
 
         Case storage newCase = _case[_caseId];
         
-        require(newCase.officers[_caseSpecificOfficerId] == msg.sender); //check if officer is assigned this case
-        require(newCase.status == CaseStatus.NULL);
-        if(officersContract.isValidOfficer(_officer)) { revert InvalidOfficer(); }
+        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
         delete(newCase.officers[_caseSpecificOfficerId]);
 
@@ -121,9 +120,9 @@ contract Cases is EIP712 {
 
         Case storage newCase = _case[_caseId];
 
-        require(newCase.officers[_caseSpecificOfficerId] == msg.sender); //check if officer is assigned this case
+        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
         
-        require(newCase.status == CaseStatus.NULL);
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
         bytes32 calculatedHash = _hashTypedDataV4(_getHash(_participant.data));
 
@@ -142,8 +141,10 @@ contract Cases is EIP712 {
     function addEvidence(uint _caseId, uint256 _caseSpecificOfficerId, Evidence memory _evidence, bytes32 _dataHash) external {
 
         Case storage newCase = _case[_caseId];
-        require(newCase.officers[_caseSpecificOfficerId] == msg.sender); //check if officer is assigned this case
-        require(newCase.status == CaseStatus.NULL);
+
+        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
+        
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
         bytes32 calculatedHash = _hashTypedDataV4(_getHash(_evidence.data));
 
