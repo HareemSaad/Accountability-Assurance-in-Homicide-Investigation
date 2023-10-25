@@ -4,14 +4,21 @@ import CaseDetailsPage from '../CaseDetails/CaseDetails';
 import Card from 'react-bootstrap/Card';
 import { useNavigate } from "react-router-dom";
 
-export const CaseCard = (props) => {
+export const CaseCard = ({ currentUser }) => {
 
-  const [card, setCard] = useState([]);
+  const [OfficerCard, setOfficerCard] = useState([]);
+  const [DetectiveCard, setDetectiveCard] = useState([]);
+  const [CaptainCard, setCaptainCard] = useState([]);
   let navigate = useNavigate();
 
   useEffect(() => {
-    const cards = [213, 345, 66, 789, 545, 22, 431];
-    setCard(cards)
+    const OfficerCards = [213, 345, 66, 789, 545, 22, 431];
+    const DetectiveCards = [13, 27, 36, 45];
+    const CaptainCards = [444, 777, 666, 888, 999];
+    console.log(`currentUser ${currentUser}`)
+    setOfficerCard(OfficerCards)
+    setDetectiveCard(DetectiveCards)
+    setCaptainCard(CaptainCards)
   }, []);
 
   function print(cardId) {
@@ -22,14 +29,31 @@ export const CaseCard = (props) => {
     <>
       <h1 className='m-4'>Cases</h1>
       <div className='card-container'>
-        {
-          card.map((card, index) => (
+        
+        {(currentUser === 'Officer') ?
+          OfficerCard.map((card, index) => (
             <Card className='case-card'>
               <h2 className='mb-3 mt-3 pb-5'>Case# {card}</h2>
               <button className='card-btn' onClick={() => print(card)}>View</button>
             </Card>
-          ))
+          )) : (currentUser === 'Detective') ?
+          DetectiveCard.map((card, index) => (
+              <Card className='case-card'>
+                <h2 className='mb-3 mt-3 pb-5'>Case# {card}</h2>
+                <button className='card-btn' onClick={() => print(card)}>View</button>
+              </Card>
+            ))
+            :
+            CaptainCard.map((card, index) => (
+              <Card className='case-card'>
+                <h2 className='mb-3 mt-3 pb-5'>Case# {card}</h2>
+                <button className='card-btn' onClick={() => print(card)}>View</button>
+              </Card>
+            ))
+
         }
+
+
       </div>
     </>
   )

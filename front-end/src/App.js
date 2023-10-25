@@ -39,6 +39,16 @@ const config = createConfig({
 
 function App() {
 
+  const Users = {
+    Officer: "Officer",
+    Detective: "Detective",
+    Captain: "Captain"
+  }
+
+  const currentUser = Users.Officer;
+  // const currentUser = Users.Detective;
+  // const currentUser = Users.Captain;
+
   return (
     <>
       <ToastContainer />
@@ -46,7 +56,7 @@ function App() {
         <NavbarComponent />
         <Routes>
           <Route path="/" element={ <Home/> } /> 
-          <Route path="/cases" element={ <CaseCard /> } />
+          <Route path="/cases" element={ <CaseCard currentUser={currentUser}/> } />
           <Route path="/case-detail/:caseId" element={ <CaseDetails /> } />
           <Route path="/add-evidence/:caseId" element={ <AddEvidence /> } />
           <Route path="/add-participant/:caseId" element={ <AddParticipant /> } />
