@@ -12,6 +12,7 @@ contract OfficerScript is Script {
         vm.startBroadcast(deployer);
         Officers officers = new Officers();
         officers.grantRole(officers.CAPTAIN_ROLE(), 0x86D5cA9d24ecE1d8c35a45b83Ba15B1B9e11BD50);
+        officers.grantRole(officers.CAPTAIN_ROLE(), 0x65120f1d8DD68cb2877A4dfEd1a2929809337BF0);
         vm.stopBroadcast();
     }
 }
