@@ -2,6 +2,7 @@
 pragma solidity ^0.8.13;
 
 error InvalidCaseId();
+error InvalidCase();
 error InvalidOfficer();
 error InvalidAddress();
 error InvalidString();
