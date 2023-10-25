@@ -8,14 +8,17 @@ contract Officers is Access {
 
     using Strings for string;
 
-    event RankUpdate (address officer, Rank indexed prevRank, Rank indexed newRank, uint indexed when, address from);
-    event NewOfficer (address officer, Rank indexed newRank, uint indexed when, address from);
+    event RankUpdate (address officer, bytes32 indexed prevRank, bytes32 indexed newRank, uint indexed when, address from);
+    event NewOfficer (address officer, bytes32 indexed newRank, uint indexed when, address from);
     event OffBoard (address officer, EmploymentStatus indexed employmentStatus, uint indexed when, address from);
+
+    constructor(address _officer, string memory _name, string memory _badge) {
+        _onboard(_officer, _name, _badge, CAPTAIN_ROLE);
+    }
 
     struct Officer {
         string name;
         string badge;
-        Rank rank;
         EmploymentStatus employmentStatus;
     }
 
@@ -33,59 +36,66 @@ contract Officers is Access {
         return officers[_officer];
     }
 
-    function isValidRank(address _officer, Rank _rank) external view returns (bool) {
-        return (officers[_officer].rank == _rank);
+    function isValidRank(address _officer, bytes32 _role) external view returns (bool) {
+        return (hasRole(_role, _officer));
     }
 
     function isValidOfficer(address _officer) external view returns (bool) {
-        return !(officers[_officer].rank == Rank.NULL);
+        return (officers[_officer].employmentStatus == EmploymentStatus.ACTIVE);
     }
 
-    function onboard(address _officer, string memory name, string memory badge, Rank rank) external onlyRole(CAPTAIN_ROLE) {
+    function onboard(address _officer, string memory _name, string memory _badge, bytes32 _rank) external onlyRole(CAPTAIN_ROLE) {
+        _onboard(_officer, _name, _badge, _rank);
+    }
+
+    function _onboard(address _officer, string memory _name, string memory _badge, bytes32 _rank) internal {
         if (_officer == address(0)) { revert InvalidAddress(); }
-        if (name.equal("") || badge.equal("")) { revert InvalidString(); }
-        if (rank == Rank.NULL) { revert InvalidRank(); }
+        if (_name.equal("") || _badge.equal("")) { revert InvalidString(); }
+        if (_rank == DEFAULT_ADMIN_ROLE) { revert InvalidRank(); }
         
         Officer storage newOfficer = officers[_officer];
-        newOfficer.name = name;
-        newOfficer.badge = badge;
-        newOfficer.rank = rank;
+        newOfficer.name = _name;
+        newOfficer.badge = _badge;
+        newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
+        _grantRole(_rank, _officer);
+
+        emit NewOfficer(_officer, _rank, block.timestamp, msg.sender);
+    }
+
+    function onboard(address _officer, bytes32 _rank) external onlyRole(CAPTAIN_ROLE) {
+        if (_officer == address(0)) { revert InvalidAddress(); }
+        if (_rank == DEFAULT_ADMIN_ROLE) { revert InvalidRank(); }
+        
+        Officer storage newOfficer = officers[_officer];
+        _grantRole(_rank, _officer);
         newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
 
-        emit NewOfficer(_officer, rank, block.timestamp, msg.sender);
+        emit NewOfficer(_officer, _rank, block.timestamp, msg.sender);
     }
 
-    function onboard(address _officer, Rank rank) external onlyRole(CAPTAIN_ROLE) {
+    function offboard(address _officer, EmploymentStatus _employmentStatus, bytes32 rank) external onlyRole(CAPTAIN_ROLE) {
         if (_officer == address(0)) { revert InvalidAddress(); }
-        if (rank == Rank.NULL) { revert InvalidRank(); }
+        if (!hasRole(rank, _officer)) { revert InvalidOfficer(); }
+        if (_employmentStatus == EmploymentStatus.ACTIVE) { revert InvalidStatus(); }
         
         Officer storage newOfficer = officers[_officer];
-        newOfficer.rank = rank;
-        newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
+        newOfficer.employmentStatus = _employmentStatus;
+        _revokeRole(rank, _officer);
 
-        emit NewOfficer(_officer, rank, block.timestamp, msg.sender);
+        emit OffBoard(_officer, _employmentStatus, block.timestamp, msg.sender);
     }
 
-    function offboard(address _officer, EmploymentStatus employmentStatus) external onlyRole(CAPTAIN_ROLE) {
-        if (_officer == address(0)) { revert InvalidAddress(); }
-        if (employmentStatus == EmploymentStatus.ACTIVE) { revert InvalidStatus(); }
-        
-        Officer storage newOfficer = officers[_officer];
-        newOfficer.employmentStatus = employmentStatus;
-
-        emit OffBoard(_officer, employmentStatus, block.timestamp, msg.sender);
-    }
-
-    function updateRank(address _officer, Rank rank) external onlyRole(CAPTAIN_ROLE) {
-        Rank prevRank = officers[_officer].rank;
+    function updateRank(address _officer, bytes32 _prevRank, bytes32 _rank) external onlyRole(CAPTAIN_ROLE) {
+        // bytes32 prevRank = ;
 
         //call is valid rank
-        if (officers[_officer].rank != prevRank) { revert InvalidOfficer(); }
-        if (rank == prevRank) { revert InvalidRank(); }
+        if (_rank == _prevRank || _prevRank == DEFAULT_ADMIN_ROLE) { revert InvalidRank(); }
+        if (!hasRole(_prevRank, _officer)) { revert InvalidOfficer(); }
 
-        officers[_officer].rank = rank;
+        _revokeRole(_prevRank, _officer);
+        _grantRole(_rank, _officer);
 
-        emit RankUpdate(_officer, prevRank, rank, block.timestamp, msg.sender);
+        emit RankUpdate(_officer, _prevRank, _rank, block.timestamp, msg.sender);
     }
 
 }
