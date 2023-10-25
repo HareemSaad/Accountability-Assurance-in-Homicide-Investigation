@@ -2,7 +2,7 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "./Error.sol";
+import "./Utils/Error.sol";
 
 contract Access is AccessControl {
 
