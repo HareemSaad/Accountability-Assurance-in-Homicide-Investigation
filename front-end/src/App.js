@@ -3,7 +3,10 @@ import React, { useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Route, Routes} from "react-router-dom";
 import { NavbarComponent } from './components/Navbar/Navbar';
-import { CaseCard } from './components/CaseCard/CaseCard';
+import { CaseCard_Detective } from './components/CaseCard/CaseCard_Detective';
+import { CaseCard_Captain } from './components/CaseCard/CaseCard_Captain';
+import { AddCase } from './components/AddCase/AddCase';
+
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
 import AddParticipant from './components/AddCaseDetail/AddParticipant';
@@ -39,13 +42,13 @@ const config = createConfig({
 
 function App() {
 
-  const Users = {
-    Officer: "Officer",
-    Detective: "Detective",
-    Captain: "Captain"
-  }
+  // const Users = {
+  //   Officer: "Officer",
+  //   Detective: "Detective",
+  //   Captain: "Captain"
+  // }
 
-  const currentUser = Users.Officer;
+  // const currentUser = Users.Officer;
   // const currentUser = Users.Detective;
   // const currentUser = Users.Captain;
 
@@ -56,10 +59,12 @@ function App() {
         <NavbarComponent />
         <Routes>
           <Route path="/" element={ <Home/> } /> 
-          <Route path="/cases" element={ <CaseCard currentUser={currentUser}/> } />
+          <Route path="/cases-detective" element={ <CaseCard_Detective /> } />
+          <Route path="/cases-captain" element={ <CaseCard_Captain /> } />
           <Route path="/case-detail/:caseId" element={ <CaseDetails /> } />
           <Route path="/add-evidence/:caseId" element={ <AddEvidence /> } />
           <Route path="/add-participant/:caseId" element={ <AddParticipant /> } />
+          <Route path="/add-case" element={ <AddCase /> } />
         </Routes>
       </WagmiConfig>
     </>
