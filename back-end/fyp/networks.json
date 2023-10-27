@@ -1,0 +1,8 @@
+{
+  "sepolia": {
+    "Cases": {
+      "address": "0xD02ED8812bF0e0df369C04A62C192f4ad665f29c",
+      "startBlock": 4561706
+    }
+  }
+}
