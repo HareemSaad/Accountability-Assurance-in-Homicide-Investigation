@@ -37,6 +37,15 @@ contract Cases is EIP712 {
     event UpdateOfficerInCase(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
 
     /**
+     * @dev Emitted when an officer is removed from a case.
+     * @dev `caseId` The identifier of the case from which an officer is removed.
+     * @dev `initiator` The address of the officer initiating the removal.
+     * @dev `officer` The address of the officer being removed.
+     * @dev `caseSpecificOfficerId` The unique identifier for the officer within the case.
+     */
+    event RemoveOfficer(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
+
+    /**
      * @dev Emitted when a new participant is added to a case.
      * @dev `caseId` The identifier of the case to which the participant is added.
      * @dev `initiator` The address of the officer initiating the addition.
@@ -194,7 +203,7 @@ contract Cases is EIP712 {
 
         delete(newCase.officers[_caseSpecificOfficerId]);
 
-        emit UpdateOfficerInCase(_caseId, msg.sender, _officer, _caseSpecificOfficerId);
+        emit RemoveOfficer(_caseId, msg.sender, _officer, _caseSpecificOfficerId);
     }
 
     /**
