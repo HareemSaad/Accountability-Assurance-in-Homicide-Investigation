@@ -159,6 +159,25 @@ contract Cases is EIP712 {
     }
 
     /**
+     * @notice transfers the assigned captain of case.
+     * @param _caseId The identifier of the case to which an officer is added.
+     * @param _officer The address of the officer to be added.
+     * @dev The caller must have the 'CAPTAIN' role for the specified case.
+     */
+    function transferCaseCaptain(uint _caseId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+
+        Case storage newCase = _case[_caseId];
+        
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
+        if(!officersContract.hasRole(officersContract.CAPTAIN_ROLE(), _officer)) { revert InvalidRank(); }
+
+        newCase.officers[0] = _officer;
+
+        emit UpdateOfficerInCase(_caseId, msg.sender, _officer, 0);
+    }
+
+    /**
      * @notice Removes an officer from a case.
      * @param _caseId The identifier of the case from which an officer is removed.
      * @param _caseSpecificOfficerId The index of the officer within the case.
@@ -274,8 +293,7 @@ contract Cases is EIP712 {
  * build a pattern for case id's like there is for cnics
  */
 
-//TODO: add function to transfer captaincy
-//TODO: just change the [0] value
+
 //TODO: make sure the officer ebing added is not a captain in new officer in case
 //TODO: change new officer event to onboard
 //TODO: check if onborad can be equal to offboard
