@@ -37,3 +37,38 @@ dataSources:
         - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
           handler: handleRoleRevoked
       file: ./src/officers.ts
+  - kind: ethereum
+    name: Cases
+    network: sepolia
+    source:
+      address: "0x9cdF3642CfEBebBA1f0e84C08E8517Bb9F5C2Fa2"
+      abi: Cases
+      startBlock: 4583127
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - CaseUpdated
+        - EIP712DomainChanged
+        - NewEvidenceInCase
+        - NewParticipantInCase
+        - RemoveOfficer
+        - UpdateOfficerInCase
+      abis:
+        - name: Cases
+          file: ./abis/Cases.json
+      eventHandlers:
+        - event: CaseUpdated(uint256,indexed address,uint8,uint8)
+          handler: handleCaseUpdated
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: NewEvidenceInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewEvidenceInCase
+        - event: NewParticipantInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewParticipantInCase
+        - event: RemoveOfficer(uint256,indexed address,indexed address,uint256)
+          handler: handleRemoveOfficer
+        - event: UpdateOfficerInCase(uint256,indexed address,indexed address,uint256)
+          handler: handleUpdateOfficerInCase
+      file: ./src/cases.ts
