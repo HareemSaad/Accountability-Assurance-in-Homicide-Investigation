@@ -293,7 +293,3 @@ contract Cases is EIP712 {
 /** TODO ...
  * build a pattern for case id's like there is for cnics
  */
-
-
-//TODO: change new officer event to onboard
-//TODO: check if onborad can be equal to offboard

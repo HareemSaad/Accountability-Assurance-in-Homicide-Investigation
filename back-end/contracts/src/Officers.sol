@@ -86,7 +86,6 @@ contract Officers is Access {
     }
 
     function updateRank(address _officer, bytes32 _prevRank, bytes32 _rank) external onlyRole(CAPTAIN_ROLE) {
-        // bytes32 prevRank = ;
 
         //call is valid rank
         if (_rank == _prevRank || _prevRank == DEFAULT_ADMIN_ROLE) { revert InvalidRank(); }
