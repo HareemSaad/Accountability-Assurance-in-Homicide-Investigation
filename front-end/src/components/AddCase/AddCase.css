@@ -1,3 +1,13 @@
+.input input {
+    outline: 0 !important;
+    box-shadow: 0 0 0 rgb(255, 255, 255) !important;
+    border-bottom: 0.2rem solid #6600cc !important;
+}
+
+input[type=number]:focus {
+    border: 3px solid #555;
+}
+
 .case-add-btn {
     /* align-self: flex-end; */
     /* display: block; */

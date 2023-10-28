@@ -48,26 +48,27 @@ export const AddCase = () => {
             <form>
                 <div className="row g-3 align-items-center m-3">
                     <div className="col-2">
-                        <label htmlFor="caseNumber" className="col-form-label">Case Number</label>
+                        <label htmlFor="caseNumber" className="col-form-label"><b><em>Case Number</em></b></label>
                     </div>
-                    <div className="col-9">
+                    <div className="col-9 input">
                         <input type="number" name='id' id="caseNumber" placeholder='Enter Case Number Here' className="form-control" onChange={handleChange} />
                     </div>
                 </div>
 
                 <div className="row g-3 align-items-center m-3">
                     <div className="col-2">
-                        <label htmlFor="caseStatus" className="col-form-label">Case Status</label>
+                        <label htmlFor="caseStatus" className="col-form-label"><b><em>Case Status</em></b></label>
                     </div>
-                    <div className="col-9">
+                    <div className="col-9 input">
                         <input type="text" name='status' id="caseStatus" className="form-control" value="Open" disabled />
                     </div>
                 </div>
 
-                <div className='d-flex justify-content-around mt-4'>
+                <div className='d-flex justify-content-around mt-4 ms-5'>
                     <button className='case-add-btn' name="add-evidence" onClick={(e) => handleNavigate(e)}>Add Evidence</button>
                     <button className='case-add-btn' name="add-participant" onClick={(e) => handleNavigate(e)}>Add Participant</button>
                 </div>
+                
                 <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2' type="submit" onClick={(e) => handleSubmit(e)}>
                     Save Case
                 </button>

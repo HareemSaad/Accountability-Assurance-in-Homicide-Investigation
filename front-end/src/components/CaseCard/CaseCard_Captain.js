@@ -28,7 +28,10 @@ export const CaseCard_Captain = () => {
         <>
             <div className="d-flex justify-content-between">
                 <h1 className='m-4'>Cases</h1>
-                <button className='card-add-btn' name="add-case" onClick={(e) => goto(e)}>Add Case</button>
+                <div className="d-flex">
+                    <button className='card-add-btn' name="add-case" onClick={(e) => goto(e)}>Add Case</button>
+                    <button className='card-add-btn' name="add-officer" onClick={(e) => goto(e)}>Add Officer</button>
+                </div>
             </div>
 
             <div className='card-container'>

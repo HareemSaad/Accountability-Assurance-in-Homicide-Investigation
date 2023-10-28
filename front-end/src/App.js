@@ -6,6 +6,7 @@ import { NavbarComponent } from './components/Navbar/Navbar';
 import { CaseCard_Detective } from './components/CaseCard/CaseCard_Detective';
 import { CaseCard_Captain } from './components/CaseCard/CaseCard_Captain';
 import { AddCase } from './components/AddCase/AddCase';
+import { AddOfficer } from './components/AddOfficer/AddOfficer';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -65,6 +66,7 @@ function App() {
           <Route path="/add-evidence/:caseId" element={ <AddEvidence /> } />
           <Route path="/add-participant/:caseId" element={ <AddParticipant /> } />
           <Route path="/add-case" element={ <AddCase /> } />
+          <Route path="/add-officer" element={ <AddOfficer /> } />
         </Routes>
       </WagmiConfig>
     </>
