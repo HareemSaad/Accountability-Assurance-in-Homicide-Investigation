@@ -43,7 +43,10 @@ export const Login = () => {
       console.log("validity ::", validity)
 
       if (validity) {
-        navigate("/cases");
+        if (selectedValue == 'Captain') { navigate('/cases-captain') }
+        else if (selectedValue == 'Detective') { navigate('/cases-detective') }
+        else if (selectedValue == 'Officer') { navigate('/cases-officer') }
+        else { handleValidationFail(); }
       } else {
         handleValidationFail();
       }
