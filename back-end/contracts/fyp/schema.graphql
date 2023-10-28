@@ -1,0 +1,63 @@
+type OffBoard @entity(immutable: true) {
+  id: Bytes!
+  officer: Bytes! # address
+  employmentStatus: Int! # uint8
+  when: BigInt! # uint256
+  from: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Onboard @entity(immutable: true) {
+  id: Bytes!
+  officer: Bytes! # address
+  newRank: Bytes! # bytes32
+  when: BigInt! # uint256
+  from: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RankUpdate @entity(immutable: true) {
+  id: Bytes!
+  officer: Bytes! # address
+  prevRank: Bytes! # bytes32
+  newRank: Bytes! # bytes32
+  when: BigInt! # uint256
+  from: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleAdminChanged @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  previousAdminRole: Bytes! # bytes32
+  newAdminRole: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleGranted @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RoleRevoked @entity(immutable: true) {
+  id: Bytes!
+  role: Bytes! # bytes32
+  account: Bytes! # address
+  sender: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
