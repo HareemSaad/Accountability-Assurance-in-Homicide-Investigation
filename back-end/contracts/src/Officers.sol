@@ -9,7 +9,7 @@ contract Officers is Access {
     using Strings for string;
 
     event RankUpdate (address officer, bytes32 indexed prevRank, bytes32 indexed newRank, uint indexed when, address from);
-    event NewOfficer (address officer, bytes32 indexed newRank, uint indexed when, address from);
+    event Onboard (address officer, bytes32 indexed newRank, uint indexed when, address from);
     event OffBoard (address officer, EmploymentStatus indexed employmentStatus, uint indexed when, address from);
 
     constructor(address _officer, string memory _name, string memory _badge) {
@@ -59,7 +59,7 @@ contract Officers is Access {
         newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
         _grantRole(_rank, _officer);
 
-        emit NewOfficer(_officer, _rank, block.timestamp, msg.sender);
+        emit Onboard(_officer, _rank, block.timestamp, msg.sender);
     }
 
     function onboard(address _officer, bytes32 _rank) external onlyRole(CAPTAIN_ROLE) {
@@ -70,7 +70,7 @@ contract Officers is Access {
         _grantRole(_rank, _officer);
         newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
 
-        emit NewOfficer(_officer, _rank, block.timestamp, msg.sender);
+        emit Onboard(_officer, _rank, block.timestamp, msg.sender);
     }
 
     function offboard(address _officer, EmploymentStatus _employmentStatus, bytes32 rank) external onlyRole(CAPTAIN_ROLE) {
