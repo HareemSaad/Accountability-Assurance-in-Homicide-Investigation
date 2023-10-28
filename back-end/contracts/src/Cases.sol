@@ -17,41 +17,25 @@ contract Cases is EIP712 {
     using Strings for string;
 
     Officers officersContract;
-
-    /**
-     * @dev Emitted when a new case is created.
-     * @dev `caseId` The unique identifier for the new case.
-     * @dev `initiator` The address of the officer initiating the case.
-     */
-    event NewCase(uint caseId, address indexed initiator);
     
     /**
-     * @dev Emitted when the status of a case is updated.
+     * @dev Emitted when a case is created or updated.
      * @dev `caseId` The identifier of the case being updated.
      * @dev `initiator` The address of the officer initiating the status update.
      * @dev `oldStatus` The previous status of the case.
      * @dev `newStatus` The new status of the case.
      */
-    event CaseStatusUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
+    event CaseUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
     
     /**
-     * @dev Emitted when an officer is added to a case.
+     * @dev Emitted when an officer is added to or removed from a case.
      * @dev `caseId` The identifier of the case to which an officer is added.
      * @dev `initiator` The address of the officer initiating the addition.
      * @dev `officer` The address of the officer being added.
      * @dev `caseSpecificOfficerId` The unique identifier for the officer within the case.
      */
-    event AddOfficer(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
+    event UpdateOfficerInCase(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
 
-    /**
-     * @dev Emitted when an officer is removed from a case.
-     * @dev `caseId` The identifier of the case from which an officer is removed.
-     * @dev `initiator` The address of the officer initiating the removal.
-     * @dev `officer` The address of the officer being removed.
-     * @dev `caseSpecificOfficerId` The unique identifier for the officer within the case.
-     */
-    event RemoveOfficer(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
-    
     /**
      * @dev Emitted when a new participant is added to a case.
      * @dev `caseId` The identifier of the case to which the participant is added.
@@ -135,7 +119,7 @@ contract Cases is EIP712 {
         newCase.status = CaseStatus.OPEN;
         newCase.officers.push(msg.sender); //case.officers[0] is always the captain
 
-        emit NewCase(_caseId, msg.sender);
+        emit CaseUpdated(_caseId, msg.sender, CaseStatus.NULL, CaseStatus.OPEN);
     }
 
     /**
@@ -153,7 +137,7 @@ contract Cases is EIP712 {
         CaseStatus oldStatus = newCase.status;
         newCase.status = _status;
 
-        emit CaseStatusUpdated(_caseId, msg.sender, oldStatus, _status);
+        emit CaseUpdated(_caseId, msg.sender, oldStatus, _status);
     }
 
     /**
@@ -171,7 +155,7 @@ contract Cases is EIP712 {
 
        newCase.officers.push(_officer); 
 
-        emit AddOfficer(_caseId, msg.sender, _officer, newCase.officers.length - 1);
+        emit UpdateOfficerInCase(_caseId, msg.sender, _officer, newCase.officers.length - 1);
     }
 
     /**
@@ -190,7 +174,7 @@ contract Cases is EIP712 {
 
         delete(newCase.officers[_caseSpecificOfficerId]);
 
-        emit RemoveOfficer(_caseId, msg.sender, _officer, _caseSpecificOfficerId);
+        emit UpdateOfficerInCase(_caseId, msg.sender, _officer, _caseSpecificOfficerId);
     }
 
     /**
@@ -289,3 +273,9 @@ contract Cases is EIP712 {
 /** TODO ...
  * build a pattern for case id's like there is for cnics
  */
+
+//TODO: add function to transfer captaincy
+//TODO: just change the [0] value
+//TODO: make sure the officer ebing added is not a captain in new officer in case
+//TODO: change new officer event to onboard
+//TODO: check if onborad can be equal to offboard
