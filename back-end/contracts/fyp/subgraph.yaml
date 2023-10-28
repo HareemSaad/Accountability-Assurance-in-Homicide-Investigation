@@ -20,6 +20,7 @@ dataSources:
         - RoleAdminChanged
         - RoleGranted
         - RoleRevoked
+        - Officers
       abis:
         - name: Officers
           file: ./abis/Officers.json
@@ -55,6 +56,9 @@ dataSources:
         - NewParticipantInCase
         - RemoveOfficer
         - UpdateOfficerInCase
+        - Cases
+        - Participants
+        - Evidences
       abis:
         - name: Cases
           file: ./abis/Cases.json

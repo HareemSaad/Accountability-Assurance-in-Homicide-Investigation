@@ -129,7 +129,7 @@ type UpdateOfficerInCase @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type Case @entity(immutable: true) {
+type Cases @entity(immutable: true) {
   id: Bytes!
   caseId: BigInt! # uint256
   captain: Bytes! # address
@@ -142,7 +142,7 @@ type Case @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type Officer @entity(immutable: true) {
+type Officers @entity(immutable: true) {
   id: Bytes!
   officer: Bytes! # address
   newRank: Bytes! # bytes32
