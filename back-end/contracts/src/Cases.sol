@@ -152,8 +152,9 @@ contract Cases is EIP712 {
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
         if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
+        if(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), _officer)) { revert InvalidRank(); }
 
-       newCase.officers.push(_officer); 
+        newCase.officers.push(_officer); 
 
         emit UpdateOfficerInCase(_caseId, msg.sender, _officer, newCase.officers.length - 1);
     }
@@ -294,6 +295,5 @@ contract Cases is EIP712 {
  */
 
 
-//TODO: make sure the officer ebing added is not a captain in new officer in case
 //TODO: change new officer event to onboard
 //TODO: check if onborad can be equal to offboard
