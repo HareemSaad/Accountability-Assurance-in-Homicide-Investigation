@@ -3,6 +3,9 @@
     "Officers": {
       "address": "0x04bA55Cd2C501758373AD16521d68106e06Ad26d",
       "startBlock": 4582794
+    },
+    "Cases": {
+      "address": "0xCE0812D10dd4DE0C80cDA1B7Da39410aa1c88573"
     }
   }
 }
