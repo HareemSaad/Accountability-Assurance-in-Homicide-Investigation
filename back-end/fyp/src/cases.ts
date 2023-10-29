@@ -16,8 +16,10 @@ import {
   UpdateOfficerInCase,
   Cases,
   Evidences,
-  Participants
+  Participants,
+  Officers
 } from "../generated/schema"
+import { BigInt } from "@graphprotocol/graph-ts"
 
 export function handleCaseUpdated(event: CaseUpdatedEvent): void {
 
@@ -89,7 +91,7 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void | E
   // Core business logic
   //  load case
   let _case = Cases.load(event.params.caseId.toString())
-  // if case does not do nothing
+  // if case does not exist do nothing
   if(!_case) {
     return new Error("AddEvidence: Case doesnot exist")
   } else {
@@ -133,7 +135,7 @@ export function handleNewParticipantInCase(
   // Core business logic
   //  load case
   let _case = Cases.load(event.params.caseId.toString())
-  // if case does not do nothing
+  // if case does not exist do nothing
   if(!_case) {
     return new Error("AddParticipant]: Case doesnot exist")
   } else {
@@ -155,7 +157,7 @@ export function handleNewParticipantInCase(
   participant.save()
 }
 
-export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
+export function handleRemoveOfficer(event: RemoveOfficerEvent): void | Error {
   let entity = new RemoveOfficer(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -169,11 +171,47 @@ export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  //  load case
+  let _case = Cases.load(event.params.caseId.toString())
+  // if case does not exist do nothing
+  if(!_case) {
+    return new Error("RemoveOfficer: Case doesnot exist")
+  } else {
+    // if it does remove officer from case array
+    // Create a new array that excludes removed officer.
+    const temp = _case.officers.filter((officer) => officer !== event.params.officer);
+
+    // Replace the old array with the new array.
+    _case.officers = temp;
+
+  }
+
+  _case.save()
+
+  //TODO: check if removing officer from case removes case from officer too
+  // //  load officer
+  // let officer = Officers.load(event.params.officer)
+  // // if officer does not exist do nothing
+  // if(!officer) {
+  //   return new Error("RemoveOfficer: Case doesnot exist")
+  // } else {
+  //   // if it does remove officer from case array
+  //   // Create a new array that excludes removed officer.
+  //   const temp = officer.cases.entries.filter((case) => case !== event.params.caseId);
+
+  //   // Replace the old array with the new array.
+  //   officer.cases.entries = temp;
+
+  // }
+
+  // officer.save()
 }
 
 export function handleUpdateOfficerInCase(
   event: UpdateOfficerInCaseEvent
-): void {
+): void | Error {
   let entity = new UpdateOfficerInCase(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -187,4 +225,25 @@ export function handleUpdateOfficerInCase(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  //  load case
+  let _case = Cases.load(event.params.caseId.toString())
+  // if case does not exist do nothing
+  if(!_case) {
+    return new Error("UpdateOfficerInCase: Case doesnot exist")
+  } else {
+    // if it does remove officer from case array
+    // if caseSpecificOfficerId == 0 change captaincy other wise add officer
+    if (event.params.caseSpecificOfficerId == new BigInt(0)) {
+      _case.captain = event.params.officer;
+    } else {
+      _case.officers.push(event.params.officer);
+    }
+
+  }
+
+  _case.save()
+
+  //TODO: check if adding officer from case adds case from officer too
 }
