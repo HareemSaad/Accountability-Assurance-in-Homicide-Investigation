@@ -145,7 +145,7 @@ type Cases @entity(immutable: true) {
 type Officers @entity(immutable: true) {
   id: Bytes!
   officer: Bytes! # address
-  newRank: Bytes! # bytes32
+  rank: Bytes! # bytes32
   employmentStatus: Int! # uint8
   from: Bytes! # address
   cases: [Cases!]! @derivedFrom {feild:"caseId"} # array of cases assigned
@@ -174,3 +174,42 @@ type Evidences @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type _Schema_
+  @fulltext(Cases
+    name: "officerSearch"
+    language: en
+    algorithm: rank
+    include: [
+      {
+        entity: "Officers", 
+        fields: [
+          { 
+            name: "officer" 
+          }, { 
+            name: "rank" 
+          }, { 
+            name: "employmentStatus" 
+          }
+        ]
+      }
+    ]
+  )
+  @fulltext(
+    name: "caseSearch"
+    language: en
+    algorithm: rank
+    include: [
+      {
+        entity: "Cases", 
+        fields: [
+          { 
+            name: "caseId" 
+          }, { 
+            name: "captain" 
+          }, { 
+            name: "status" 
+          }
+        ]
+      }
+    ]
+  )
