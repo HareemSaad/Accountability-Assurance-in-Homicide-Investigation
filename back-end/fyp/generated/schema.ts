@@ -1601,7 +1601,7 @@ export class UpdateOfficerInCase extends Entity {
   }
 }
 
-export class Cases extends Entity {
+export class Case extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -1609,22 +1609,22 @@ export class Cases extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Cases entity without an ID");
+    assert(id != null, "Cannot save Case entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Cases must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type Case must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Cases", id.toString(), this);
+      store.set("Case", id.toString(), this);
     }
   }
 
-  static loadInBlock(id: string): Cases | null {
-    return changetype<Cases | null>(store.get_in_block("Cases", id));
+  static loadInBlock(id: string): Case | null {
+    return changetype<Case | null>(store.get_in_block("Case", id));
   }
 
-  static load(id: string): Cases | null {
-    return changetype<Cases | null>(store.get("Cases", id));
+  static load(id: string): Case | null {
+    return changetype<Case | null>(store.get("Case", id));
   }
 
   get id(): string {
@@ -1666,43 +1666,55 @@ export class Cases extends Entity {
     this.set("status", Value.fromI32(value));
   }
 
-  get officers(): Array<Bytes> {
+  get officers(): Array<Bytes> | null {
     let value = this.get("officers");
     if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
+      return null;
     } else {
       return value.toBytesArray();
     }
   }
 
-  set officers(value: Array<Bytes>) {
-    this.set("officers", Value.fromBytesArray(value));
+  set officers(value: Array<Bytes> | null) {
+    if (!value) {
+      this.unset("officers");
+    } else {
+      this.set("officers", Value.fromBytesArray(<Array<Bytes>>value));
+    }
   }
 
-  get participants(): Array<BigInt> {
+  get participants(): Array<BigInt> | null {
     let value = this.get("participants");
     if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
+      return null;
     } else {
       return value.toBigIntArray();
     }
   }
 
-  set participants(value: Array<BigInt>) {
-    this.set("participants", Value.fromBigIntArray(value));
+  set participants(value: Array<BigInt> | null) {
+    if (!value) {
+      this.unset("participants");
+    } else {
+      this.set("participants", Value.fromBigIntArray(<Array<BigInt>>value));
+    }
   }
 
-  get evidences(): Array<BigInt> {
+  get evidences(): Array<BigInt> | null {
     let value = this.get("evidences");
     if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
+      return null;
     } else {
       return value.toBigIntArray();
     }
   }
 
-  set evidences(value: Array<BigInt>) {
-    this.set("evidences", Value.fromBigIntArray(value));
+  set evidences(value: Array<BigInt> | null) {
+    if (!value) {
+      this.unset("evidences");
+    } else {
+      this.set("evidences", Value.fromBigIntArray(<Array<BigInt>>value));
+    }
   }
 
   get blockNumber(): BigInt {
@@ -1745,7 +1757,7 @@ export class Cases extends Entity {
   }
 }
 
-export class Officers extends Entity {
+export class Officer extends Entity {
   constructor(id: Bytes) {
     super();
     this.set("id", Value.fromBytes(id));
@@ -1753,24 +1765,24 @@ export class Officers extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Officers entity without an ID");
+    assert(id != null, "Cannot save Officer entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.BYTES,
-        `Entities of type Officers must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type Officer must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Officers", id.toBytes().toHexString(), this);
+      store.set("Officer", id.toBytes().toHexString(), this);
     }
   }
 
-  static loadInBlock(id: Bytes): Officers | null {
-    return changetype<Officers | null>(
-      store.get_in_block("Officers", id.toHexString())
+  static loadInBlock(id: Bytes): Officer | null {
+    return changetype<Officer | null>(
+      store.get_in_block("Officer", id.toHexString())
     );
   }
 
-  static load(id: Bytes): Officers | null {
-    return changetype<Officers | null>(store.get("Officers", id.toHexString()));
+  static load(id: Bytes): Officer | null {
+    return changetype<Officer | null>(store.get("Officer", id.toHexString()));
   }
 
   get id(): Bytes {
@@ -1825,8 +1837,8 @@ export class Officers extends Entity {
     this.set("from", Value.fromBytes(value));
   }
 
-  get cases(): CasesLoader {
-    return new CasesLoader("Officers", this.get("id")!.toString(), "cases");
+  get cases(): CaseLoader {
+    return new CaseLoader("Officer", this.get("id")!.toString(), "cases");
   }
 
   get blockNumber(): BigInt {
@@ -1869,7 +1881,7 @@ export class Officers extends Entity {
   }
 }
 
-export class Participants extends Entity {
+export class Participant extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -1877,24 +1889,24 @@ export class Participants extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Participants entity without an ID");
+    assert(id != null, "Cannot save Participant entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Participants must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type Participant must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Participants", id.toString(), this);
+      store.set("Participant", id.toString(), this);
     }
   }
 
-  static loadInBlock(id: string): Participants | null {
-    return changetype<Participants | null>(
-      store.get_in_block("Participants", id)
+  static loadInBlock(id: string): Participant | null {
+    return changetype<Participant | null>(
+      store.get_in_block("Participant", id)
     );
   }
 
-  static load(id: string): Participants | null {
-    return changetype<Participants | null>(store.get("Participants", id));
+  static load(id: string): Participant | null {
+    return changetype<Participant | null>(store.get("Participant", id));
   }
 
   get id(): string {
@@ -1910,17 +1922,21 @@ export class Participants extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get cases(): Array<string> {
+  get cases(): Array<string> | null {
     let value = this.get("cases");
     if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
+      return null;
     } else {
       return value.toStringArray();
     }
   }
 
-  set cases(value: Array<string>) {
-    this.set("cases", Value.fromStringArray(value));
+  set cases(value: Array<string> | null) {
+    if (!value) {
+      this.unset("cases");
+    } else {
+      this.set("cases", Value.fromStringArray(<Array<string>>value));
+    }
   }
 
   get blockNumber(): BigInt {
@@ -1963,7 +1979,7 @@ export class Participants extends Entity {
   }
 }
 
-export class Evidences extends Entity {
+export class Evidence extends Entity {
   constructor(id: string) {
     super();
     this.set("id", Value.fromString(id));
@@ -1971,22 +1987,22 @@ export class Evidences extends Entity {
 
   save(): void {
     let id = this.get("id");
-    assert(id != null, "Cannot save Evidences entity without an ID");
+    assert(id != null, "Cannot save Evidence entity without an ID");
     if (id) {
       assert(
         id.kind == ValueKind.STRING,
-        `Entities of type Evidences must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
+        `Entities of type Evidence must have an ID of type String but the id '${id.displayData()}' is of type ${id.displayKind()}`
       );
-      store.set("Evidences", id.toString(), this);
+      store.set("Evidence", id.toString(), this);
     }
   }
 
-  static loadInBlock(id: string): Evidences | null {
-    return changetype<Evidences | null>(store.get_in_block("Evidences", id));
+  static loadInBlock(id: string): Evidence | null {
+    return changetype<Evidence | null>(store.get_in_block("Evidence", id));
   }
 
-  static load(id: string): Evidences | null {
-    return changetype<Evidences | null>(store.get("Evidences", id));
+  static load(id: string): Evidence | null {
+    return changetype<Evidence | null>(store.get("Evidence", id));
   }
 
   get id(): string {
@@ -2002,17 +2018,21 @@ export class Evidences extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get cases(): Array<string> {
+  get cases(): Array<string> | null {
     let value = this.get("cases");
     if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
+      return null;
     } else {
       return value.toStringArray();
     }
   }
 
-  set cases(value: Array<string>) {
-    this.set("cases", Value.fromStringArray(value));
+  set cases(value: Array<string> | null) {
+    if (!value) {
+      this.unset("cases");
+    } else {
+      this.set("cases", Value.fromStringArray(<Array<string>>value));
+    }
   }
 
   get blockNumber(): BigInt {
@@ -2055,7 +2075,7 @@ export class Evidences extends Entity {
   }
 }
 
-export class CasesLoader extends Entity {
+export class CaseLoader extends Entity {
   _entity: string;
   _field: string;
   _id: string;
@@ -2067,8 +2087,8 @@ export class CasesLoader extends Entity {
     this._field = field;
   }
 
-  load(): Cases[] {
+  load(): Case[] {
     let value = store.loadRelated(this._entity, this._id, this._field);
-    return changetype<Cases[]>(value);
+    return changetype<Case[]>(value);
   }
 }

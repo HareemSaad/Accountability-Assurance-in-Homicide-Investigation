@@ -8,7 +8,7 @@ import {
 } from "../generated/Officers/Officers"
 import {
   OffBoard,
-  Officers,
+  Officer,
   Onboard,
   RankUpdate,
   RoleAdminChanged,
@@ -30,6 +30,19 @@ export function handleOffBoard(event: OffBoardEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  //  load officer
+  let officer = Officer.load(event.params.officer)
+  // if officer does not exist return
+  if(!officer) {
+    return
+  } else {
+    officer.employmentStatus = event.params.employmentStatus
+    officer.from = event.params.from
+  }
+
+  officer.save()
 }
 
 export function handleOnboard(event: OnboardEvent): void {
@@ -49,10 +62,10 @@ export function handleOnboard(event: OnboardEvent): void {
 
   // Core business logic
   //  load officer
-  let officer = Officers.load(event.params.officer)
+  let officer = Officer.load(event.params.officer)
   // if officer does not exist create one
   if(!officer) {
-    officer = new Officers(event.params.officer)
+    officer = new Officer(event.params.officer)
     officer.rank = event.params.newRank
     officer.employmentStatus = 1
     officer.from = event.params.from
@@ -86,7 +99,7 @@ export function handleRankUpdate(event: RankUpdateEvent): void {
 
   // Core business logic
   //  load officer
-  let officer = Officers.load(event.params.officer)
+  let officer = Officer.load(event.params.officer)
   // if officer does not exist throe error
   if(!officer) {
     // return new Error("RankUpdate: Officer does not exist");

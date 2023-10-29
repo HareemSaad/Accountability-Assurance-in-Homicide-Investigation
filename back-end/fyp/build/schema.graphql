@@ -129,40 +129,40 @@ type UpdateOfficerInCase @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type Cases @entity(immutable: false) {
+type Case @entity(immutable: false) {
   id: String! # uint256
   captain: Bytes! # address
   status: Int! # uint8
-  officers: [Officers!]! # array of addresses
-  participants: [BigInt!]! # array of participants
-  evidences: [BigInt!]! # array of evidences
+  officers: [Officer!] # array of addresses
+  participants: [BigInt!] # array of participants
+  evidences: [BigInt!] # array of evidences
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 
-type Officers @entity(immutable: false) {
+type Officer @entity(immutable: false) {
   id: Bytes! # address
   rank: Bytes! # bytes32
   employmentStatus: Int! # uint8
   from: Bytes! # address
-  cases: [Cases!]! @derivedFrom (field:"officers") # array of cases assigned
+  cases: [Case!] @derivedFrom (field:"officers") # array of cases assigned
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 
-type Participants @entity(immutable: true) {
+type Participant @entity(immutable: true) {
   id: String! # suspectId
-  cases: [Cases!]! # array of cases assigned
+  cases: [Case!] # array of cases they are a part of
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 
-type Evidences @entity(immutable: true) {
+type Evidence @entity(immutable: true) {
   id: String! # evidenceId
-  cases: [Cases!]! # array of cases assigned
+  cases: [Case!] # array of cases assigned
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -190,7 +190,7 @@ type _Schema_
     algorithm: rank
     include: [
       {
-        entity: "Cases", 
+        entity: "Case", 
         fields: [
           { name: "id" }, 
           # { name: "captain" }, 

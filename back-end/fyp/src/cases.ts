@@ -14,10 +14,10 @@ import {
   NewParticipantInCase,
   RemoveOfficer,
   UpdateOfficerInCase,
-  Cases,
-  Evidences,
-  Participants,
-  Officers
+  Case,
+  Evidence,
+  Participant,
+  Officer
 } from "../generated/schema"
 import { BigInt, Bytes } from "@graphprotocol/graph-ts"
 
@@ -40,12 +40,15 @@ export function handleCaseUpdated(event: CaseUpdatedEvent): void {
 
   // Core business logic
   //  load case
-  let _entity = Cases.load(event.params.caseId.toString())
+  let _entity = Case.load(event.params.caseId.toString())
   // if case does not exist create it
   if(!_entity) {
-    _entity = new Cases(event.params.caseId.toString());
+    _entity = new Case(event.params.caseId.toString());
     _entity.captain = event.params.initiator;
     _entity.status = event.params.newStatus;
+    _entity.officers = [];
+    _entity.evidences = [];
+    _entity.participants = [];
     _entity.blockNumber = event.block.number
     _entity.blockTimestamp = event.block.timestamp
     _entity.transactionHash = event.transaction.hash
@@ -90,25 +93,25 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
 
   // Core business logic
   //  load case
-  let _case = Cases.load(event.params.caseId.toString())
+  let _case = Case.load(event.params.caseId.toString())
   // if case does not exist do nothing
   if(!_case) {
     // return new Error("AddEvidence: Case doesnot exist")
     return;
   } else {
     // if it does exist add evidence
-    _case.evidences.push(event.params.evidenceId)
+    _case.evidences!.push(event.params.evidenceId)
   }
 
   _case.save()
 
   //  load evidence
-  let evidence = Evidences.load(event.params.evidenceId.toString())
+  let evidence = Evidence.load(event.params.evidenceId.toString())
   // if evidence does not exist create one other wise add it to case
   if(!evidence) {
-    evidence = new Evidences(event.params.evidenceId.toString());
+    evidence = new Evidence(event.params.evidenceId.toString());
   } 
-  evidence.cases.push(event.params.caseId.toString())
+  evidence.cases!.push(event.params.caseId.toString())
 
   _case.save()
   evidence.save()
@@ -135,25 +138,25 @@ export function handleNewParticipantInCase(
 
   // Core business logic
   //  load case
-  let _case = Cases.load(event.params.caseId.toString())
+  let _case = Case.load(event.params.caseId.toString())
   // if case does not exist do nothing
   if(!_case) {
     // return new Error("AddParticipant]: Case doesnot exist")
     return;
   } else {
     // if it does exist add evidence
-    _case.evidences.push(event.params.suspectId)
+    _case.evidences!.push(event.params.suspectId)
   }
 
   _case.save()
 
   //  load evidence
-  let participant = Participants.load(event.params.suspectId.toString())
+  let participant = Participant.load(event.params.suspectId.toString())
   // if evidence does not exist create one other wise add it to case
   if(!participant) {
-    participant = new Participants(event.params.suspectId.toString());
+    participant = new Participant(event.params.suspectId.toString());
   } 
-  participant.cases.push(event.params.caseId.toString())
+  participant.cases!.push(event.params.caseId.toString())
 
   _case.save()
   participant.save()
@@ -176,7 +179,7 @@ export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
 
   // Core business logic
   //  load case
-  let _case = Cases.load(event.params.caseId.toString())
+  let _case = Case.load(event.params.caseId.toString())
   // if case does not exist do nothing
   if(!_case) {
     // return new Error("RemoveOfficer: Case doesnot exist")
@@ -191,7 +194,7 @@ export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
 
     const zeroBytes = new Bytes(0)
     const index = event.params.caseSpecificOfficerId.toU32() - 1;
-    _case.officers[index] = zeroBytes;
+    _case.officers![index] = zeroBytes;
 
   }
 
@@ -199,7 +202,7 @@ export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
 
   //TODO: check if removing officer from case removes case from officer too
   // //  load officer
-  // let officer = Officers.load(event.params.officer)
+  // let officer = Officer.load(event.params.officer)
   // // if officer does not exist do nothing
   // if(!officer) {
   //   return new Error("RemoveOfficer: Case doesnot exist")
@@ -235,7 +238,7 @@ export function handleUpdateOfficerInCase(
 
   // Core business logic
   //  load case
-  let _case = Cases.load(event.params.caseId.toString())
+  let _case = Case.load(event.params.caseId.toString())
   // if case does not exist do nothing
   if(!_case) {
     // return new Error("UpdateOfficerInCase: Case doesnot exist")
@@ -246,7 +249,7 @@ export function handleUpdateOfficerInCase(
     if (event.params.caseSpecificOfficerId == new BigInt(0)) {
       _case.captain = event.params.officer;
     } else {
-      _case.officers.push(event.params.officer);
+      _case.officers!.push(event.params.officer);
     }
 
   }
