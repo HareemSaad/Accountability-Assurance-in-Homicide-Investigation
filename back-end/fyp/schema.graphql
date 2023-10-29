@@ -194,6 +194,8 @@ type _Schema_
       }
     ]
   )
+
+type _Schema_
   @fulltext(
     name: "caseSearch"
     language: en
