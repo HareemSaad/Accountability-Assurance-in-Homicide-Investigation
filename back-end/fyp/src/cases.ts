@@ -12,10 +12,13 @@ import {
   NewEvidenceInCase,
   NewParticipantInCase,
   RemoveOfficer,
-  UpdateOfficerInCase
+  UpdateOfficerInCase,
+  Cases
 } from "../generated/schema"
 
 export function handleCaseUpdated(event: CaseUpdatedEvent): void {
+
+  //save in Case Updated Event
   let entity = new CaseUpdated(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -29,6 +32,9 @@ export function handleCaseUpdated(event: CaseUpdatedEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  entity = Cases.load()
 }
 
 export function handleEIP712DomainChanged(

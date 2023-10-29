@@ -5,31 +5,31 @@ import {
   clearStore,
   beforeAll,
   afterAll
-} from "matchstick-as/assembly/index"
-import { BigInt, Address, Bytes } from "@graphprotocol/graph-ts"
-import { CaseUpdated } from "../generated/schema"
-import { CaseUpdated as CaseUpdatedEvent } from "../generated/Cases/Cases"
-import { handleCaseUpdated } from "../src/cases"
-import { createCaseUpdatedEvent } from "./cases-utils"
+} from "matchstick-as"
+import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts"
+import { OffBoard } from "../generated/schema"
+import { OffBoard as OffBoardEvent } from "../generated/Officers/Officers"
+import { handleOffBoard } from "../src/officers"
+import { createOffBoardEvent } from "./officers-utils"
 
 // Tests structure (matchstick-as >=0.5.0)
 // https://thegraph.com/docs/en/developer/matchstick/#tests-structure-0-5-0
 
 describe("Describe entity assertions", () => {
   beforeAll(() => {
-    let caseId = BigInt.fromI32(234)
-    let initiator = Address.fromString(
+    let officer = Address.fromString(
       "0x0000000000000000000000000000000000000001"
     )
-    let oldStatus = 123
-    let newStatus = 123
-    let newCaseUpdatedEvent = createCaseUpdatedEvent(
-      caseId,
-      initiator,
-      oldStatus,
-      newStatus
+    let employmentStatus = 123
+    let when = BigInt.fromI32(234)
+    let from = Address.fromString("0x0000000000000000000000000000000000000001")
+    let newOffBoardEvent = createOffBoardEvent(
+      officer,
+      employmentStatus,
+      when,
+      from
     )
-    handleCaseUpdated(newCaseUpdatedEvent)
+    handleOffBoard(newOffBoardEvent)
   })
 
   afterAll(() => {
@@ -39,33 +39,33 @@ describe("Describe entity assertions", () => {
   // For more test scenarios, see:
   // https://thegraph.com/docs/en/developer/matchstick/#write-a-unit-test
 
-  test("CaseUpdated created and stored", () => {
-    assert.entityCount("CaseUpdated", 1)
+  test("OffBoard created and stored", () => {
+    assert.entityCount("OffBoard", 1)
 
     // 0xa16081f360e3847006db660bae1c6d1b2e17ec2a is the default address used in newMockEvent() function
     assert.fieldEquals(
-      "CaseUpdated",
+      "OffBoard",
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "caseId",
-      "234"
-    )
-    assert.fieldEquals(
-      "CaseUpdated",
-      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "initiator",
+      "officer",
       "0x0000000000000000000000000000000000000001"
     )
     assert.fieldEquals(
-      "CaseUpdated",
+      "OffBoard",
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "oldStatus",
+      "employmentStatus",
       "123"
     )
     assert.fieldEquals(
-      "CaseUpdated",
+      "OffBoard",
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
-      "newStatus",
-      "123"
+      "when",
+      "234"
+    )
+    assert.fieldEquals(
+      "OffBoard",
+      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
+      "from",
+      "0x0000000000000000000000000000000000000001"
     )
 
     // More assert options:
