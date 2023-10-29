@@ -68,7 +68,7 @@ export function handleOnboard(event: OnboardEvent): void {
   officer.save()
 }
 
-export function handleRankUpdate(event: RankUpdateEvent): void | Error {
+export function handleRankUpdate(event: RankUpdateEvent): void {
   let entity = new RankUpdate(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -89,7 +89,8 @@ export function handleRankUpdate(event: RankUpdateEvent): void | Error {
   let officer = Officers.load(event.params.officer)
   // if officer does not exist throe error
   if(!officer) {
-    return new Error("RankUpdate: Officer does not exist");
+    // return new Error("RankUpdate: Officer does not exist");
+    return;
   } else { // other wise update rank
     officer.rank = event.params.newRank
   }

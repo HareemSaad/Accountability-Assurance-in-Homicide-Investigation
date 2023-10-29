@@ -71,7 +71,7 @@ export function handleEIP712DomainChanged(
   entity.save()
 }
 
-export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void | Error {
+export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
   let entity = new NewEvidenceInCase(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -93,7 +93,8 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void | E
   let _case = Cases.load(event.params.caseId.toString())
   // if case does not exist do nothing
   if(!_case) {
-    return new Error("AddEvidence: Case doesnot exist")
+    // return new Error("AddEvidence: Case doesnot exist")
+    return;
   } else {
     // if it does exist add evidence
     _case.evidences.push(event.params.evidenceId)
@@ -115,7 +116,7 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void | E
 
 export function handleNewParticipantInCase(
   event: NewParticipantInCaseEvent
-): void | Error {
+): void {
   let entity = new NewParticipantInCase(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -137,7 +138,8 @@ export function handleNewParticipantInCase(
   let _case = Cases.load(event.params.caseId.toString())
   // if case does not exist do nothing
   if(!_case) {
-    return new Error("AddParticipant]: Case doesnot exist")
+    // return new Error("AddParticipant]: Case doesnot exist")
+    return;
   } else {
     // if it does exist add evidence
     _case.evidences.push(event.params.suspectId)
@@ -157,7 +159,7 @@ export function handleNewParticipantInCase(
   participant.save()
 }
 
-export function handleRemoveOfficer(event: RemoveOfficerEvent): void | Error {
+export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
   let entity = new RemoveOfficer(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -177,7 +179,8 @@ export function handleRemoveOfficer(event: RemoveOfficerEvent): void | Error {
   let _case = Cases.load(event.params.caseId.toString())
   // if case does not exist do nothing
   if(!_case) {
-    return new Error("RemoveOfficer: Case doesnot exist")
+    // return new Error("RemoveOfficer: Case doesnot exist")
+    return;
   } else {
     // if it does remove officer from case array
     // Create a new array that excludes removed officer.
@@ -211,7 +214,7 @@ export function handleRemoveOfficer(event: RemoveOfficerEvent): void | Error {
 
 export function handleUpdateOfficerInCase(
   event: UpdateOfficerInCaseEvent
-): void | Error {
+): void {
   let entity = new UpdateOfficerInCase(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -231,7 +234,8 @@ export function handleUpdateOfficerInCase(
   let _case = Cases.load(event.params.caseId.toString())
   // if case does not exist do nothing
   if(!_case) {
-    return new Error("UpdateOfficerInCase: Case doesnot exist")
+    // return new Error("UpdateOfficerInCase: Case doesnot exist")
+    return
   } else {
     // if it does remove officer from case array
     // if caseSpecificOfficerId == 0 change captaincy other wise add officer
