@@ -129,53 +129,31 @@ type UpdateOfficerInCase @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
-type Cases @entity(immutable: true) {
-  id: Bytes!
-  caseId: BigInt! # uint256
+type Cases @entity(immutable: false) {
+  id: String! # uint256
   captain: Bytes! # address
   status: Int! # uint8
-  officers: [Officers!]! @derivedFrom {feild:"officer"} # array of addresses
-  participants: [NewParticipantInCase!]! @derivedFrom {feild:"suspectId"} # array of participants
-  evidences: [NewEvidenceInCase!]! @derivedFrom {feild:"evidenceId"} # array of evidences
+  officers: [Officers!]! # array of addresses
+  participants: [NewParticipantInCase!]! # array of participants
+  evidences: [NewEvidenceInCase!]! # array of evidences
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 
-type Officers @entity(immutable: true) {
-  id: Bytes!
-  officer: Bytes! # address
+type Officers @entity(immutable: false) {
+  id: Bytes! # address
   rank: Bytes! # bytes32
   employmentStatus: Int! # uint8
   from: Bytes! # address
-  cases: [Cases!]! @derivedFrom {feild:"caseId"} # array of cases assigned
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Participants @entity(immutable: true) {
-  id: Bytes!
-  suspectId: BigInt! # uint48
-  category: Int! # uint8
-  cases: [Cases!]! @derivedFrom {feild:"caseId"} # array of cases assigned
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
-
-type Evidences @entity(immutable: true) {
-  id: Bytes!
-  evidenceId: BigInt! # uint48
-  category: Int! # uint8
-  cases: [Cases!]! @derivedFrom {feild:"caseId"} # array of cases assigned
+  cases: [Cases!]! @derivedFrom (field:"officers") # array of cases assigned
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 
 type _Schema_
-  @fulltext(Cases
+  @fulltext(
     name: "officerSearch"
     language: en
     algorithm: rank
@@ -194,8 +172,6 @@ type _Schema_
       }
     ]
   )
-
-type _Schema_
   @fulltext(
     name: "caseSearch"
     language: en

@@ -34,7 +34,22 @@ export function handleCaseUpdated(event: CaseUpdatedEvent): void {
   entity.save()
 
   // Core business logic
-  entity = Cases.load()
+  //  load case
+  let _entity = Cases.load(event.params.caseId.toString())
+  // if case does not exist create it
+  if(!_entity) {
+    _entity = new Cases(event.params.caseId.toString());
+    _entity.captain = event.params.initiator;
+    _entity.status = event.params.newStatus;
+    _entity.blockNumber = event.block.number
+    _entity.blockTimestamp = event.block.timestamp
+    _entity.transactionHash = event.transaction.hash
+  } else {
+    // if it does exist update its status
+    _entity.status = event.params.newStatus;
+  }
+
+  _entity.save()
 }
 
 export function handleEIP712DomainChanged(
