@@ -1,4 +1,7 @@
 specVersion: 0.0.5
+features: 
+  - fullTextSearch
+  - ipfsOnEthereumContracts
 schema:
   file: ./schema.graphql
 dataSources:

@@ -169,25 +169,21 @@ type Evidences @entity(immutable: true) {
 }
 
 type _Schema_
-  @fulltext(
-    name: "officerSearch"
-    language: en
-    algorithm: rank
-    include: [
-      {
-        entity: "Officers", 
-        fields: [
-          { 
-            name: "officer" 
-          }, { 
-            name: "rank" 
-          }, { 
-            name: "employmentStatus" 
-          }
-        ]
-      }
-    ]
-  )
+  # @fulltext(
+  #   name: "officerSearch"
+  #   language: en
+  #   algorithm: rank
+  #   include: [
+  #     {
+  #       entity: "Officers", 
+  #       fields: [
+  #         { name: "id" }, 
+  #         { name: "rank" }, 
+  #         { name: "employmentStatus" }
+  #       ]
+  #     }
+  #   ]
+  # )
   @fulltext(
     name: "caseSearch"
     language: en
@@ -196,58 +192,42 @@ type _Schema_
       {
         entity: "Cases", 
         fields: [
-          { 
-            name: "caseId" 
-          }, { 
-            name: "captain" 
-          }, { 
-            name: "status" 
-          }
+          { name: "id" }, 
+          # { name: "captain" }, 
+          # { name: "status" }
         ]
       }
     ]
   )
-  @fulltext(
-    name: "evidenceSearch"
-    language: en
-    algorithm: rank
-    include: [
-      {
-        entity: "NewEvidenceInCase", 
-        fields: [
-          { 
-            name: "caseId" 
-          }, { 
-            name: "evidenceId" 
-          },
-          { 
-            name: "initiator" 
-          }, { 
-            name: "category" 
-          }
-        ]
-      }
-    ]
-  )
-  @fulltext(
-    name: "participantSearch"
-    language: en
-    algorithm: rank
-    include: [
-      {
-        entity: "NewParticipantInCase", 
-        fields: [
-          { 
-            name: "caseId" 
-          }, { 
-            name: "suspectId" 
-          },
-          { 
-            name: "initiator" 
-          }, { 
-            name: "category" 
-          }
-        ]
-      }
-    ]
-  )
+  # @fulltext(
+  #   name: "evidenceSearch"
+  #   language: en
+  #   algorithm: rank
+  #   include: [
+  #     {
+  #       entity: "NewEvidenceInCase", 
+  #       fields: [
+  #         { name: "caseId" }, 
+  #         { name: "evidenceId" },
+  #         { name: "initiator" }, 
+  #         { name: "category" }
+  #       ]
+  #     }
+  #   ]
+  # )
+  # @fulltext(
+  #   name: "participantSearch"
+  #   language: en
+  #   algorithm: rank
+  #   include: [
+  #     {
+  #       entity: "NewParticipantInCase", 
+  #       fields: [
+  #         { name: "caseId" },
+  #         { name: "suspectId" },
+  #         { name: "initiator" }, 
+  #         { name: "category" }
+  #       ]
+  #     }
+  #   ]
+  # )
