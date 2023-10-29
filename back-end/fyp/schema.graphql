@@ -152,6 +152,22 @@ type Officers @entity(immutable: false) {
   transactionHash: Bytes!
 }
 
+type Participants @entity(immutable: true) {
+  id: String! # suspectId
+  cases: [Cases!]! # array of cases assigned
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Evidences @entity(immutable: true) {
+  id: String! # evidenceId
+  cases: [Cases!]! # array of cases assigned
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
 type _Schema_
   @fulltext(
     name: "officerSearch"

@@ -14,7 +14,9 @@ import {
   NewParticipantInCase,
   RemoveOfficer,
   UpdateOfficerInCase,
-  Cases
+  Cases,
+  Evidences,
+  Participants
 } from "../generated/schema"
 
 export function handleCaseUpdated(event: CaseUpdatedEvent): void {
@@ -86,21 +88,32 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void | E
 
   // Core business logic
   //  load case
-  let _entity = Cases.load(event.params.caseId.toString())
+  let _case = Cases.load(event.params.caseId.toString())
   // if case does not do nothing
-  if(!_entity) {
+  if(!_case) {
     return new Error("AddEvidence: Case doesnot exist")
   } else {
     // if it does exist add evidence
-    _entity.evidences.push(event.params.evidenceId)
+    _case.evidences.push(event.params.evidenceId)
   }
 
-  _entity.save()
+  _case.save()
+
+  //  load evidence
+  let evidence = Evidences.load(event.params.evidenceId.toString())
+  // if evidence does not exist create one other wise add it to case
+  if(!evidence) {
+    evidence = new Evidences(event.params.evidenceId.toString());
+  } 
+  evidence.cases.push(event.params.caseId.toString())
+
+  _case.save()
+  evidence.save()
 }
 
 export function handleNewParticipantInCase(
   event: NewParticipantInCaseEvent
-): void {
+): void | Error {
   let entity = new NewParticipantInCase(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -116,6 +129,30 @@ export function handleNewParticipantInCase(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  //  load case
+  let _case = Cases.load(event.params.caseId.toString())
+  // if case does not do nothing
+  if(!_case) {
+    return new Error("AddParticipant]: Case doesnot exist")
+  } else {
+    // if it does exist add evidence
+    _case.evidences.push(event.params.suspectId)
+  }
+
+  _case.save()
+
+  //  load evidence
+  let participant = Participants.load(event.params.suspectId.toString())
+  // if evidence does not exist create one other wise add it to case
+  if(!participant) {
+    participant = new Participants(event.params.suspectId.toString());
+  } 
+  participant.cases.push(event.params.caseId.toString())
+
+  _case.save()
+  participant.save()
 }
 
 export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
