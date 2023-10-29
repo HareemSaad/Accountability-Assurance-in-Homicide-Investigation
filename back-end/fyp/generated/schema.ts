@@ -1679,30 +1679,30 @@ export class Cases extends Entity {
     this.set("officers", Value.fromBytesArray(value));
   }
 
-  get participants(): Array<Bytes> {
+  get participants(): Array<BigInt> {
     let value = this.get("participants");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
-      return value.toBytesArray();
+      return value.toBigIntArray();
     }
   }
 
-  set participants(value: Array<Bytes>) {
-    this.set("participants", Value.fromBytesArray(value));
+  set participants(value: Array<BigInt>) {
+    this.set("participants", Value.fromBigIntArray(value));
   }
 
-  get evidences(): Array<Bytes> {
+  get evidences(): Array<BigInt> {
     let value = this.get("evidences");
     if (!value || value.kind == ValueKind.NULL) {
       throw new Error("Cannot return null for a required field.");
     } else {
-      return value.toBytesArray();
+      return value.toBigIntArray();
     }
   }
 
-  set evidences(value: Array<Bytes>) {
-    this.set("evidences", Value.fromBytesArray(value));
+  set evidences(value: Array<BigInt>) {
+    this.set("evidences", Value.fromBigIntArray(value));
   }
 
   get blockNumber(): BigInt {

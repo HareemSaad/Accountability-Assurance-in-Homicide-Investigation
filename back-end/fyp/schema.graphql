@@ -134,8 +134,8 @@ type Cases @entity(immutable: false) {
   captain: Bytes! # address
   status: Int! # uint8
   officers: [Officers!]! # array of addresses
-  participants: [NewParticipantInCase!]! # array of participants
-  evidences: [NewEvidenceInCase!]! # array of evidences
+  participants: [BigInt!]! # array of participants
+  evidences: [BigInt!]! # array of evidences
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -186,6 +186,50 @@ type _Schema_
             name: "captain" 
           }, { 
             name: "status" 
+          }
+        ]
+      }
+    ]
+  )
+  @fulltext(
+    name: "evidenceSearch"
+    language: en
+    algorithm: rank
+    include: [
+      {
+        entity: "NewEvidenceInCase", 
+        fields: [
+          { 
+            name: "caseId" 
+          }, { 
+            name: "evidenceId" 
+          },
+          { 
+            name: "initiator" 
+          }, { 
+            name: "category" 
+          }
+        ]
+      }
+    ]
+  )
+  @fulltext(
+    name: "participantSearch"
+    language: en
+    algorithm: rank
+    include: [
+      {
+        entity: "NewParticipantInCase", 
+        fields: [
+          { 
+            name: "caseId" 
+          }, { 
+            name: "suspectId" 
+          },
+          { 
+            name: "initiator" 
+          }, { 
+            name: "category" 
           }
         ]
       }

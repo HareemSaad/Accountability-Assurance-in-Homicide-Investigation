@@ -1,3 +1,4 @@
+import { Error } from "error"
 import {
   CaseUpdated as CaseUpdatedEvent,
   EIP712DomainChanged as EIP712DomainChangedEvent,
@@ -66,7 +67,7 @@ export function handleEIP712DomainChanged(
   entity.save()
 }
 
-export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
+export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void | Error {
   let entity = new NewEvidenceInCase(
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
@@ -82,6 +83,19 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  //  load case
+  let _entity = Cases.load(event.params.caseId.toString())
+  // if case does not do nothing
+  if(!_entity) {
+    return new Error("AddEvidence: Case doesnot exist")
+  } else {
+    // if it does exist add evidence
+    _entity.evidences.push(event.params.evidenceId)
+  }
+
+  _entity.save()
 }
 
 export function handleNewParticipantInCase(
