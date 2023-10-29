@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import './AddCase.css';
+import CaseABI from "./../CasesABI.json";
+import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
 
 export const AddCase = () => {
 
@@ -16,6 +18,7 @@ export const AddCase = () => {
         console.log("params :: ", name)
         console.log("value :: ", value)
     };
+    const caseContractAddress = process.env.REACT_APP_CASE_CONTRACT;
 
     const handleNavigate = (e) => {
         e.preventDefault();
@@ -30,16 +33,28 @@ export const AddCase = () => {
         }
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (caseNum.id === '') {
             // console.log("null");
             notify("error", `Case Number is empty`);
-        } else {
-            console.log("caseNum :: ", caseNum.id)
-            // console.log(`navigation:: /${name}/${caseNum.id}`);
-            // navigate(`/${name}/${caseNum.id}`);
-        }
+        } 
+        
+        // call contract
+        const { hash } = await writeContract({
+            address: caseContractAddress,
+            abi: CaseABI.abi,
+            functionName: 'addCase',
+            args: [caseNum.id],
+            chainId: 11155111
+        })
+        console.log("hash :: ", hash)
+
+        // wait for txn
+        const result = await waitForTransaction({
+            hash: hash,
+        })
+        console.log("Transaction result:", result);
     }
 
     return (
@@ -69,7 +84,7 @@ export const AddCase = () => {
                     <button className='case-add-btn' name="add-participant" onClick={(e) => handleNavigate(e)}>Add Participant</button>
                 </div>
                 
-                <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2' type="submit" onClick={(e) => handleSubmit(e)}>
+                <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
                     Save Case
                 </button>
                 
