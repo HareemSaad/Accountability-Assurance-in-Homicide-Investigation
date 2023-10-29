@@ -78,7 +78,7 @@ export const Login = () => {
     <div className='login'>
       <div className='login-container'>
         <h2 className='login-welcome'> Welcome </h2>
-        <DropdownButton id="rank" title={selectedValue ? selectedValue : "Select Your Rank"} className='mb-4'>
+        <DropdownButton variant="light" id="rank" title={selectedValue ? selectedValue : "Select Your Rank"} className='mb-4 dropdown-rank'>
           <Dropdown.Item onClick={() => handleDropdownSelect('Captain')}>Captain</Dropdown.Item>
           <Dropdown.Item onClick={() => handleDropdownSelect('Officer')}>Officer</Dropdown.Item>
           <Dropdown.Item onClick={() => handleDropdownSelect('Detective')}>Detective</Dropdown.Item>

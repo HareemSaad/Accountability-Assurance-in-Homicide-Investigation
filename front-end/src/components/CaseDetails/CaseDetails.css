@@ -1,3 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300&family=Varela+Round&display=swap');
+
+* {
+  font-family: 'Lato', sans-serif;
+  font-family: 'Varela Round', sans-serif;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.backgound-div{
+  background-color:#f5f7fa;
+  margin: 1rem;
+  padding: 2rem;
+  border-radius: 1rem;
+  /* background-color: rgba(250, 250, 250, 1); */
+}
+
 .case-nav-btn {
   align-self: flex-end;
   display: block;
@@ -13,7 +31,54 @@
   font-weight: bold;
 }
 
-.row-flex{
-    display: flex;
-    justify-content: space-around
+.div-btn{
+  margin: 4rem 5rem 0rem 5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.statusTagOpen {
+  align-self: center;
+  padding: 0.1rem 0.7rem 0.1rem 0.7rem;
+  background-color: #1CAC78;
+  border: 0.2rem solid #039e65;
+  border-radius: 0.3rem;
+  color: white;
+}
+
+.statusTagClose {
+  align-self: flex-end;
+  padding: 0.1rem 0.7rem 0.1rem 0.7rem;
+  background-color: #D2122E;
+  border: 0.2rem solid #aa041d;
+  border-radius: 0.3rem;
+  color: white;
+}
+.statusTagCold {
+  align-self: flex-end;
+  padding: 0.1rem 0.7rem 0.1rem 0.7rem;
+  background-color: #2d88c9;
+  border: 0.2rem solid #034d81;
+  border-radius: 0.3rem;
+  color: white;
+}
+
+.card-info-container {
+  /* border: 0.2rem solid red; */
+  padding: 0rem 0rem 0rem 3.6rem;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 13px 10px;
+}
+
+.case-info-card {
+  /* border: 0.2rem solid red !important; */
+  /* margin: 0 3rem; */
+  /* padding: 0 1rem 1rem 1rem; */
+  /* min-height: 170px; */
+  display: flex;
+  background-color: rgba(250, 250, 250, 1);
+  /* box-shadow: rgba(0, 0, 0, 0.15) 6.95px 6.95px 6.95px 6.6px; */
+  border-radius: 0.4rem;
+  border-bottom: 0.2rem solid #6600cc !important;
 }
