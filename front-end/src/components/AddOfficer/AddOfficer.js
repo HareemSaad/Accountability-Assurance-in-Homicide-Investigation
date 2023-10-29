@@ -10,7 +10,8 @@ export const AddOfficer = () => {
 
     let navigate = useNavigate();
 
-    const [selectedValue, setSelectedValue] = useState(null);
+    const [selectedStatusValue, setSelectedStatusValue] = useState(null);
+    const [selectedRankValue, setSelectedRankValue] = useState(null);
     const [officerInfo, setOfficerInfo] = useState({
         address: '',
         name: '',
@@ -20,6 +21,7 @@ export const AddOfficer = () => {
     });
     const rankArray = ['Null', 'Officer', 'Detective', 'Captain'];
     const statusArray = ['Inactive', 'Active', 'Retired', 'Fired'];
+    const officerContractAddress = process.env.REACT_APP_OFFICER_CONTRACT;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -38,8 +40,15 @@ export const AddOfficer = () => {
     }
 
     // Function to handle dropdown item selection
-    const handleDropdownSelect = (categoryValue) => {
-        setSelectedValue(categoryValue);
+    const handleStatusDropdownSelect = (categoryValue) => {
+        setSelectedStatusValue(categoryValue);
+        const name = 'category';
+        setOfficerInfo({ ...officerInfo, [name]: categoryValue });
+    };
+
+    // Function to handle dropdown item selection
+    const handleRankDropdownSelect = (categoryValue) => {
+        setSelectedRankValue(categoryValue);
         const name = 'category';
         setOfficerInfo({ ...officerInfo, [name]: categoryValue });
     };
@@ -86,11 +95,11 @@ export const AddOfficer = () => {
 
                     <div className="col-9">
                         <Dropdown>
-                            <Dropdown.Toggle variant="secondary" id="officerStatus" className='dropdown'> {selectedValue ? statusArray[selectedValue] : 'Select a Status'} </Dropdown.Toggle>
+                            <Dropdown.Toggle variant="secondary" id="officerStatus" className='dropdown'> {selectedStatusValue ? statusArray[selectedStatusValue] : 'Select a Status'} </Dropdown.Toggle>
 
                             <Dropdown.Menu className='dropdown'>
                                 {statusArray.map((category, index) => (
-                                    <Dropdown.Item name='status' key={index} onClick={() => handleDropdownSelect(index)}> {category} </Dropdown.Item>
+                                    <Dropdown.Item name='status' key={index} onClick={() => handleStatusDropdownSelect(index)}> {category} </Dropdown.Item>
                                 ))}
                             </Dropdown.Menu>
                         </Dropdown>
@@ -105,11 +114,11 @@ export const AddOfficer = () => {
 
                     <div className="col-9">
                         <Dropdown>
-                            <Dropdown.Toggle variant="secondary" id="officerRank" className='dropdown'> {selectedValue ? rankArray[selectedValue] : 'Select a Rank'} </Dropdown.Toggle>
+                            <Dropdown.Toggle variant="secondary" id="officerRank" className='dropdown'> {selectedRankValue ? rankArray[selectedRankValue] : 'Select a Rank'} </Dropdown.Toggle>
 
                             <Dropdown.Menu className='dropdown'>
                                 {rankArray.map((category, index) => (
-                                    <Dropdown.Item name='rank' key={index} onClick={() => handleDropdownSelect(index)}> {category} </Dropdown.Item>
+                                    <Dropdown.Item name='rank' key={index} onClick={() => handleRankDropdownSelect(index)}> {category} </Dropdown.Item>
                                 ))}
                             </Dropdown.Menu>
                         </Dropdown>
