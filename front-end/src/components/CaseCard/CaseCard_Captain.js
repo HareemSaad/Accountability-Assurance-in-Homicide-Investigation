@@ -10,7 +10,7 @@ export const CaseCard_Captain = () => {
     let navigate = useNavigate();
 
     useEffect(() => {
-        const CaptainCards = [444, 777, 666, 888, 999];
+        const CaptainCards = [213, 192, 615, 888, 999];
         setCaptainCard(CaptainCards)
     }, []);
 
