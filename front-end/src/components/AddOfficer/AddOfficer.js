@@ -25,7 +25,7 @@ export const AddOfficer = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setOfficerInfo({ ...officerInfo, [name]: parseInt(value) });
+        setOfficerInfo({ ...officerInfo, [name]: value });
         console.log("params :: ", name)
         console.log("value :: ", value)
     };
@@ -33,9 +33,9 @@ export const AddOfficer = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (officerInfo.name === '') {
-            notify("error", `Case Number is empty`);
+            notify("error", `Officer Name is empty`);
         } else {
-            console.log("caseNum :: ", officerInfo.name)
+            console.log("Officer Name :: ", officerInfo.name)
         }
     }
 
@@ -73,7 +73,7 @@ export const AddOfficer = () => {
                         <label htmlFor="officerName" className="col-form-label"><b><em>Officer Name:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='name' id="officerName" placeholder='Enter officer Name Here' className="form-control" ></input>
+                        <input type="text" name='name' id="officerName" placeholder='Enter officer Name Here' className="form-control" onChange={handleChange}></input>
                     </div>
                 </div>
 
@@ -83,7 +83,7 @@ export const AddOfficer = () => {
                         <label htmlFor="officerRank" className="col-form-label"><b><em>Officer Batch:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='batch' id="officerBatch" placeholder='Enter officer Batch Here' className="form-control"></input>
+                        <input type="text" name='batch' id="officerBatch" placeholder='Enter officer Batch Here' className="form-control" onChange={handleChange}></input>
                     </div>
                 </div>
 
