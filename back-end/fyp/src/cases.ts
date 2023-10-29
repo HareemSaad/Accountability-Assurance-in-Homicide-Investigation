@@ -19,7 +19,7 @@ import {
   Participants,
   Officers
 } from "../generated/schema"
-import { BigInt } from "@graphprotocol/graph-ts"
+import { BigInt, Bytes } from "@graphprotocol/graph-ts"
 
 export function handleCaseUpdated(event: CaseUpdatedEvent): void {
 
@@ -183,11 +183,15 @@ export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
     return;
   } else {
     // if it does remove officer from case array
-    // Create a new array that excludes removed officer.
-    const temp = _case.officers.filter((officer) => officer !== event.params.officer);
+    // // Create a new array that excludes removed officer.
+    // const temp = _case.officers.filter((officer) => officer !== event.params.officer);
 
-    // Replace the old array with the new array.
-    _case.officers = temp;
+    // // Replace the old array with the new array.
+    // _case.officers = temp;
+
+    const zeroBytes = new Bytes(0)
+    const index = event.params.caseSpecificOfficerId.toU32() - 1;
+    _case.officers[index] = zeroBytes;
 
   }
 
