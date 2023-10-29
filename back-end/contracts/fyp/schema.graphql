@@ -134,9 +134,9 @@ type Cases @entity(immutable: true) {
   caseId: BigInt! # uint256
   captain: Bytes! # address
   status: Int! # uint8
-  officers: [Bytes!]! # array of addresses
-  participants: [Bytes!]! # array of participants
-  evidences: [Bytes!]! # array of evidences
+  officers: [Officers!]! @derivedFrom {feild:"officer"} # array of addresses
+  participants: [NewParticipantInCase!]! @derivedFrom {feild:"suspectId"} # array of participants
+  evidences: [NewEvidenceInCase!]! @derivedFrom {feild:"evidenceId"} # array of evidences
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -148,7 +148,7 @@ type Officers @entity(immutable: true) {
   newRank: Bytes! # bytes32
   employmentStatus: Int! # uint8
   from: Bytes! # address
-  cases: [BigInt!]! # array of cases assigned
+  cases: [Cases!]! @derivedFrom {feild:"caseId"} # array of cases assigned
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -158,7 +158,7 @@ type Participants @entity(immutable: true) {
   id: Bytes!
   suspectId: BigInt! # uint48
   category: Int! # uint8
-  cases: [BigInt!]! # array of cases assigned
+  cases: [Cases!]! @derivedFrom {feild:"caseId"} # array of cases assigned
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -168,8 +168,9 @@ type Evidences @entity(immutable: true) {
   id: Bytes!
   evidenceId: BigInt! # uint48
   category: Int! # uint8
-  cases: [BigInt!]! # array of cases assigned
+  cases: [Cases!]! @derivedFrom {feild:"caseId"} # array of cases assigned
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
