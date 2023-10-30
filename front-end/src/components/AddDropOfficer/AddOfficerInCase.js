@@ -4,7 +4,7 @@ import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
-// import './AddCase.css';
+import '../AddCase/AddCase.css';
 
 export const AddOfficerInCase = () => {
     const { caseId } = useParams();
