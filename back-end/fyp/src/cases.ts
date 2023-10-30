@@ -100,7 +100,11 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
     return;
   } else {
     // if it does exist add evidence
-    _case.evidences!.push(event.params.evidenceId)
+    // _case.evidences!.push(event.params.evidenceId)
+
+    let temp = _case.evidences!
+    temp.push(event.params.evidenceId)
+    _case.evidences = temp
   }
 
   _case.save()
@@ -110,10 +114,16 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
   // if evidence does not exist create one other wise add it to case
   if(!evidence) {
     evidence = new Evidence(event.params.evidenceId.toString());
+    evidence.cases = []
+    evidence.blockNumber = event.block.number
+    evidence.blockTimestamp = event.block.timestamp
+    evidence.transactionHash = event.transaction.hash
   } 
-  evidence.cases!.push(event.params.caseId.toString())
+  
+  let temp = evidence.cases!
+  temp.push(event.params.caseId.toString())
+  evidence.cases = temp
 
-  _case.save()
   evidence.save()
 }
 
@@ -145,7 +155,9 @@ export function handleNewParticipantInCase(
     return;
   } else {
     // if it does exist add evidence
-    _case.evidences!.push(event.params.suspectId)
+    let temp = _case.evidences!
+    temp.push(event.params.suspectId)
+    _case.evidences = temp
   }
 
   _case.save()
@@ -155,10 +167,18 @@ export function handleNewParticipantInCase(
   // if evidence does not exist create one other wise add it to case
   if(!participant) {
     participant = new Participant(event.params.suspectId.toString());
+    participant.cases = []
+    participant.blockNumber = event.block.number
+    participant.blockTimestamp = event.block.timestamp
+    participant.transactionHash = event.transaction.hash
   } 
-  participant.cases!.push(event.params.caseId.toString())
+  // participant.cases!.push(event.params.caseId.toString())
 
-  _case.save()
+  let temp = participant.cases!
+  temp.push(event.params.caseId.toString())
+  participant.cases = temp
+
+  // _case.save()
   participant.save()
 }
 
@@ -249,7 +269,10 @@ export function handleUpdateOfficerInCase(
     if (event.params.caseSpecificOfficerId == new BigInt(0)) {
       _case.captain = event.params.officer;
     } else {
-      _case.officers!.push(event.params.officer);
+      // _case.officers!.push(event.params.officer);
+      let temp = _case.officers!
+      temp.push(event.params.officer)
+      _case.officers = temp
     }
 
   }
