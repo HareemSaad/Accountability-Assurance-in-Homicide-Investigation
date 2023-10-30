@@ -73,7 +73,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
             address: casesContractAddress,
             abi: CasesABI.abi,
             functionName: 'addEvidence',
-            args: [caseId, evidence, hashTypedData],
+            args: [caseId, 0, evidence, hashTypedData],
             chainId: 11155111
           })
           console.log("hash :: ", hash)
@@ -114,7 +114,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
             address: casesContractAddress,
             abi: CasesABI.abi,
             functionName: 'addParticipant',
-            args: [caseId, participant, hashTypedData],
+            args: [caseId, 0, participant, hashTypedData],
             chainId: 11155111
           })
           console.log("hash :: ", hash)
