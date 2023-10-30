@@ -1683,37 +1683,37 @@ export class Case extends Entity {
     }
   }
 
-  get participants(): Array<BigInt> | null {
+  get participants(): Array<string> | null {
     let value = this.get("participants");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigIntArray();
+      return value.toStringArray();
     }
   }
 
-  set participants(value: Array<BigInt> | null) {
+  set participants(value: Array<string> | null) {
     if (!value) {
       this.unset("participants");
     } else {
-      this.set("participants", Value.fromBigIntArray(<Array<BigInt>>value));
+      this.set("participants", Value.fromStringArray(<Array<string>>value));
     }
   }
 
-  get evidences(): Array<BigInt> | null {
+  get evidences(): Array<string> | null {
     let value = this.get("evidences");
     if (!value || value.kind == ValueKind.NULL) {
       return null;
     } else {
-      return value.toBigIntArray();
+      return value.toStringArray();
     }
   }
 
-  set evidences(value: Array<BigInt> | null) {
+  set evidences(value: Array<string> | null) {
     if (!value) {
       this.unset("evidences");
     } else {
-      this.set("evidences", Value.fromBigIntArray(<Array<BigInt>>value));
+      this.set("evidences", Value.fromStringArray(<Array<string>>value));
     }
   }
 
@@ -1922,21 +1922,8 @@ export class Participant extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get cases(): Array<string> | null {
-    let value = this.get("cases");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toStringArray();
-    }
-  }
-
-  set cases(value: Array<string> | null) {
-    if (!value) {
-      this.unset("cases");
-    } else {
-      this.set("cases", Value.fromStringArray(<Array<string>>value));
-    }
+  get cases(): CaseLoader {
+    return new CaseLoader("Participant", this.get("id")!.toString(), "cases");
   }
 
   get category(): i32 {
@@ -1992,21 +1979,8 @@ export class Evidence extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get cases(): Array<string> | null {
-    let value = this.get("cases");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toStringArray();
-    }
-  }
-
-  set cases(value: Array<string> | null) {
-    if (!value) {
-      this.unset("cases");
-    } else {
-      this.set("cases", Value.fromStringArray(<Array<string>>value));
-    }
+  get cases(): CaseLoader {
+    return new CaseLoader("Evidence", this.get("id")!.toString(), "cases");
   }
 
   get category(): i32 {

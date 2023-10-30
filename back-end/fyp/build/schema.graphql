@@ -134,8 +134,8 @@ type Case @entity(immutable: false) {
   captain: Bytes! # address
   status: Int! # uint8
   officers: [Officer!] # array of addresses
-  participants: [BigInt!] # array of participants
-  evidences: [BigInt!] # array of evidences
+  participants: [Participant!] # array of participants
+  evidences: [Evidence!] # array of evidences
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
@@ -154,13 +154,13 @@ type Officer @entity(immutable: false) {
 
 type Participant @entity(immutable: false) {
   id: String! # suspectId
-  cases: [Case!] # array of cases they are a part of
+  cases: [Case!] @derivedFrom (field:"participants") # array of cases they are a part of
   category: Int! # uint8
 }
 
 type Evidence @entity(immutable: false) {
   id: String! # evidenceId
-  cases: [Case!] # array of cases assigned
+  cases: [Case!] @derivedFrom (field:"evidences") # array of cases assigned
   category: Int! # uint8
 }
 

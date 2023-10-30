@@ -92,6 +92,17 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
   entity.save()
 
   // Core business logic
+  //  load evidence
+  let evidence = Evidence.load(event.params.evidenceId.toString())
+  // if evidence does not exist create one other wise add it to case
+  if(!evidence) {
+    evidence = new Evidence(event.params.evidenceId.toString());
+    evidence.category = event.params.category;
+  } 
+  evidence.category = event.params.category;
+
+  evidence.save()
+
   //  load case
   let _case = Case.load(event.params.caseId.toString())
   // if case does not exist do nothing
@@ -103,27 +114,11 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
     // _case.evidences!.push(event.params.evidenceId)
 
     let temp = _case.evidences!
-    temp.push(event.params.evidenceId)
+    temp.push(event.params.evidenceId.toString())
     _case.evidences = temp
   }
 
   _case.save()
-
-  //  load evidence
-  let evidence = Evidence.load(event.params.evidenceId.toString())
-  // if evidence does not exist create one other wise add it to case
-  if(!evidence) {
-    evidence = new Evidence(event.params.evidenceId.toString());
-    evidence.cases = []
-    evidence.category = event.params.category;
-  } 
-  
-  let temp = evidence.cases!
-  temp.push(event.params.caseId.toString())
-  evidence.cases = temp
-  evidence.category = event.params.category;
-
-  evidence.save()
 }
 
 export function handleNewParticipantInCase(
@@ -146,6 +141,21 @@ export function handleNewParticipantInCase(
   entity.save()
 
   // Core business logic
+
+  //  load evidence
+  let participant = Participant.load(event.params.suspectId.toString())
+  // if evidence does not exist create one other wise add it to case
+  if(!participant) {
+    participant = new Participant(event.params.suspectId.toString());
+    participant.category = event.params.category;
+  } 
+  // participant.cases!.push(event.params.caseId.toString())
+
+  participant.category = event.params.category;
+
+  // _case.save()
+  participant.save()
+
   //  load case
   let _case = Case.load(event.params.caseId.toString())
   // if case does not exist do nothing
@@ -154,30 +164,12 @@ export function handleNewParticipantInCase(
     return;
   } else {
     // if it does exist add evidence
-    let temp = _case.evidences!
-    temp.push(event.params.suspectId)
-    _case.evidences = temp
+    let temp = _case.participants!
+    temp.push(event.params.suspectId.toString())
+    _case.participants = temp
   }
 
   _case.save()
-
-  //  load evidence
-  let participant = Participant.load(event.params.suspectId.toString())
-  // if evidence does not exist create one other wise add it to case
-  if(!participant) {
-    participant = new Participant(event.params.suspectId.toString());
-    participant.cases = []
-    participant.category = event.params.category;
-  } 
-  // participant.cases!.push(event.params.caseId.toString())
-
-  let temp = participant.cases!
-  temp.push(event.params.caseId.toString())
-  participant.cases = temp
-  participant.category = event.params.category;
-
-  // _case.save()
-  participant.save()
 }
 
 export function handleRemoveOfficer(event: RemoveOfficerEvent): void {
