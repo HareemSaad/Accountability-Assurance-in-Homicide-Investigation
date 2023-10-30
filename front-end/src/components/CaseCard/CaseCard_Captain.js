@@ -4,21 +4,10 @@ import CaseDetailsPage from '../CaseDetails/CaseDetails';
 import Card from 'react-bootstrap/Card';
 import { useNavigate } from "react-router-dom";
 import { createClient, cacheExchange, fetchExchange } from 'urql';
+import { useAccount } from 'wagmi';
 
 const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
 
-
-const query = `
-    query CaptainsCases {
-        cases(where: { captain: "0x86d5ca9d24ece1d8c35a45b83ba15b1b9e11bd50" }) {
-        id
-        officers {
-            id
-            rank
-        }
-    }
-    }
-`
 const client = createClient({
     url: APIURL,
     exchanges: [cacheExchange, fetchExchange]
@@ -28,6 +17,7 @@ export const CaseCard_Captain = () => {
 
     // const [CaptainCard, setCaptainCard] = useState([]);
     const [cardResponse, setCardResponse] = useState([]);
+    const { address, connector, isConnected } = useAccount()
     let navigate = useNavigate();
 
     useEffect(() => {
@@ -37,6 +27,18 @@ export const CaseCard_Captain = () => {
     }, []);
 
     async function fetchData() {
+
+        const query = `
+        query CaptainsCases {
+            cases(where: { captain: "${address}" }) {
+            id
+            officers {
+                id
+                rank
+            }
+        }
+        }
+        `
         const response = await client.query(query).toPromise();
         const { data, fetching, error } = response;
         setCardResponse(data.cases);
