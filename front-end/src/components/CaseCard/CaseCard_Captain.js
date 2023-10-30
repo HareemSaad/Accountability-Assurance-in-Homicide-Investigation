@@ -29,15 +29,16 @@ export const CaseCard_Captain = () => {
     async function fetchData() {
 
         const query = `
-        query CaptainsCases {
-            cases(where: { captain: "${address}" }) {
-            id
-            officers {
+        query {
+            cases(where: { captain: "0x86d5ca9d24ece1d8c35a45b83ba15b1b9e11bd50" }) {
+              id
+              officers {
                 id
                 rank
+              }
+              status
             }
-        }
-        }
+          }
         `
         const response = await client.query(query).toPromise();
         const { data, fetching, error } = response;
@@ -68,7 +69,7 @@ export const CaseCard_Captain = () => {
                 {cardResponse.map((card, index) => (
                     <Card className='case-card'>
                         <h2 className='mb-3 mt-3 pb-5'>Case# {card.id}</h2>
-                        <button className='card-btn' onClick={() => print(card.id)}>View</button>
+                        <button className='card-btn' onClick={() => print(card.id, card.status)}>View</button>
                     </Card>
                 ))}
             </div>

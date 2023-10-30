@@ -7,6 +7,9 @@ import { CaseCard_Detective } from './components/CaseCard/CaseCard_Detective';
 import { CaseCard_Captain } from './components/CaseCard/CaseCard_Captain';
 import { AddCase } from './components/AddCase/AddCase';
 import { AddOfficer } from './components/AddOfficer/AddOfficer';
+import { AddOfficerInCase } from './components/AddDropOfficer/AddOfficerInCase';
+import { DropOfficerFromCase } from './components/AddDropOfficer/DropOfficerFromCase';
+
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -67,6 +70,8 @@ function App() {
           <Route path="/add-participant/:caseId" element={ <AddParticipant /> } />
           <Route path="/add-case" element={ <AddCase /> } />
           <Route path="/add-officer" element={ <AddOfficer /> } />
+          <Route path="/add-officer-in-case/:caseId" element={ <AddOfficerInCase /> } />
+          <Route path="/drop-officer-from-case/:caseId" element={ <DropOfficerFromCase /> } />
         </Routes>
       </WagmiConfig>
     </>

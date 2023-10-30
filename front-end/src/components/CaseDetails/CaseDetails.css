@@ -13,6 +13,12 @@
   margin: 1rem;
   padding: 2rem;
   border-radius: 1rem;
+  /* border: 1rem solid red; */
+  /* display: flex;
+  flex-direction: column;
+  justify-content: center; */
+  /* align-items: center; */
+  
   /* background-color: rgba(250, 250, 250, 1); */
 }
 
@@ -65,21 +71,22 @@
 
 .card-info-container {
   /* border: 0.2rem solid red; */
-  /* padding: 0rem 0rem 0rem 3.6rem; */
-  /* display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 13px 10px; */
-  display: flex;
+  /* padding: 0rem 2rem 0rem 2rem; */
+  padding-left: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: center;
+  gap: 13px 13px;
+  /* display: flex;
   justify-content: space-around;
-  /* align-items: flex-start; */
   flex-wrap: wrap;
   row-gap: 10px;
-  column-gap: 50px;
+  column-gap: 50px; */
 }
 
 .case-info-card {
   /* border: 0.2rem solid red !important; */
-  /* margin-right: 3rem; */
+  /* margin-right: 3rem !important; */
   /* padding: 0 1rem 1rem 1rem; */
   /* min-height: 170px; */
   display: flex;
