@@ -115,14 +115,13 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
   if(!evidence) {
     evidence = new Evidence(event.params.evidenceId.toString());
     evidence.cases = []
-    evidence.blockNumber = event.block.number
-    evidence.blockTimestamp = event.block.timestamp
-    evidence.transactionHash = event.transaction.hash
+    evidence.category = event.params.category;
   } 
   
   let temp = evidence.cases!
   temp.push(event.params.caseId.toString())
   evidence.cases = temp
+  evidence.category = event.params.category;
 
   evidence.save()
 }
@@ -168,15 +167,14 @@ export function handleNewParticipantInCase(
   if(!participant) {
     participant = new Participant(event.params.suspectId.toString());
     participant.cases = []
-    participant.blockNumber = event.block.number
-    participant.blockTimestamp = event.block.timestamp
-    participant.transactionHash = event.transaction.hash
+    participant.category = event.params.category;
   } 
   // participant.cases!.push(event.params.caseId.toString())
 
   let temp = participant.cases!
   temp.push(event.params.caseId.toString())
   participant.cases = temp
+  participant.category = event.params.category;
 
   // _case.save()
   participant.save()

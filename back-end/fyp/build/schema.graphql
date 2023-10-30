@@ -152,20 +152,16 @@ type Officer @entity(immutable: false) {
   transactionHash: Bytes!
 }
 
-type Participant @entity(immutable: true) {
+type Participant @entity(immutable: false) {
   id: String! # suspectId
   cases: [Case!] # array of cases they are a part of
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+  category: Int! # uint8
 }
 
-type Evidence @entity(immutable: true) {
+type Evidence @entity(immutable: false) {
   id: String! # evidenceId
   cases: [Case!] # array of cases assigned
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
+  category: Int! # uint8
 }
 
 type _Schema_
