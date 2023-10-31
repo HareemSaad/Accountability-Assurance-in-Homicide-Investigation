@@ -5,26 +5,50 @@ import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import '../AddCase/AddCase.css';
+import CaseABI from "./../CasesABI.json";
+import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
 
 export const AddOfficerInCase = () => {
     const { caseId } = useParams();
     let navigate = useNavigate();
+    const caseContractAddress = process.env.REACT_APP_CASE_CONTRACT;
 
     const [officerAddress, setOfficerAddress] = useState("");
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setOfficerAddress({ ...officerAddress, [name]: parseInt(value) });
+        setOfficerAddress(value.toString());
         // console.log("params :: ", name)
-        // console.log("value :: ", value)
+        console.log("value :: ", value.toString())
     };
     
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if(officerAddress === ''){
             notify("error", `Officer Address is empty`);
         } else {
             console.log("Submit")
+            try {
+                // console.log(caseContractAddress, officerAddress)
+                // call contract
+                const { hash } = await writeContract({
+                    address: caseContractAddress,
+                    abi: CaseABI.abi,
+                    functionName: 'addOfficerInCase',
+                    args: [caseId, officerAddress],
+                    chainId: 11155111
+                })
+                console.log("hash :: ", hash)
+
+                // wait for txn
+                const result = await waitForTransaction({
+                    hash: hash,
+                })
+                console.log("Transaction result:", result);
+            } catch (error) {
+                console.log(error)
+                notify('error', 'Transaction Failed')
+            }
         }
     }
 
