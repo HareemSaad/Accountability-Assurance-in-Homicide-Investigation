@@ -5,26 +5,71 @@ import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import '../AddCase/AddCase.css';
+import CaseABI from "./../CasesABI.json";
+import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
+import { createClient, cacheExchange, fetchExchange } from 'urql';
+
+const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
+
+const client = createClient({
+  url: APIURL,
+  exchanges: [cacheExchange, fetchExchange]
+})
+
 
 export const DropOfficerFromCase = () => {
   const { caseId } = useParams();
   let navigate = useNavigate();
 
   const [officerAddress, setOfficerAddress] = useState("");
+  const caseContractAddress = process.env.REACT_APP_CASE_CONTRACT;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setOfficerAddress({ ...officerAddress, [name]: parseInt(value) });
+    setOfficerAddress(value);
     // console.log("params :: ", name)
     // console.log("value :: ", value)
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (officerAddress === '') {
       notify("error", `Officer Address is empty`);
     } else {
       console.log("Submit")
+      try {
+
+          const query = `
+          query {
+            updateOfficerInCases(where: {caseId: "${caseId}", officer: "${officerAddress}"}) {
+              caseSpecificOfficerId
+            }
+          }
+          `
+          const response = await client.query(query).toPromise();
+          const { data, fetching, error } = response;
+          const caseSpecificOfficerId = data.updateOfficerInCases[0].caseSpecificOfficerId;
+          console.log("data:: ", data.updateOfficerInCases[0].caseSpecificOfficerId)
+          // console.log(caseContractAddress, officerAddress)
+          // call contract
+          const { hash } = await writeContract({
+              address: caseContractAddress,
+              abi: CaseABI.abi,
+              functionName: 'removeOfficerInCase',
+              args: [caseId, caseSpecificOfficerId ,officerAddress],
+              chainId: 11155111
+          })
+          console.log("hash :: ", hash)
+
+          // wait for txn
+          const result = await waitForTransaction({
+              hash: hash,
+          })
+          console.log("Transaction result:", result);
+      } catch (error) {
+          console.log(error)
+          notify('error', 'Transaction Failed')
+      }
     }
   }
 
