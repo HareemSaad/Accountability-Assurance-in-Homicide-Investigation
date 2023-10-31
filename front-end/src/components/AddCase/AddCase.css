@@ -1,0 +1,26 @@
+.input input {
+    outline: 0 !important;
+    box-shadow: 0 0 0 rgb(255, 255, 255) !important;
+    border-bottom: 0.2rem solid #6600cc !important;
+}
+
+input[type=number]:focus {
+    border: 3px solid #555;
+}
+
+.case-add-btn {
+    /* align-self: flex-end; */
+    /* display: block; */
+    width: 15%;
+    padding: 0.6rem 0.8rem;
+    margin: 1.2rem 3rem;
+    font-size: 18px;
+    border: 1rem solid red;
+    border-radius: 3px;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+    background-color: #0D003F;
+    color: white;
+    font-weight: bold;
+}

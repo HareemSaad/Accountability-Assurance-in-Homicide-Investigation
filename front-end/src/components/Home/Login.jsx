@@ -17,6 +17,11 @@ export const Login = () => {
   const { disconnect } = useDisconnect()
   let navigate = useNavigate();
   const [selectedValue, setSelectedValue] = useState(null);
+  const RoleBytes = {
+    Captain: "0xd1caa20fe64a17576895d331b6b815baf91df37730e70e788978bc77ac7559b4",
+    Detective: "0x9bcceb74634ac977676ecaf8900febd8cc8358719b06c206b86e9e10f6758bc2",
+    Officer: "0xbbecb2568601cb27e6ced525237c463da94c4fb7a9b98ac79fd30fd56d8e1b53",
+  }
 
   // Function to handle dropdown item selection
   const handleDropdownSelect = async (value) => {
@@ -31,14 +36,17 @@ export const Login = () => {
       const validity = await readContract({
         address: process.env.REACT_APP_OFFICER_CONTRACT,
         abi: OfficersABI.abi,
-        functionName: 'isValidOfficer',
-        args: [address],
+        functionName: 'isValidRank',
+        args: [address, RoleBytes[selectedValue]],
         chainId: 11155111
       })
       console.log("validity ::", validity)
 
       if (validity) {
-        navigate("/cases");
+        if (selectedValue == 'Captain') { navigate('/cases-captain') }
+        else if (selectedValue == 'Detective') { navigate('/cases-detective') }
+        else if (selectedValue == 'Officer') { navigate('/cases-officer') }
+        else { handleValidationFail(); }
       } else {
         handleValidationFail();
       }
@@ -70,7 +78,7 @@ export const Login = () => {
     <div className='login'>
       <div className='login-container'>
         <h2 className='login-welcome'> Welcome </h2>
-        <DropdownButton id="rank" title={selectedValue ? selectedValue : "Select Your Rank"} className='mb-4'>
+        <DropdownButton variant="light" id="rank" title={selectedValue ? selectedValue : "Select Your Rank"} className='mb-4 dropdown-rank'>
           <Dropdown.Item onClick={() => handleDropdownSelect('Captain')}>Captain</Dropdown.Item>
           <Dropdown.Item onClick={() => handleDropdownSelect('Officer')}>Officer</Dropdown.Item>
           <Dropdown.Item onClick={() => handleDropdownSelect('Detective')}>Detective</Dropdown.Item>

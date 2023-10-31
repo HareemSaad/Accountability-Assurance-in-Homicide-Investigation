@@ -1,0 +1,81 @@
+specVersion: 0.0.5
+features:
+  - fullTextSearch
+  - ipfsOnEthereumContracts
+schema:
+  file: schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Officers
+    network: sepolia
+    source:
+      address: "0xD33707a96C9369C425c2fDb45f89fEaD93dd466E"
+      abi: Officers
+      startBlock: 4583118
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - OffBoard
+        - Onboard
+        - RankUpdate
+        - RoleAdminChanged
+        - RoleGranted
+        - RoleRevoked
+        - Officers
+      abis:
+        - name: Officers
+          file: Officers/abis/Officers.json
+      eventHandlers:
+        - event: OffBoard(address,indexed uint8,indexed uint256,address)
+          handler: handleOffBoard
+        - event: Onboard(address,indexed bytes32,indexed uint256,address)
+          handler: handleOnboard
+        - event: RankUpdate(address,indexed bytes32,indexed bytes32,indexed uint256,address)
+          handler: handleRankUpdate
+        - event: RoleAdminChanged(indexed bytes32,indexed bytes32,indexed bytes32)
+          handler: handleRoleAdminChanged
+        - event: RoleGranted(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleGranted
+        - event: RoleRevoked(indexed bytes32,indexed address,indexed address)
+          handler: handleRoleRevoked
+      file: Officers/Officers.wasm
+  - kind: ethereum
+    name: Cases
+    network: sepolia
+    source:
+      address: "0x9cdF3642CfEBebBA1f0e84C08E8517Bb9F5C2Fa2"
+      abi: Cases
+      startBlock: 4583127
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - CaseUpdated
+        - EIP712DomainChanged
+        - NewEvidenceInCase
+        - NewParticipantInCase
+        - RemoveOfficer
+        - UpdateOfficerInCase
+        - Cases
+        - Participants
+        - Evidences
+      abis:
+        - name: Cases
+          file: Cases/abis/Cases.json
+      eventHandlers:
+        - event: CaseUpdated(uint256,indexed address,uint8,uint8)
+          handler: handleCaseUpdated
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: NewEvidenceInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewEvidenceInCase
+        - event: NewParticipantInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewParticipantInCase
+        - event: RemoveOfficer(uint256,indexed address,indexed address,uint256)
+          handler: handleRemoveOfficer
+        - event: UpdateOfficerInCase(uint256,indexed address,indexed address,uint256)
+          handler: handleUpdateOfficerInCase
+      file: Cases/Cases.wasm

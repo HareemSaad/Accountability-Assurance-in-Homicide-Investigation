@@ -1,0 +1,15 @@
+.dropdown {
+    width: 100%;
+    /* border: 3px solid red; */
+}
+
+.input input {
+    outline: 0 !important;
+    box-shadow: 0 0 0 rgb(255, 255, 255) !important;
+    border-bottom: 0.2rem solid #6600cc !important;
+}
+
+
+input[type=text]:focus {
+    border: 3px solid #555;
+}

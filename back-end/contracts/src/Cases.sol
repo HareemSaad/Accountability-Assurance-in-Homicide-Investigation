@@ -5,20 +5,70 @@ import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./Access.sol";
 import "./Officers.sol";
 
+/**
+ * @title Cases
+ * @notice A smart contract for managing and tracking legal cases.
+ * This contract provides functionality for creating and updating cases, managing officers, adding participants and evidence to cases,
+ * and verifying the integrity of data through signatures and data hashing.
+ * @dev This contract is designed to work in conjunction with the Access and Officers contracts.
+ */
 contract Cases is EIP712 {
 
     using Strings for string;
 
     Officers officersContract;
+    
+    /**
+     * @dev Emitted when a case is created or updated.
+     * @dev `caseId` The identifier of the case being updated.
+     * @dev `initiator` The address of the officer initiating the status update.
+     * @dev `oldStatus` The previous status of the case.
+     * @dev `newStatus` The new status of the case.
+     */
+    event CaseUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
+    
+    /**
+     * @dev Emitted when an officer is added to or removed from a case.
+     * @dev `caseId` The identifier of the case to which an officer is added.
+     * @dev `initiator` The address of the officer initiating the addition.
+     * @dev `officer` The address of the officer being added.
+     * @dev `caseSpecificOfficerId` The unique identifier for the officer within the case.
+     */
+    event UpdateOfficerInCase(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
 
-    event NewCase(uint caseId, address indexed initiator);
-    event CaseStatusUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
-    event AddOfficer(uint caseId, address indexed initiator, address indexed officer);
+    /**
+     * @dev Emitted when an officer is removed from a case.
+     * @dev `caseId` The identifier of the case from which an officer is removed.
+     * @dev `initiator` The address of the officer initiating the removal.
+     * @dev `officer` The address of the officer being removed.
+     * @dev `caseSpecificOfficerId` The unique identifier for the officer within the case.
+     */
+    event RemoveOfficer(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
+
+    /**
+     * @dev Emitted when a new participant is added to a case.
+     * @dev `caseId` The identifier of the case to which the participant is added.
+     * @dev `initiator` The address of the officer initiating the addition.
+     * @dev `suspectId` The unique identifier for the participant in the case.
+     * @dev `category` The category of the participant (e.g., SUSPECT, WITNESS, PERPETRATOR, VICTIM).
+     * @dev `dataHash` The hash of the participant's data for data integrity verification.
+     * @dev `data` The data associated with the participant.
+     */
     event NewParticipantInCase(uint caseId, address indexed initiator, uint48 suspectId, ParticipantCategory category, bytes32 dataHash, bytes data);
+    
+    /**
+     * @dev Emitted when new evidence is added to a case.
+     * @dev `caseId` The identifier of the case to which evidence is added.
+     * @dev `initiator` The address of the officer initiating the addition.
+     * @dev `evidenceId` The unique identifier for the evidence in the case.
+     * @dev `category` The category of the evidence (e.g., WEAPON, PHYSICAL, DRUG, DOCUMENTARY, etc.).
+     * @dev `dataHash` The hash of the evidence's data for data integrity verification.
+     * @dev `data` The data associated with the evidence.
+     */
     event NewEvidenceInCase(uint caseId, address indexed initiator, uint48 evidenceId, EvidenceCategory category, bytes32 dataHash, bytes data);
     
     enum CaseStatus {
-        OPEN, CLOSED, COLD
+        NULL, OPEN, CLOSED, COLD
     }
 
     enum ParticipantCategory {
@@ -56,41 +106,121 @@ contract Cases is EIP712 {
 
     mapping (uint => Case) _case;
 
-    function addCase(uint _caseId) external {
-
-        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
-
-        Case storage newCase = _case[_caseId];
-        newCase.status = CaseStatus.OPEN;
-
-        emit NewCase(_caseId, msg.sender);
+    modifier onlyRole(bytes32 role) {
+        _onlyRole(role);
+        _;
     }
 
-    function updateCaseStatus(uint _caseId, CaseStatus _status) external {
-
-        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
-
-        CaseStatus oldStatus = _case[_caseId].status;
-        _case[_caseId].status = _status;
-
-        emit CaseStatusUpdated(_caseId, msg.sender, oldStatus, _status);
-    }
-
-    function addOfficerInCase(uint _caseId, address _officer) external {
-
-        require(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), msg.sender));
-
-        if(officersContract.isValidOfficer(_officer)) { revert InvalidOfficer(); }
-
-        _case[_caseId].officers.push(_officer); 
-
-        emit AddOfficer(_caseId, msg.sender, _officer);
+    function _onlyRole(bytes32 role) internal view {
+        require(officersContract.hasRole(role, msg.sender));
     }
 
     /**
-     * @dev add a modifier or something
+     * @notice Creates a new legal case.
+     * @param _caseId The unique identifier for the new case.
+     * @dev The caller must have the 'CAPTAIN' role to create a case.
      */
-    function addParticipant(uint _caseId, Participant memory _participant, bytes32 _dataHash) external {
+    function addCase(uint _caseId) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+
+        if(_case[_caseId].status != CaseStatus.NULL) { revert InvalidCase(); }
+
+        Case storage newCase = _case[_caseId];
+        newCase.status = CaseStatus.OPEN;
+        newCase.officers.push(msg.sender); //case.officers[0] is always the captain
+
+        emit CaseUpdated(_caseId, msg.sender, CaseStatus.NULL, CaseStatus.OPEN);
+    }
+
+    /**
+     * @notice Updates the status of a case.
+     * @param _caseId The identifier of the case to be updated.
+     * @param _status The new status of the case.
+     * @dev The caller must have the 'CAPTAIN' role for the specified case.
+     */
+    function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+        Case storage newCase = _case[_caseId];
+
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
+
+        CaseStatus oldStatus = newCase.status;
+        newCase.status = _status;
+
+        emit CaseUpdated(_caseId, msg.sender, oldStatus, _status);
+    }
+
+    /**
+     * @notice Adds an officer to a case.
+     * @param _caseId The identifier of the case to which an officer is added.
+     * @param _officer The address of the officer to be added.
+     * @dev The caller must have the 'CAPTAIN' role for the specified case.
+     */
+    function addOfficerInCase(uint _caseId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+
+        Case storage newCase = _case[_caseId];
+        
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
+        if(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), _officer)) { revert InvalidRank(); }
+
+        newCase.officers.push(_officer); 
+
+        emit UpdateOfficerInCase(_caseId, msg.sender, _officer, newCase.officers.length - 1);
+    }
+
+    /**
+     * @notice transfers the assigned captain of case.
+     * @param _caseId The identifier of the case to which an officer is added.
+     * @param _officer The address of the officer to be added.
+     * @dev The caller must have the 'CAPTAIN' role for the specified case.
+     */
+    function transferCaseCaptain(uint _caseId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+
+        Case storage newCase = _case[_caseId];
+        
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
+        if(!officersContract.hasRole(officersContract.CAPTAIN_ROLE(), _officer)) { revert InvalidRank(); }
+
+        newCase.officers[0] = _officer;
+
+        emit UpdateOfficerInCase(_caseId, msg.sender, _officer, 0);
+    }
+
+    /**
+     * @notice Removes an officer from a case.
+     * @param _caseId The identifier of the case from which an officer is removed.
+     * @param _caseSpecificOfficerId The index of the officer within the case.
+     * @param _officer The address of the officer to be removed.
+     * @dev The caller must have the 'CAPTAIN' role for the specified case, and the officer must be assigned to the case.
+     */
+    function removeOfficerInCase(uint _caseId, uint256 _caseSpecificOfficerId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+
+        Case storage newCase = _case[_caseId];
+        
+        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+
+        delete(newCase.officers[_caseSpecificOfficerId]);
+
+        emit RemoveOfficer(_caseId, msg.sender, _officer, _caseSpecificOfficerId);
+    }
+
+    /**
+     * @notice Adds a participant to a case.
+     * @param _caseId The identifier of the case to which the participant is added.
+     * @param _caseSpecificOfficerId The index of the officer within the case.
+     * @param _participant The participant's data and signature.
+     * @param _dataHash The hash of the participant's data for data integrity verification.
+     * @dev The caller must be an officer assigned to the specified case.
+     */
+    function addParticipant(uint _caseId, uint256 _caseSpecificOfficerId, Participant memory _participant, bytes32 _dataHash) external {
+
+        Case storage newCase = _case[_caseId];
+
+        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
+        
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
         bytes32 calculatedHash = _hashTypedDataV4(_getHash(_participant.data));
 
@@ -98,15 +228,26 @@ contract Cases is EIP712 {
 
         _validateSignature(_participant.signature, calculatedHash);
 
-        _case[_caseId].participants.push(_participant);
+        newCase.participants.push(_participant);
 
         emit NewParticipantInCase(_caseId, msg.sender, _participant.suspectId, _participant.category, calculatedHash, _participant.data);
     }
 
     /**
-     * @dev add a modifier or something
+     * @notice Adds evidence to a case.
+     * @param _caseId The identifier of the case to which evidence is added.
+     * @param _caseSpecificOfficerId The index of the officer within the case.
+     * @param _evidence The evidence's data and signature.
+     * @param _dataHash The hash of the evidence's data for data integrity verification.
+     * @dev The caller must be an officer assigned to the specified case.
      */
-    function addEvidence(uint _caseId, Evidence memory _evidence, bytes32 _dataHash) external {
+    function addEvidence(uint _caseId, uint256 _caseSpecificOfficerId, Evidence memory _evidence, bytes32 _dataHash) external {
+
+        Case storage newCase = _case[_caseId];
+
+        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
+        
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
         bytes32 calculatedHash = _hashTypedDataV4(_getHash(_evidence.data));
 
@@ -114,7 +255,7 @@ contract Cases is EIP712 {
 
         _validateSignature(_evidence.signature, calculatedHash);
 
-        _case[_caseId].evidences.push(_evidence);
+       newCase.evidences.push(_evidence);
 
         emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash, _evidence.data);
     }

@@ -10,7 +10,7 @@ contract OfficerScript is Script {
     function run() public {
         uint256 deployer = vm.envUint("WALLET_KEY");
         vm.startBroadcast(deployer);
-        Cases cases = new Cases(0x987e0f94aaEE564f797dFA2295b64Def41eD5EDB);
+        Cases cases = new Cases(0xD33707a96C9369C425c2fDb45f89fEaD93dd466E);
         cases.addCase(213);
         cases.addCase(192);
         vm.stopBroadcast();
