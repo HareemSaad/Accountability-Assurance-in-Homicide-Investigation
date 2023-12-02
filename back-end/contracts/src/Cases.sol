@@ -105,13 +105,12 @@ contract Cases is EIP712 {
 
     mapping (uint => Case) _case;
 
-    modifier onlyRole(bytes32 role) {
-        _onlyRole(role);
-        _;
-    }
+    // trustee address => case Id => T/F
+    mapping (address => mapping (uint => bool)) trusteeLedger;
 
-    function _onlyRole(bytes32 role) internal view {
-        require(officersContract.hasRole(role, msg.sender));
+    modifier onlyRank(Officers.Rank rank) {
+        if (officersContract.isValidRank(msg.sender, rank)) { revert InvalidRank(); }
+        _;
     }
 
     /**
@@ -119,7 +118,7 @@ contract Cases is EIP712 {
      * @param _caseId The unique identifier for the new case.
      * @dev The caller must have the 'CAPTAIN' role to create a case.
      */
-    function addCase(uint _caseId) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+    function addCase(uint _caseId) external onlyRank(Officers.Rank.CAPTAIN) {
 
         if(_case[_caseId].status != CaseStatus.NULL) { revert InvalidCase(); }
 
@@ -136,7 +135,7 @@ contract Cases is EIP712 {
      * @param _status The new status of the case.
      * @dev The caller must have the 'CAPTAIN' role for the specified case.
      */
-    function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+    function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRank(Officers.Rank.CAPTAIN) {
         Case storage newCase = _case[_caseId];
 
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
@@ -154,13 +153,12 @@ contract Cases is EIP712 {
      * @param _officer The address of the officer to be added.
      * @dev The caller must have the 'CAPTAIN' role for the specified case.
      */
-    function addOfficerInCase(uint _caseId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+    function addOfficerInCase(uint _caseId, address _officer) external onlyRank(Officers.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
         if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
-        if(officersContract.hasRole(officersContract.CAPTAIN_ROLE(), _officer)) { revert InvalidRank(); }
 
         newCase.officers.push(_officer); 
 
@@ -173,13 +171,12 @@ contract Cases is EIP712 {
      * @param _officer The address of the officer to be added.
      * @dev The caller must have the 'CAPTAIN' role for the specified case.
      */
-    function transferCaseCaptain(uint _caseId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+    function transferCaseCaptain(uint _caseId, address _officer) external onlyRank(Officers.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
         if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
-        if(!officersContract.hasRole(officersContract.CAPTAIN_ROLE(), _officer)) { revert InvalidRank(); }
 
         newCase.officers[0] = _officer;
 
@@ -193,7 +190,7 @@ contract Cases is EIP712 {
      * @param _officer The address of the officer to be removed.
      * @dev The caller must have the 'CAPTAIN' role for the specified case, and the officer must be assigned to the case.
      */
-    function removeOfficerInCase(uint _caseId, uint256 _caseSpecificOfficerId, address _officer) external onlyRole(officersContract.CAPTAIN_ROLE()) {
+    function removeOfficerInCase(uint _caseId, uint256 _caseSpecificOfficerId, address _officer) external onlyRank(Officers.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
         
@@ -257,6 +254,14 @@ contract Cases is EIP712 {
        newCase.evidences.push(_evidence);
 
         emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash, _evidence.data);
+    }
+
+    function addTrustee(address _trustee, uint caseId) external onlyRank(Officers.Rank.CAPTAIN) {
+        //check if trustee address 0 
+        //for go rank check as aptains can give read access to officers of other branches
+        //check if trustee signed this request
+        //approve trustee
+        //event emit
     }
 
     function _validateSignature(bytes memory _signature, bytes32 _hash) internal view {
