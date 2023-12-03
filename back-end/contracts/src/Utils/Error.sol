@@ -10,3 +10,5 @@ error InvalidHash();
 error InvalidSignature();
 error InvalidRank();
 error InvalidStatus();
+error NoAccessToRevoke();
+error AccessAlreadyGranted();

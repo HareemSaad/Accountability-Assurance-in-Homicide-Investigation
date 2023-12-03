@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./Officers.sol";
+import "./Libraries/TrusteeRequest.sol";
 
 /**
  * @title Cases
@@ -14,6 +15,7 @@ import "./Officers.sol";
 contract Cases is EIP712 {
 
     using Strings for string;
+    using TrusteeRequestLib for TrusteeRequestLib.TrusteeRequest;
 
     Officers officersContract;
     
@@ -65,6 +67,15 @@ contract Cases is EIP712 {
      * @dev `data` The data associated with the evidence.
      */
     event NewEvidenceInCase(uint caseId, address indexed initiator, uint48 evidenceId, EvidenceCategory category, bytes32 dataHash, bytes data);
+    
+    /**
+     * @dev Emitted when trustee access is updated
+     * @dev `caseId` The identifier of the case to which evidence is added.
+     * @dev `initiator` The address of the officer initiating the addition.
+     * @dev `trustree` The address of the person who whose read access gets revoked or granted.
+     * @dev `approved` True for granted access, False for revoked access
+     */
+    event Trustee(uint caseId, bytes32 indexed branchId, address indexed initiator, address indexed trustree, bool approved);
     
     enum CaseStatus {
         NULL, OPEN, CLOSED, COLD
@@ -222,7 +233,7 @@ contract Cases is EIP712 {
 
         if (_dataHash != calculatedHash) { revert InvalidHash(); }
 
-        _validateSignature(_participant.signature, calculatedHash);
+        _validateSignature(_participant.signature, calculatedHash, msg.sender);
 
         newCase.participants.push(_participant);
 
@@ -249,23 +260,50 @@ contract Cases is EIP712 {
 
         if (_dataHash != calculatedHash) { revert InvalidHash(); }
 
-        _validateSignature(_evidence.signature, calculatedHash);
+        _validateSignature(_evidence.signature, calculatedHash, msg.sender);
 
        newCase.evidences.push(_evidence);
 
         emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash, _evidence.data);
     }
 
-    function addTrustee(address _trustee, uint caseId) external onlyRank(Officers.Rank.CAPTAIN) {
-        //check if trustee address 0 
-        //for go rank check as aptains can give read access to officers of other branches
-        //check if trustee signed this request
-        //approve trustee
-        //event emit
+    function grantTrusteeAccess(address _trustee, uint _caseId, string memory _branchId, bytes32 _hash, bytes memory _signature) external onlyRank(Officers.Rank.CAPTAIN) {
+        
+        if(address(0) == _trustee) { revert InvalidAddress(); }
+
+        Case storage currCase = _case[_caseId];
+        if(currCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(trusteeLedger[_trustee][_caseId]) { revert AccessAlreadyGranted(); }
+
+        if(_hash != TrusteeRequestLib.TrusteeRequest(
+            _caseId,
+            _trustee,
+            msg.sender,
+            keccak256(abi.encode(_branchId))
+        ).hash()) { revert InvalidHash(); }
+
+        _validateSignature(_signature, _hash, _trustee);
+
+        trusteeLedger[_trustee][_caseId] = true;
+        
+        emit Trustee(_caseId, keccak256(abi.encode(_branchId)), msg.sender, _trustee, true);
     }
 
-    function _validateSignature(bytes memory _signature, bytes32 _hash) internal view {
-        if (ECDSA.recover(_hash, _signature) == msg.sender) { revert InvalidSignature(); }
+    function revokeTrusteeAccess(address _trustee, uint _caseId, string memory _branchId) external onlyRank(Officers.Rank.CAPTAIN) {
+        
+        if(address(0) == _trustee) { revert InvalidAddress(); }
+
+        Case storage currCase = _case[_caseId];
+        if(currCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(!trusteeLedger[_trustee][_caseId]) { revert NoAccessToRevoke(); }
+
+        trusteeLedger[_trustee][_caseId] = false;
+        
+        emit Trustee(_caseId, keccak256(abi.encode(_branchId)), msg.sender, _trustee, false);
+    }
+
+    function _validateSignature(bytes memory _signature, bytes32 _hash, address _signer) internal pure {
+        if (ECDSA.recover(_hash, _signature) == _signer) { revert InvalidSignature(); }
     }
 
     function _getHash(
