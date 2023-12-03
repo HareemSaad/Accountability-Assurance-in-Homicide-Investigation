@@ -12,3 +12,8 @@ error InvalidRank();
 error InvalidStatus();
 error NoAccessToRevoke();
 error AccessAlreadyGranted();
+error InvalidBadge();
+error ZeroAddress();
+error InvalidBranch();
+error PreexistingBranch();
+error NonexistingBranch();
