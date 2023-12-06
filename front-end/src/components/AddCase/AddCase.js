@@ -59,7 +59,7 @@ export const AddCase = () => {
 
     return (
         <div className='container'>
-            <h2 className='m-3'>Add Case</h2>
+            <h2 className='m-3 mt-5 mb-4'>Add Case</h2>
             <form>
                 <div className="row g-3 align-items-center m-3">
                     <div className="col-2">

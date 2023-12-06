@@ -76,7 +76,7 @@ export const AddOfficer = () => {
 
     return (
         <div className='container'>
-            <h2 className='m-3'>Add Officer</h2>
+            <h2 className='m-3 mt-5 mb-4'>Add Officer</h2>
             <form>
                 {/* Officer address */}
                 <div className="row g-3 align-items-center m-3">

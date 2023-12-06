@@ -9,6 +9,7 @@ import { AddCase } from './components/AddCase/AddCase';
 import { AddOfficer } from './components/AddOfficer/AddOfficer';
 import { AddOfficerInCase } from './components/AddDropOfficer/AddOfficerInCase';
 import { DropOfficerFromCase } from './components/AddDropOfficer/DropOfficerFromCase';
+import { ChangeCaseStatus } from './components/CaseStatus/ChangeCaseStatus.js';
 
 
 import { Home } from './components/Home/Home.js';
@@ -72,6 +73,7 @@ function App() {
           <Route path="/add-officer" element={ <AddOfficer /> } />
           <Route path="/add-officer-in-case/:caseId" element={ <AddOfficerInCase /> } />
           <Route path="/drop-officer-from-case/:caseId" element={ <DropOfficerFromCase /> } />
+          <Route path="/change-case-status/:caseId" element={ <ChangeCaseStatus /> } />
         </Routes>
       </WagmiConfig>
     </>

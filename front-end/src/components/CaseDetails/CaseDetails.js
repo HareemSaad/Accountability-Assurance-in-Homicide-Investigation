@@ -21,26 +21,26 @@ const CaseDetailsPage = () => {
   const [caseParticipant, setCaseParticipant] = useState([]);
 
   const evidenceList = {
-    '0': 'WEAPON', 
-    '1': 'PHYSICAL', 
-    '2': 'DRUG', 
-    '3': 'DOCUMENTARY', 
-    '4': 'DEMONSTRATIVE', 
-    '5': 'HEARSAY', 
+    '0': 'WEAPON',
+    '1': 'PHYSICAL',
+    '2': 'DRUG',
+    '3': 'DOCUMENTARY',
+    '4': 'DEMONSTRATIVE',
+    '5': 'HEARSAY',
     '6': 'MURDER_WEAPON'
   }
 
   const participantList = {
-    '0': 'SUSPECT', 
-    '1': 'WITNESS', 
-    '2': 'PERPETRATOR', 
+    '0': 'SUSPECT',
+    '1': 'WITNESS',
+    '2': 'PERPETRATOR',
     '3': 'VICTIM'
   }
 
   const officerList = {
-    '0': 'NULL', 
-    '1': 'OFFICER', 
-    '2': 'DETECTIVE', 
+    '0': 'NULL',
+    '1': 'OFFICER',
+    '2': 'DETECTIVE',
     '3': 'CAPTAIN'
   }
 
@@ -79,7 +79,7 @@ const CaseDetailsPage = () => {
     console.log("data:: ", data)
     // console.log("data evidence:: ", data.cases[0].evidences)
     // console.log("data participant:: ", data.cases[0].participants)
- 
+
     setCaseOfficer(data.cases[0].officers);
     setCaseEvidence(data.cases[0].evidences);
     setCaseParticipant(data.cases[0].participants);
@@ -93,12 +93,17 @@ const CaseDetailsPage = () => {
 
   return (
     <div className=''>
-      {/* case Number  */}
-      <div className='m-4 d-flex flex-row'>
-        <h2>Case Number: {caseId}</h2>
-        {/* case status */}
-        <h6 className='statusTagOpen ms-4'>#OPEN</h6>
+      {/* case Number and change status button */}
+      <div className="d-flex justify-content-between">
+        <div className='m-4 d-flex flex-row'>
+          <h2>Case Number: {caseId}</h2>
+          {/* case status */}
+          <h6 className='statusTagOpen ms-4'>#OPEN</h6>
+        </div>
+
+        <button className='case-nav-btn m-4' name="change-case-status" onClick={(e) => goto(e)}>Change Status</button>
       </div>
+
 
       {/* officer, detective on case */}
       <div className='backgound-div'>
@@ -155,9 +160,9 @@ const CaseDetailsPage = () => {
                 <Card.Subtitle className="mb-2 text-muted">{evidenceList[evidence.category]}</Card.Subtitle>
               </Card.Body>
             </Card>
-          )): 
-          <h4 style={{ textAlign: 'center' }} className='mb-2 mt-4'><em>No Evidence in this Case</em></h4>
-        }
+          )):
+            <h4 style={{ textAlign: 'center' }} className='mb-2 mt-4'><em>No Evidence in this Case</em></h4>
+          }
         </div>
 
         <div className='div-btn'>
