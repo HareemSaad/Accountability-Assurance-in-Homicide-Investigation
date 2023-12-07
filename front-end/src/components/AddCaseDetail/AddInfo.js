@@ -35,106 +35,116 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-
-      // converting the details field from formInfo into bytes
-      const message = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)).toString()
-      // console.log("message: ", message);
-
-      // signing the transaction
-      const signature = await signMessage({ message })
-      // console.log("SIG :: ", signature)
-
-      // calling the functions from contract
-      if (name === "Evidence") {
-        try {
-
-          // get typed hash data
-          const hashTypedData = await readContract({
-            address: casesContractAddress,
-            abi: CasesABI.abi,
-            functionName: 'hashTypedDataV4',
-            args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
-            chainId: 11155111
-          })
-          // console.log("hashTypedData: ", hashTypedData);
-
-          // create evidence struct
-          const evidence = {
-            evidenceId: formInfo.id,
-            category: formInfo.category - 1,
-            data: message,
-            signature: signature
-          }
-          // console.log("evidence :: ", evidence)
-
-          // call contract
-          const { hash } = await writeContract({
-            address: casesContractAddress,
-            abi: CasesABI.abi,
-            functionName: 'addEvidence',
-            args: [caseId, 0, evidence, hashTypedData],
-            chainId: 11155111
-          })
-          console.log("hash :: ", hash)
-
-          // wait for txn
-          const result = await waitForTransaction({
-            hash: hash,
-          })
-          console.log("Transaction result:", result);
-        } catch (error) {
-          console.error("Error calling contract function:", error);
-          notify("error", `Transaction Failed`);
-        }
-      }
-      else if (name === "Participant") {
-        try {
-          // get typed hash data
-          const hashTypedData = await readContract({
-            address: casesContractAddress,
-            abi: CasesABI.abi,
-            functionName: 'hashTypedDataV4',
-            args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
-            chainId: 11155111
-          })
-          // console.log("hashTypedData: ", hashTypedData);
-
-          // create evidence struct
-          const participant = {
-            suspectId: formInfo.id,
-            category: formInfo.category - 1,
-            data: message,
-            signature: signature
-          }
-          console.log("participant :: ", participant)
-
-          // call contract
-          const { hash } = await writeContract({
-            address: casesContractAddress,
-            abi: CasesABI.abi,
-            functionName: 'addParticipant',
-            args: [caseId, 0, participant, hashTypedData],
-            chainId: 11155111
-          })
-          console.log("hash :: ", hash)
-
-          // wait for txn
-          const result = await waitForTransaction({
-            hash: hash,
-          })
-          console.log("Transaction result:", result);
-        } catch (error) {
-          console.error("Error calling contract function:", error);
-          notify("error", `Transaction Failed`);
-        }
-      } else {
-        notify("error", `Case Number is empty`);
-      }
+    if (formInfo.id === "") {
+      notify("error", `Please enter a valid ${name} ID`);
     }
-    catch (error) {
-      console.error(error);
-      notify("error", `Submission Failed`);
+    else if (formInfo.detail === "") {
+      notify("error", `${name} detail cannot be empty.`);
+    }
+    else if (formInfo.category === "") {
+      notify("error", `${name} category cannot be empty.`);
+    }
+    else {
+      try {
+        // converting the details field from formInfo into bytes
+        const message = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)).toString()
+        // console.log("message: ", message);
+
+        // signing the transaction
+        const signature = await signMessage({ message })
+        // console.log("SIG :: ", signature)
+
+        // calling the functions from contract
+        if (name === "Evidence") {
+          try {
+
+            // get typed hash data
+            const hashTypedData = await readContract({
+              address: casesContractAddress,
+              abi: CasesABI.abi,
+              functionName: 'hashTypedDataV4',
+              args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
+              chainId: 11155111
+            })
+            // console.log("hashTypedData: ", hashTypedData);
+
+            // create evidence struct
+            const evidence = {
+              evidenceId: formInfo.id,
+              category: formInfo.category - 1,
+              data: message,
+              signature: signature
+            }
+            // console.log("evidence :: ", evidence)
+
+            // call contract
+            const { hash } = await writeContract({
+              address: casesContractAddress,
+              abi: CasesABI.abi,
+              functionName: 'addEvidence',
+              args: [caseId, 0, evidence, hashTypedData],
+              chainId: 11155111
+            })
+            console.log("hash :: ", hash)
+
+            // wait for txn
+            const result = await waitForTransaction({
+              hash: hash,
+            })
+            console.log("Transaction result:", result);
+          } catch (error) {
+            console.error("Error calling contract function:", error);
+            notify("error", `Transaction Failed`);
+          }
+        }
+        else if (name === "Participant") {
+          try {
+            // get typed hash data
+            const hashTypedData = await readContract({
+              address: casesContractAddress,
+              abi: CasesABI.abi,
+              functionName: 'hashTypedDataV4',
+              args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
+              chainId: 11155111
+            })
+            // console.log("hashTypedData: ", hashTypedData);
+
+            // create evidence struct
+            const participant = {
+              suspectId: formInfo.id,
+              category: formInfo.category - 1,
+              data: message,
+              signature: signature
+            }
+            console.log("participant :: ", participant)
+
+            // call contract
+            const { hash } = await writeContract({
+              address: casesContractAddress,
+              abi: CasesABI.abi,
+              functionName: 'addParticipant',
+              args: [caseId, 0, participant, hashTypedData],
+              chainId: 11155111
+            })
+            console.log("hash :: ", hash)
+
+            // wait for txn
+            const result = await waitForTransaction({
+              hash: hash,
+            })
+            console.log("Transaction result:", result);
+          } catch (error) {
+            console.error("Error calling contract function:", error);
+            notify("error", `Transaction Failed`);
+          }
+        } else {
+          notify("error", `Case Number is empty`);
+        }
+      }
+      catch (error) {
+        console.error(error);
+        notify("error", `Submission Failed`);
+      }
     }
   };
 
