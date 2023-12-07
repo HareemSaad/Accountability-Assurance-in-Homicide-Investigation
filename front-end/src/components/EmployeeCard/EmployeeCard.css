@@ -1,0 +1,32 @@
+.emp-card-container {
+    /* border: 0.2rem solid red; */
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+.emp-case-card {
+    /* border: 0.2rem solid red; */
+    margin: 1.3rem 1rem;
+    min-height: 150px;
+    display: flex;
+    background-color: rgb(247, 245, 245);
+    box-shadow: rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px;
+    border-radius: 0.4rem;
+    border-bottom: 0.2rem solid #6600cc !important;
+}
+
+.emp-card-btn {
+    /* align-self: flex-end; */
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    margin-top: 0.5rem;
+    font-size: 20px;
+    border-radius: 3px;
+    border: none;
+    text-align: center;
+    cursor: pointer;
+    background-color: #0D003F;
+    color: white;
+    font-weight: bold;
+}

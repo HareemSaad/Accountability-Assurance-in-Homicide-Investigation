@@ -61,7 +61,9 @@ export const CaseCard_Captain = () => {
                 <h1 className='m-4'>Cases</h1>
                 <div className="d-flex">
                     <button className='card-add-btn' name="add-case" onClick={(e) => goto(e)}>Add Case</button>
-                    <button className='card-add-btn' name="add-officer" onClick={(e) => goto(e)}>Add Officer</button>
+                    {/* <button className='card-add-btn' name="add-officer" onClick={(e) => goto(e)}>Add Officer</button> */}
+                    <button className='card-add-btn' name="employees" onClick={(e) => goto(e)}>Employees</button>
+                    <button className='card-add-btn' name="archive-cases" onClick={(e) => goto(e)}>Archive Cases</button>
                 </div>
             </div>
 
