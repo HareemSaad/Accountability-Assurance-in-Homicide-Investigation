@@ -110,7 +110,11 @@ contract Officers {
         emit OfficerStatusChange(_officer, _branchId, _rank, EmploymentStatus.ACTIVE, block.timestamp, msg.sender);
     }
 
-    function onboard(address _officer, bytes32 _branchId, Rank _rank) external onlyRank(Rank.CAPTAIN) {
+    function onboard(
+        address _officer, 
+        bytes32 _branchId, 
+        Rank _rank
+    ) external onlyRank(Rank.CAPTAIN) {
         Officer storage newOfficer = officers[_officer];
         if (_officer == address(0)) { revert InvalidAddress(); }
         if (newOfficer.badge == keccak256(abi.encode(""))) { revert InvalidOfficer(); }
@@ -168,7 +172,7 @@ contract Officers {
         bytes32 _branchId,  
         Rank _prevRank, 
         Rank _rank
-    ) external onlyRank(Rank.CAPTAIN) {
+    ) external onlyRank(Rank.MODERATOR) {
 
         if (_rank == Rank.NULL) { revert InvalidRank(); }
         //call is valid rank
