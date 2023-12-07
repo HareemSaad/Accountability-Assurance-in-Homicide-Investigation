@@ -12,6 +12,7 @@ import { DropOfficerFromCase } from './components/AddDropOfficer/DropOfficerFrom
 import { ChangeCaseStatus } from './components/CaseStatus/ChangeCaseStatus.js';
 import { ArchiveCases } from './components/ArchiveCases/ArchiveCases.js';
 import { EmployeeCard } from './components/EmployeeCard/EmployeeCard.js';
+import { ArchiveEmployees } from './components/ArchiveEmployees/ArchiveEmployees.js';
 
 
 import { Home } from './components/Home/Home.js';
@@ -78,6 +79,7 @@ function App() {
           <Route path="/change-case-status/:caseId" element={ <ChangeCaseStatus /> } />
           <Route path="/archive-cases" element={ <ArchiveCases /> } />
           <Route path="/employees" element={ <EmployeeCard /> } />
+          <Route path="/archive-employees" element={ <ArchiveEmployees /> } />
         </Routes>
       </WagmiConfig>
     </>
