@@ -17,3 +17,5 @@ error ZeroAddress();
 error InvalidBranch();
 error PreexistingBranch();
 error NonexistingBranch();
+error PreexistingOfficer();
+error CaptainAlreadyExists();

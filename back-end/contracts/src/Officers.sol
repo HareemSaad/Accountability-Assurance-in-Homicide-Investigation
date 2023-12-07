@@ -42,8 +42,8 @@ contract Officers {
         _;
     }
 
-    mapping (address => Officer) officers;
-    mapping (bytes32 => address) branches;
+    mapping (address => Officer) public officers;
+    mapping (bytes32 => address) public branches;
 
     function officer(address _officer) external view returns (Officer memory) {
         return officers[_officer];
@@ -78,6 +78,7 @@ contract Officers {
     ) external onlyRank(Rank.MODERATOR) {
         // moderator cannot hire officers or detectives
         if (_rank == Rank.OFFICER || _rank == Rank.DETECTIVE) { revert InvalidRank(); }
+        if (branches[_branchId] != address(0)) { revert CaptainAlreadyExists(); }
         _onboard(_officer, _name, _badge, _branchId, _rank);
     }
 
@@ -97,13 +98,18 @@ contract Officers {
         if (_rank == Rank.NULL) { revert InvalidRank(); }
         if (branches[_branchId] != address(0)) { revert PreexistingBranch(); }
 
+        // create officer
+        Officer storage newOfficer = officers[_officer];
+
+        // check if he aready exists
+        if(newOfficer.badge != bytes32(0)) { revert PreexistingOfficer(); }
+
         // if captain is being onboarded he needs to be assigned to a branch
         if (_rank == Rank.CAPTAIN) { branches[_branchId] = _officer; }
         
-        // create officer
-        Officer storage newOfficer = officers[_officer];
         newOfficer.name = _name;
         newOfficer.badge = _badge;
+        newOfficer.branchId = _branchId;
         newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
         newOfficer.rank = _rank;
 
@@ -114,7 +120,7 @@ contract Officers {
         address _officer, 
         bytes32 _branchId, 
         Rank _rank
-    ) external onlyRank(Rank.CAPTAIN) {
+    ) external onlyRank(Rank.MODERATOR) {
         Officer storage newOfficer = officers[_officer];
         if (_officer == address(0)) { revert InvalidAddress(); }
         if (newOfficer.badge == keccak256(abi.encode(""))) { revert InvalidOfficer(); }
