@@ -45,7 +45,7 @@ export const ArchiveCases = () => {
                 </div>
             </div>
 
-            {/* According to index of status category choosen from the dropdown employees list is shown */}
+            {/* According to index of status category choosen from the dropdown cases list is shown */}
             <div className='emp-card-container'>
                 {(statusValue === 2 ? casesCardResponseCold : casesCardResponseClosed).map((caseCard, index) => (
                     <Card key={index} style={{ width: '18rem' }} className='emp-case-card'>

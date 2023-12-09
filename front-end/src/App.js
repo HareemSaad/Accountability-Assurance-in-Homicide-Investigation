@@ -13,6 +13,8 @@ import { ChangeCaseStatus } from './components/CaseStatus/ChangeCaseStatus.js';
 import { ArchiveCases } from './components/ArchiveCases/ArchiveCases.js';
 import { EmployeeCard } from './components/EmployeeCard/EmployeeCard.js';
 import { ArchiveEmployees } from './components/ArchiveEmployees/ArchiveEmployees.js';
+import { EmployeeDetails } from './components/EmployeeDetails/EmployeeDetails.js';
+import { EmployeeStatus } from './components/EmployeeStatus/EmployeeStatus.js';
 
 
 import { Home } from './components/Home/Home.js';
@@ -72,6 +74,7 @@ function App() {
           <Route path="/case-detail/:caseId" element={ <CaseDetails /> } />
           <Route path="/add-evidence/:caseId" element={ <AddEvidence /> } />
           <Route path="/add-participant/:caseId" element={ <AddParticipant /> } />
+          {/* Captain-only accessed */}
           <Route path="/add-case" element={ <AddCase /> } />
           <Route path="/add-officer" element={ <AddOfficer /> } />
           <Route path="/add-officer-in-case/:caseId" element={ <AddOfficerInCase /> } />
@@ -80,6 +83,8 @@ function App() {
           <Route path="/archive-cases" element={ <ArchiveCases /> } />
           <Route path="/employees" element={ <EmployeeCard /> } />
           <Route path="/archive-employees" element={ <ArchiveEmployees /> } />
+          <Route path="/employee-detail/:employeeId" element={ <EmployeeDetails /> } />
+          <Route path="/change-employee-status/:employeeId" element={ <EmployeeStatus /> } />
         </Routes>
       </WagmiConfig>
     </>
