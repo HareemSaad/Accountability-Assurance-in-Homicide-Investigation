@@ -14,7 +14,7 @@ export const EmployeeStatus = () => {
 
     // Function to handle dropdown item selection
     const [selectedValue, setSelectedValue] = useState(null);
-    const statusArray = ['Select a Status', 'Active', 'Fired', 'Retired'];
+    const statusArray = ['Select a Status', 'Active', 'Inactive', 'Fired', 'Retired'];
 
     const handleDropdownSelect = (statusValue) => {
         setSelectedValue(statusValue);

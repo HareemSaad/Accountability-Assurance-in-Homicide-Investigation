@@ -6,13 +6,16 @@ import { useNavigate } from "react-router-dom";
 
 export const ArchiveEmployees = () => {
 
-    const archiveEmployee = ["Select Status", "Retired", "Fired"];
+    const archiveEmployee = ["Select Status", "Inactive", "Retired", "Fired"];
     const [selectedValue, setSelectedValue] = useState(null);
     const [statusValue, setStatusValue] = useState(0);
 
     const empCardResponseRetired = [{ id: 21, status: "Retired" }, { id: 212, status: "Retired" }, { id: 211, status: "Retired" }, { id: 2121, status: "Retired" }, { id: 2441, status: "Retired" }, { id: 21, status: "Retired" }, { id: 21, status: "Retired" }, { id: 21, status: "Retired" }, { id: 24321, status: "Retired" }, { id: 23241, status: "Retired" }, { id: 21, status: "Retired" }];
 
     const empCardResponseFired = [{ id: 21675, status: "Fired" }, { id: 56721, status: "Fired" }, { id: 45621, status: "Fired" }, { id: 66421, status: "Fired" }, { id: 24312, status: "Fired" }, { id: 21, status: "Fired" }, { id: 21, status: "Fired" }, { id: 21, status: "Fired" }, { id: 21, status: "Fired" }, { id: 21, status: "Fired" }, { id: 21, status: "Fired" }];
+
+    const empCardResponseInactive = [{ id: 21675, status: "Inactive" }, { id: 56721, status: "Inactive" }, { id: 45621, status: "Inactive" }, { id: 66421, status: "Inactive" }, { id: 24312, status: "Inactive" }, { id: 21, status: "Inactive" }, { id: 21, status: "Inactive" }, { id: 21, status: "Inactive" }, { id: 21, status: "Inactive" }, { id: 21, status: "Inactive" }, { id: 21, status: "Inactive" }];
+
     let navigate = useNavigate();
 
 
@@ -29,7 +32,7 @@ export const ArchiveEmployees = () => {
     return (
         <>
             <div className="d-flex justify-content-between">
-                <h1 className='m-4'>{selectedValue ? `${archiveEmployee[selectedValue]} Employees` : 'Retired Employees'}</h1>
+                <h1 className='m-4'>{selectedValue ? `${archiveEmployee[selectedValue]} Employees` : 'Inactive Employees'}</h1>
                 <div className="d-flex">
                     <div className='emp-status-dropdown'>
                         <Dropdown className='emp-status'>
@@ -47,7 +50,7 @@ export const ArchiveEmployees = () => {
 
             {/* According to index of status category choosen from the dropdown employees list is shown */}
             <div className='emp-card-container'>
-                {(statusValue === 2 ? empCardResponseFired : empCardResponseRetired).map((employee, index) => (
+                {(statusValue === 2 ? empCardResponseRetired : statusValue === 3 ? empCardResponseFired : empCardResponseInactive).map((employee, index) => (
                     <Card key={index} style={{ width: '18rem' }} className='emp-case-card'>
                         <Card.Body>
                             <Card.Title>{employee.id}</Card.Title>

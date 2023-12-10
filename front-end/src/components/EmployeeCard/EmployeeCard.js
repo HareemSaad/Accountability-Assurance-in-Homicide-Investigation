@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 export const EmployeeCard = () => {
 
     // const [EmpCardResponse, EmpCardResponse] = useState([]);
-    const empCardResponse = [{ id: 21, status: "Active" }, { id: 21, status: "Cold" }, { id: 21, status: "Cold" }, { id: 21, status: "Cold" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" },{ id: 21, status: "Active" }];
+    const empCardResponse = [{ id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" }, { id: 21, status: "Active" },{ id: 21, status: "Active" }];
     let navigate = useNavigate();
 
     function print(cardId) {
