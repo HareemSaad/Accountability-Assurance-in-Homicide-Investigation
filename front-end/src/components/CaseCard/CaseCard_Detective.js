@@ -10,7 +10,7 @@ export const CaseCard_Detective = ({ currentUser }) => {
   let navigate = useNavigate();
 
   useEffect(() => {
-    const DetectiveCards = [13, 27, 36, 45];
+    const DetectiveCards = [{ id: 13, status: "Open" }, { id: 27, status: "Open" }, { id: 36, status: "Open" }, { id: 45, status: "Open" }];
     console.log(`currentUser ${currentUser}`)
     setDetectiveCard(DetectiveCards)
   }, []);
@@ -19,22 +19,30 @@ export const CaseCard_Detective = ({ currentUser }) => {
     navigate(`/case-detail/${cardId}`);
   }
 
+  const goto = (e) => {
+    const { name } = e.target;
+    console.log("params ::", name)
+    navigate(`/${name}`);
+  }
+
 
 
   return (
     <>
+      <div className="d-flex justify-content-between">
         <h1 className='m-4'>Cases</h1>
-      
+        <div className="d-flex">
+          <button className='card-add-btn' name="archive-cases" onClick={(e) => goto(e)}>Archive Cases</button>
+        </div>
+      </div>
 
       <div className='card-container'>
         {DetectiveCard.map((card, index) => (
           <Card className='case-card'>
-            <h2 className='mb-3 mt-3 pb-5'>Case# {card}</h2>
-            <button className='card-btn' onClick={() => print(card)}>View</button>
+            <h2 className='mb-3 mt-3 pb-5'>Case# {card.id}</h2>
+            <button className='card-btn' onClick={() => print(card.id, card.status)}>View</button>
           </Card>
         ))}
-
-
       </div>
     </>
   )
