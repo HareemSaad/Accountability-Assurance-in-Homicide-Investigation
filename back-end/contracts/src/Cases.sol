@@ -26,16 +26,24 @@ contract Cases is EIP712 {
      * @dev `oldStatus` The previous status of the case.
      * @dev `newStatus` The new status of the case.
      */
-    event CaseUpdated(uint caseId, address indexed initiator, CaseStatus oldStatus, CaseStatus newStatus);
+    event CaseUpdated(
+        uint caseId, 
+        address indexed initiator, 
+        CaseStatus oldStatus, 
+        CaseStatus newStatus
+    );
     
     /**
      * @dev Emitted when an officer is added to or removed from a case.
      * @dev `caseId` The identifier of the case to which an officer is added.
      * @dev `initiator` The address of the officer initiating the addition.
      * @dev `officer` The address of the officer being added.
-     * @dev `caseSpecificOfficerId` The unique identifier for the officer within the case.
      */
-    event UpdateOfficerInCase(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
+    event UpdateOfficerInCase(
+        uint caseId, 
+        address indexed initiator, 
+        address indexed officer
+    );
 
     /**
      * @dev Emitted when an officer is removed from a case.
@@ -44,7 +52,11 @@ contract Cases is EIP712 {
      * @dev `officer` The address of the officer being removed.
      * @dev `caseSpecificOfficerId` The unique identifier for the officer within the case.
      */
-    event RemoveOfficer(uint caseId, address indexed initiator, address indexed officer, uint256 caseSpecificOfficerId);
+    event RemoveOfficer(
+        uint caseId, 
+        address indexed initiator, 
+        address indexed officer
+    );
 
     /**
      * @dev Emitted when a new participant is added to a case.
@@ -55,7 +67,14 @@ contract Cases is EIP712 {
      * @dev `dataHash` The hash of the participant's data for data integrity verification.
      * @dev `data` The data associated with the participant.
      */
-    event NewParticipantInCase(uint caseId, address indexed initiator, uint48 suspectId, ParticipantCategory category, bytes32 dataHash, bytes data);
+    event NewParticipantInCase(
+        uint caseId, 
+        address indexed initiator, 
+        uint48 suspectId, 
+        ParticipantCategory category, 
+        bytes32 dataHash, 
+        bytes data
+    );
     
     /**
      * @dev Emitted when new evidence is added to a case.
@@ -66,7 +85,14 @@ contract Cases is EIP712 {
      * @dev `dataHash` The hash of the evidence's data for data integrity verification.
      * @dev `data` The data associated with the evidence.
      */
-    event NewEvidenceInCase(uint caseId, address indexed initiator, uint48 evidenceId, EvidenceCategory category, bytes32 dataHash, bytes data);
+    event NewEvidenceInCase(
+        uint caseId, 
+        address indexed initiator, 
+        uint48 evidenceId, 
+        EvidenceCategory category, 
+        bytes32 dataHash, 
+        bytes data
+    );
     
     /**
      * @dev Emitted when trustee access is updated
@@ -75,7 +101,13 @@ contract Cases is EIP712 {
      * @dev `trustree` The address of the person who whose read access gets revoked or granted.
      * @dev `approved` True for granted access, False for revoked access
      */
-    event Trustee(uint caseId, bytes32 indexed branchId, address indexed initiator, address indexed trustree, bool approved);
+    event Trustee(
+        uint caseId, 
+        bytes32 indexed branchId, 
+        address indexed initiator, 
+        address indexed trustree, 
+        bool approved
+    );
     
     enum CaseStatus {
         NULL, OPEN, CLOSED, COLD
@@ -105,7 +137,7 @@ contract Cases is EIP712 {
 
     struct Case {
         CaseStatus status;
-        address[] officers;
+        mapping (address => bool) officers;
         Participant[] participants;
         Evidence[] evidences;   
     }
@@ -120,8 +152,12 @@ contract Cases is EIP712 {
     mapping (address => mapping (uint => bool)) trusteeLedger;
 
     modifier onlyRank(Officers.Rank rank) {
-        if (officersContract.isValidRank(msg.sender, rank)) { revert InvalidRank(); }
+        _onlyRank(rank);
         _;
+    }
+
+    function _onlyRank(Officers.Rank rank) internal view {
+        if (officersContract.isValidRank(msg.sender, rank)) { revert InvalidRank(); }
     }
 
     /**
@@ -135,7 +171,7 @@ contract Cases is EIP712 {
 
         Case storage newCase = _case[_caseId];
         newCase.status = CaseStatus.OPEN;
-        newCase.officers.push(msg.sender); //case.officers[0] is always the captain
+        newCase.officers[msg.sender] = true;
 
         emit CaseUpdated(_caseId, msg.sender, CaseStatus.NULL, CaseStatus.OPEN);
     }
@@ -150,7 +186,7 @@ contract Cases is EIP712 {
         Case storage newCase = _case[_caseId];
 
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
+        if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); }
 
         CaseStatus oldStatus = newCase.status;
         newCase.status = _status;
@@ -169,11 +205,11 @@ contract Cases is EIP712 {
         Case storage newCase = _case[_caseId];
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
+        if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); }
 
-        newCase.officers.push(_officer); 
+        newCase.officers[_officer] = true; 
 
-        emit UpdateOfficerInCase(_caseId, msg.sender, _officer, newCase.officers.length - 1);
+        emit UpdateOfficerInCase(_caseId, msg.sender, _officer);
     }
 
     /**
@@ -182,50 +218,49 @@ contract Cases is EIP712 {
      * @param _officer The address of the officer to be added.
      * @dev The caller must have the 'CAPTAIN' role for the specified case.
      */
-    function transferCaseCaptain(uint _caseId, address _officer) external onlyRank(Officers.Rank.CAPTAIN) {
+    function transferCaseCaptain(uint _caseId, address _officer, address _prevOfficer) external onlyRank(Officers.Rank.MODERATOR) {
 
         Case storage newCase = _case[_caseId];
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(newCase.officers[0] != msg.sender) { revert InvalidOfficer(); }
+        if(!newCase.officers[_prevOfficer]) { revert InvalidOfficer(); }
 
-        newCase.officers[0] = _officer;
+        delete(newCase.officers[_prevOfficer]);
+        newCase.officers[_officer] = true;
 
-        emit UpdateOfficerInCase(_caseId, msg.sender, _officer, 0);
+        // emit UpdateOfficerInCase(_caseId, msg.sender, _officer, 0);
     }
 
     /**
      * @notice Removes an officer from a case.
      * @param _caseId The identifier of the case from which an officer is removed.
-     * @param _caseSpecificOfficerId The index of the officer within the case.
      * @param _officer The address of the officer to be removed.
      * @dev The caller must have the 'CAPTAIN' role for the specified case, and the officer must be assigned to the case.
      */
-    function removeOfficerInCase(uint _caseId, uint256 _caseSpecificOfficerId, address _officer) external onlyRank(Officers.Rank.CAPTAIN) {
+    function removeOfficerInCase(uint _caseId, address _officer) external onlyRank(Officers.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
         
-        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(!newCase.officers[_officer]) { revert InvalidOfficer(); } //check if officer is assigned this case
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
-        delete(newCase.officers[_caseSpecificOfficerId]);
+        delete(newCase.officers[_officer]);
 
-        emit RemoveOfficer(_caseId, msg.sender, _officer, _caseSpecificOfficerId);
+        emit RemoveOfficer(_caseId, msg.sender, _officer);
     }
 
     /**
      * @notice Adds a participant to a case.
      * @param _caseId The identifier of the case to which the participant is added.
-     * @param _caseSpecificOfficerId The index of the officer within the case.
      * @param _participant The participant's data and signature.
      * @param _dataHash The hash of the participant's data for data integrity verification.
      * @dev The caller must be an officer assigned to the specified case.
      */
-    function addParticipant(uint _caseId, uint256 _caseSpecificOfficerId, Participant memory _participant, bytes32 _dataHash) external {
+    function addParticipant(uint _caseId, Participant memory _participant, bytes32 _dataHash) external {
 
         Case storage newCase = _case[_caseId];
 
-        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
@@ -243,16 +278,15 @@ contract Cases is EIP712 {
     /**
      * @notice Adds evidence to a case.
      * @param _caseId The identifier of the case to which evidence is added.
-     * @param _caseSpecificOfficerId The index of the officer within the case.
      * @param _evidence The evidence's data and signature.
      * @param _dataHash The hash of the evidence's data for data integrity verification.
      * @dev The caller must be an officer assigned to the specified case.
      */
-    function addEvidence(uint _caseId, uint256 _caseSpecificOfficerId, Evidence memory _evidence, bytes32 _dataHash) external {
+    function addEvidence(uint _caseId, Evidence memory _evidence, bytes32 _dataHash) external {
 
         Case storage newCase = _case[_caseId];
 
-        if(newCase.officers[_caseSpecificOfficerId] != msg.sender) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
@@ -321,26 +355,3 @@ contract Cases is EIP712 {
     }
 
 }
-
-
-/** Only the ... 
- * captain can open a case
- * captain can re-activate the case
- * captain can close a case
- */
-
-/** I can get information about
- * the case id
- * the precinct the case assigned to
- * the officers the case assigned to
- * the case status
- */
-
-/** how to store information inside a case?
- * log info in events
- * save in contract
- */
-
-/** TODO ...
- * build a pattern for case id's like there is for cnics
- */
