@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import './Home.css'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, } from 'react';
 import { useNavigate } from "react-router-dom";
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
@@ -8,9 +8,13 @@ import { useConnect, useAccount, useDisconnect } from 'wagmi'
 import { readContract } from '@wagmi/core'
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
-import OfficersABI from "./../OfficersABI.json"
+import OfficersABI from "./../OfficersABI.json";
+
+// CONTEXT
+import { UserContext, useUserContext } from '../Context/userContext.tsx';
 
 export const Login = () => {
+  const { user, setUser } = useUserContext();
 
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
   const { address, connector, isConnected } = useAccount()
@@ -26,9 +30,11 @@ export const Login = () => {
   // Function to handle dropdown item selection
   const handleDropdownSelect = async (value) => {
     setSelectedValue(value);
+    console.log("value :: ", value)
+    setUser(value);
   };
 
-   // Function to handle successful login
+  // Function to handle successful login
   const handleLoginSuccess = async () => {
 
     if (isConnected) {
@@ -62,7 +68,7 @@ export const Login = () => {
   };
 
   const handleValidationFail = () => {
-    if(isConnected) {
+    if (isConnected) {
       disconnect()
     }
     notify("error", "Rank validation failed");
@@ -77,7 +83,7 @@ export const Login = () => {
   return (
     <div className='login'>
       <div className='login-container'>
-        <h2 className='login-welcome'> Welcome </h2>
+        <h2 className='login-welcome'> Welcome {user}</h2>
         <DropdownButton variant="light" id="rank" title={selectedValue ? selectedValue : "Select Your Rank"} className='mb-4 dropdown-rank'>
           <Dropdown.Item onClick={() => handleDropdownSelect('Captain')}>Captain</Dropdown.Item>
           <Dropdown.Item onClick={() => handleDropdownSelect('Officer')}>Officer</Dropdown.Item>

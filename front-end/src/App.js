@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, createContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Route, Routes} from "react-router-dom";
 import { NavbarComponent } from './components/Navbar/Navbar';
@@ -21,6 +21,9 @@ import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
 import AddParticipant from './components/AddCaseDetail/AddParticipant';
 import AddEvidence from './components/AddCaseDetail/AddEvidence.js';
+
+// CONTEXT
+import { UserContext, UserProvider } from './components/Context/userContext.tsx';
 
 import { hexToDec } from 'hex2dec';
 
@@ -64,6 +67,7 @@ function App() {
 
   return (
     <>
+      <UserProvider>
       <ToastContainer />
       <WagmiConfig config={config}> 
         <NavbarComponent />
@@ -87,6 +91,7 @@ function App() {
           <Route path="/change-employee-status/:employeeId" element={ <EmployeeStatus /> } />
         </Routes>
       </WagmiConfig>
+      </UserProvider>
     </>
   );
 }
