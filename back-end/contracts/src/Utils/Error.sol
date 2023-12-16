@@ -19,3 +19,5 @@ error PreexistingBranch();
 error NonexistingBranch();
 error PreexistingOfficer();
 error CaptainAlreadyExists();
+error InvalidId();
+error BranchAlreadyExists();
