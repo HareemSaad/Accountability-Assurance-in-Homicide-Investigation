@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-library CreateBranch {
+library UpdateBranch {
 
-    struct CreateBranchVote {
+    struct UpdateBranchVote {
         uint nonce;
         string precinctAddress;
         uint jurisdictionArea;
@@ -13,8 +13,8 @@ library CreateBranch {
 
     bytes32 public constant REQUEST_TYPE_HASH =
     keccak256(
-        "CreateBranchVote("
-        "uint nonce"
+        "UpdateBranchVote("
+        "uint nonce,"
         "string precinctAddress,"
         "uint jurisdictionArea,"
         "uint stateCode,"
@@ -22,7 +22,7 @@ library CreateBranch {
         ")"
     );
 
-    function hash(CreateBranchVote calldata request) public pure returns (bytes32) {
+    function hash(UpdateBranchVote calldata request) public pure returns (bytes32) {
         return (
             keccak256(
                 abi.encode(

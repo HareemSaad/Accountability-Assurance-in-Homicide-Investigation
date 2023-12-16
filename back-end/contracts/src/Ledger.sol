@@ -6,6 +6,8 @@ import "@openzeppelin/contracts/utils/cryptography/SignatureChecker.sol";
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import "./Utils/Error.sol";
 import "./Libraries/CreateBranch.sol";
+import "./Libraries/UpdateBranch.sol";
+import "forge-std/Test.sol";
 
 contract Ledger is EIP712 {
 
@@ -14,10 +16,15 @@ contract Ledger is EIP712 {
     event BranchUpdate(
         bytes32 indexed id,
         string precinctAddress,
-        uint indexed jurisdictionArea
+        uint indexed jurisdictionArea,
+        uint indexed stateCode
     );
 
     constructor(address _officer, string memory _name, bytes32 _badge, bytes32 _branchId) EIP712("Ledger", "1") {
+        moderators[0x0376AAc07Ad725E01357B1725B5ceC61aE10473c][88886] = true;
+        moderators[0x4a79fB1C667Ff8AF3e5B50925747AA39D9f74262][88886] = true;
+
+        moderatorCount[88886] = 2;
     }
 
     struct Officer {
@@ -32,6 +39,7 @@ contract Ledger is EIP712 {
     struct Branch {
         string precinctAddress;
         uint jurisdictionArea; //postal code
+        uint stateCode;
         uint numberOfOfficers;
     }
 
@@ -57,33 +65,81 @@ contract Ledger is EIP712 {
     mapping (address => mapping (uint => bool)) public moderators;
     mapping (uint => uint) public moderatorCount;
     mapping (bytes32 => Branch) public branches;
+    mapping (bytes32 => bool) public replay;
     
     // add a new branch
     function createBranch(
         string memory _id, 
         string memory _precinctAddress,
         uint _jurisdictionArea,
+        uint _stateCode,
+        uint _nonce,
         bytes[] memory _signatures,
         address[] memory _signers
-    ) external onlyModerator(_jurisdictionArea) {
+    ) external onlyModerator(_stateCode) {
+        if(_id.equal("") || _precinctAddress.equal("") || _jurisdictionArea == 0 || _stateCode == 0) revert InvalidInput();
+
+        bytes32 id = keccak256(abi.encode(_id));
+        Branch storage _branch = branches[id];
+
+        if(_branch.stateCode != 0) revert BranchAlreadyExists();
+
+        if(_signatures.length != _signers.length) revert LengthMismatch();
+        if((moderatorCount[_stateCode] / 2) + 1  > _signers.length) revert NotEnoughSignatures();
+
+
+        bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
+            _nonce,
+            _precinctAddress,
+            _jurisdictionArea,
+            _stateCode,
+            id
+        ));
+
+        _validateSignatures(messageHash, _signatures, _signers, _stateCode);
+
+        _branch.precinctAddress = _precinctAddress;
+        _branch.jurisdictionArea = _jurisdictionArea;
+        _branch.stateCode = _stateCode;
+
+        emit BranchUpdate(
+            id,
+            _precinctAddress,
+            _jurisdictionArea,
+            _stateCode
+        );
+
+    }
+    // update a pre existing branch
+    function updateBranch(
+        string memory _id, 
+        string memory _precinctAddress,
+        uint _jurisdictionArea,
+        uint _stateCode,
+        uint _nonce,
+        bytes[] memory _signatures,
+        address[] memory _signers
+    ) external onlyModerator(_stateCode) {
         if(_id.equal("") || _precinctAddress.equal("") || _jurisdictionArea == 0) revert InvalidInput();
 
         bytes32 id = keccak256(abi.encode(_id));
         Branch storage _branch = branches[id];
 
-        if(!_branch.precinctAddress.equal("")) revert BranchAlreadyExists();
+        if(_branch.stateCode != _stateCode || _stateCode == 0) revert BranchDoesNotExists();
 
         if(_signatures.length != _signers.length) revert LengthMismatch();
-        if((moderatorCount[_jurisdictionArea] / 2) + 1  > _signers.length) revert NotEnoughSignatures();
+        if((moderatorCount[_stateCode] / 2) + 1  > _signers.length) revert NotEnoughSignatures();
 
 
-        bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
+        bytes32 messageHash = UpdateBranch.hash(UpdateBranch.UpdateBranchVote(
+            _nonce,
             _precinctAddress,
             _jurisdictionArea,
+            _stateCode,
             id
         ));
 
-        _validateSignatures(messageHash, _signatures, _signers, _jurisdictionArea);
+        _validateSignatures(messageHash, _signatures, _signers, _stateCode);
 
         _branch.precinctAddress = _precinctAddress;
         _branch.jurisdictionArea = _jurisdictionArea;
@@ -91,7 +147,8 @@ contract Ledger is EIP712 {
         emit BranchUpdate(
             id,
             _precinctAddress,
-            _jurisdictionArea
+            _jurisdictionArea,
+            _stateCode
         );
 
     }
@@ -100,12 +157,14 @@ contract Ledger is EIP712 {
         bytes32 _hash,
         bytes[] memory _signatures,
         address[] memory _signers,
-        uint _jurisdictionArea
-    ) public view {
+        uint _stateCode
+    ) public {
         bytes32 _messageHash = _hashTypedDataV4(_hash);
+        if (replay[_messageHash]) revert SignatureReplay();
+        replay[_messageHash] = true;
         for (uint i = 0; i < _signatures.length; ++i) {
             if(!(
-                SignatureChecker.isValidSignatureNow(_signers[i], _messageHash, _signatures[i]) && moderators[_signers[i]][_jurisdictionArea]
+                SignatureChecker.isValidSignatureNow(_signers[i], _messageHash, _signatures[i]) && moderators[_signers[i]][_stateCode]
             )) revert InvalidSignature();
         }   
     }

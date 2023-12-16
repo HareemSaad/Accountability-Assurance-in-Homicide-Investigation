@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 import "forge-std/Test.sol";
 import "./../src/Ledger.sol";
 import "./../src/Libraries/CreateBranch.sol";
+import "./../src/Libraries/UpdateBranch.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract OfficersTest is Test {
@@ -35,7 +36,9 @@ contract OfficersTest is Test {
 
     function testNewBranch() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
+            1,
             "5th Avenue",
+            123456,
             88886,
             PRECINCT1
         ));
@@ -61,7 +64,9 @@ contract OfficersTest is Test {
         ledger.createBranch(
             "PRECINCT 1",
             "5th Avenue",
+            123456,
             88886,
+            1,
             signatures,
             signers
         );
@@ -69,11 +74,13 @@ contract OfficersTest is Test {
         (
             string memory precinctAddress,
             uint jurisdictionArea,
+            uint stateCode,
             uint numberOfOfficers
         ) = ledger.branches(PRECINCT1);
 
         assertEq(precinctAddress, "5th Avenue");
-        assertEq(jurisdictionArea, 88886);
+        assertEq(stateCode, 88886);
+        assertEq(jurisdictionArea, 123456);
         assertEq(numberOfOfficers, 0);
 
         vm.stopPrank();
@@ -81,7 +88,9 @@ contract OfficersTest is Test {
 
     function testDuplicateBranch() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
+            1,
             "5th Avenue",
+            123456,
             88886,
             PRECINCT1
         ));
@@ -110,7 +119,9 @@ contract OfficersTest is Test {
         ledger.createBranch(
             "PRECINCT 1",
             "5th Avenue",
+            123456,
             88886,
+            1,
             signatures,
             signers
         );
@@ -118,10 +129,12 @@ contract OfficersTest is Test {
         vm.stopPrank();
     }
 
-    function testBranchIncorrectInput() public {
+    function testCreateBranchIncorrectInput() public {
 
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
+            1,
             "5th Avenue",
+            123456,
             88886,
             PRECINCT1
         ));
@@ -154,7 +167,9 @@ contract OfficersTest is Test {
         ledger.createBranch(
             "",
             "5th Avenue",
+            123456,
             88886,
+            1,
             signatures,
             signers
         );
@@ -163,7 +178,9 @@ contract OfficersTest is Test {
         ledger.createBranch(
             "PRECINCT 1",
             "",
+            123456,
             88886,
+            1,
             signatures,
             signers
         );
@@ -172,7 +189,20 @@ contract OfficersTest is Test {
         ledger.createBranch(
             "PRECINCT 1",
             "5th Avenue",
+            123456,
             0,
+            1,
+            signatures,
+            signers
+        );
+
+        vm.expectRevert(InvalidInput.selector);
+        ledger.createBranch(
+            "PRECINCT 1",
+            "5th Avenue",
+            0,
+            88886,
+            1,
             signatures,
             signers
         );
@@ -181,7 +211,9 @@ contract OfficersTest is Test {
         ledger.createBranch(
             "PRECINCT 1",
             "5th Avenue",
+            123456,
             88886,
+            1,
             signaturesHalf,
             signers
         );
@@ -190,7 +222,9 @@ contract OfficersTest is Test {
         ledger.createBranch(
             "PRECINCT 1",
             "5th Avenue",
+            123456,
             88886,
+            1,
             signaturesHalf,
             signersHalf
         );
@@ -201,13 +235,212 @@ contract OfficersTest is Test {
         ledger.createBranch(
             "PRECINCT 1",
             "5th Avenue",
+            123456,
             88886,
+            1,
+            signatures,
+            signers
+        );
+
+
+        vm.expectRevert(InvalidSignature.selector);
+        ledger.createBranch(
+            "PRECINCT 1",
+            "5th Avenue",
+            123456,
+            88886,
+            0,
             signatures,
             signers
         );
 
         vm.stopPrank();
     }
+
+    function testUpdateBranch() public {
+        testNewBranch(); 
+
+        bytes32 messageHash = UpdateBranch.hash(UpdateBranch.UpdateBranchVote(
+            1,
+            "6th Avenue",
+            123456,
+            88886,
+            PRECINCT1
+        ));
+
+        bytes[] memory signatures = new bytes[](2);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator1PrivateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        (v, r, s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+
+        signatures[0] = moderator1Signature;
+        signatures[1] = moderator2Signature;
+
+        address[] memory signers = new address[](2);
+
+        signers[0] = moderator1;
+        signers[1] = moderator2;
+        
+        vm.startPrank(moderator1);
+
+        ledger.updateBranch(
+            "PRECINCT 1",
+            "6th Avenue",
+            123456,
+            88886,
+            1,
+            signatures,
+            signers
+        );
+
+        (
+            string memory precinctAddress,
+            uint jurisdictionArea,
+            uint stateCode,
+            uint numberOfOfficers
+        ) = ledger.branches(PRECINCT1);
+
+        assertEq(precinctAddress, "6th Avenue");
+        assertEq(stateCode, 88886);
+        assertEq(jurisdictionArea, 123456);
+        assertEq(numberOfOfficers, 0);
+
+        vm.stopPrank();
+    }
+
+    function testUpdateBranchIncorrectInput() public {
+
+        bytes32 messageHash = UpdateBranch.hash(UpdateBranch.UpdateBranchVote(
+            1,
+            "6th Avenue",
+            123456,
+            88886,
+            PRECINCT1
+        ));
+
+        bytes[] memory signatures = new bytes[](2);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator1PrivateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        (v, r, s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+
+        signatures[0] = moderator1Signature;
+        signatures[1] = moderator2Signature;
+
+        address[] memory signers = new address[](2);
+
+        signers[0] = moderator1;
+        signers[1] = moderator2;
+
+        bytes[] memory signaturesHalf = new bytes[](1);
+        signaturesHalf[0] = moderator1Signature;
+
+        address[] memory signersHalf = new address[](1);
+        signersHalf[0] = moderator1;
+
+        testNewBranch(); 
+
+        vm.startPrank(moderator1);
+
+        vm.expectRevert(InvalidInput.selector);
+        ledger.updateBranch(
+            "",
+            "6th Avenue",
+            123456,
+            88886,
+            1,
+            signatures,
+            signers
+        );
+
+        vm.expectRevert(InvalidInput.selector);
+        ledger.updateBranch(
+            "PRECINCT 1",
+            "",
+            123456,
+            88886,
+            1,
+            signatures,
+            signers
+        );
+
+        vm.expectRevert(OnlyModerator.selector);
+        ledger.updateBranch(
+            "PRECINCT 1",
+            "6th Avenue",
+            123456,
+            0,
+            1,
+            signatures,
+            signers
+        );
+
+        vm.expectRevert(InvalidInput.selector);
+        ledger.updateBranch(
+            "PRECINCT 1",
+            "6th Avenue",
+            0,
+            88886,
+            1,
+            signatures,
+            signers
+        );
+
+        vm.expectRevert(LengthMismatch.selector);
+        ledger.updateBranch(
+            "PRECINCT 1",
+            "6th Avenue",
+            123456,
+            88886,
+            1,
+            signaturesHalf,
+            signers
+        );
+
+        vm.expectRevert(NotEnoughSignatures.selector);
+        ledger.updateBranch(
+            "PRECINCT 1",
+            "6th Avenue",
+            123456,
+            88886,
+            1,
+            signaturesHalf,
+            signersHalf
+        );
+
+        signers[0] = moderator2;
+
+        vm.expectRevert(InvalidSignature.selector);
+        ledger.updateBranch(
+            "PRECINCT 1",
+            "6th Avenue",
+            123456,
+            88886,
+            1,
+            signatures,
+            signers
+        );
+
+
+        vm.expectRevert(InvalidSignature.selector);
+        ledger.updateBranch(
+            "PRECINCT 1",
+            "6th Avenue",
+            123456,
+            88886,
+            0,
+            signatures,
+            signers
+        );
+
+        vm.stopPrank();
+    }
+
 
     function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
         return ECDSA.toTypedDataHash(ledger.DOMAIN_SEPARATOR(), structHash);

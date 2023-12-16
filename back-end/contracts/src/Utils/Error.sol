@@ -24,3 +24,5 @@ error BranchAlreadyExists();
 error OnlyModerator();
 error LengthMismatch();
 error NotEnoughSignatures();
+error BranchDoesNotExists();
+error SignatureReplay();
