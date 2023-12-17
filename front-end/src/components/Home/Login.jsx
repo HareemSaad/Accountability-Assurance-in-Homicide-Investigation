@@ -9,8 +9,11 @@ import { readContract } from '@wagmi/core'
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import OfficersABI from "./../OfficersABI.json"
+// CONTEXT
+import { UserContext, useUserContext } from '../Context/userContext.tsx';
 
 export const Login = () => {
+  const { user, setUser } = useUserContext();
 
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
   const { address, connector, isConnected } = useAccount()
@@ -26,6 +29,7 @@ export const Login = () => {
   // Function to handle dropdown item selection
   const handleDropdownSelect = async (value) => {
     setSelectedValue(value);
+    setUser(value);
   };
 
    // Function to handle successful login
@@ -77,7 +81,7 @@ export const Login = () => {
   return (
     <div className='login'>
       <div className='login-container'>
-        <h2 className='login-welcome'> Welcome </h2>
+        <h2 className='login-welcome'> Welcome {user} </h2>
         <DropdownButton variant="light" id="rank" title={selectedValue ? selectedValue : "Select Your Rank"} className='mb-4 dropdown-rank'>
           <Dropdown.Item onClick={() => handleDropdownSelect('Captain')}>Captain</Dropdown.Item>
           <Dropdown.Item onClick={() => handleDropdownSelect('Officer')}>Officer</Dropdown.Item>
