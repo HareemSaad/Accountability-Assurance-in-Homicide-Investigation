@@ -28,6 +28,7 @@ contract OfficersTest is Test {
     address captain2 = address(3);
     uint256 _alicePrivateKey = 0xA11CE;
     address detective1 = vm.addr(_alicePrivateKey); //0xe05fcC23807536bEe418f142D19fa0d21BB0cfF7
+    address detective2 = address(88);
 
     function setUp() public {
         ledger = new Ledger(
@@ -955,12 +956,43 @@ contract OfficersTest is Test {
             2,
             88888,
             detective1,
-            address(0),
+            address(99),
+            moderator2Signature,
+            moderator2
+        );
+
+        vm.expectRevert(InvalidSigner.selector);
+        ledger.updateAddress(
+            2,
+            88886,
+            detective1,
+            address(99),
+            moderator2Signature,
+            moderator1
+        );
+
+        vm.expectRevert(ModeratorOfDifferentState.selector);
+        ledger.updateAddress(
+            2,
+            88886,
+            detective2,
+            address(99),
             moderator2Signature,
             moderator2
         );
 
         vm.stopPrank();
+
+        vm.prank(moderator1);
+        vm.expectRevert(OnlyModerator.selector);
+        ledger.updateAddress(
+            2,
+            88886,
+            detective1,
+            address(99),
+            moderator2Signature,
+            moderator1
+        );
     }
 
     //test isValidBranch

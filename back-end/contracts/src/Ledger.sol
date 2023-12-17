@@ -442,9 +442,3 @@ contract Ledger is EIP712 {
     }
 
 }
-
-//TODO: check for stateCode either put it in signing scheme or put a check on it from branches that the given branch exists in the state
-
-//TODO: remove signer == sender 
-
-//TODO: shift events to private funnctions
