@@ -8,6 +8,7 @@ import "./Utils/Error.sol";
 import "./Libraries/CreateBranch.sol";
 import "./Libraries/UpdateBranch.sol";
 import "./Libraries/Onboard.sol";
+import "./Libraries/UpdateOfficer.sol";
 import "forge-std/Test.sol";
 
 contract Ledger is EIP712 {
@@ -28,6 +29,14 @@ contract Ledger is EIP712 {
         bytes32 badge, 
         bytes32 indexed branchId, 
         Rank indexed rank, 
+        uint when, 
+        address from
+    );
+
+    event OfficerAddressUpdated (
+        address indexed oldAddr,
+        address indexed newAddr,
+        bytes32 legalNumber, 
         uint when, 
         address from
     );
@@ -139,7 +148,7 @@ contract Ledger is EIP712 {
             id
         ));
 
-        _validateSignatures(messageHash, _signatures, _signers, _stateCode);
+        _validateSignatures(messageHash, _signatures, _signers);
 
         _initializeBranch(
             id,
@@ -186,7 +195,7 @@ contract Ledger is EIP712 {
             id
         ));
 
-        _validateSignatures(messageHash, _signatures, _signers, _stateCode);
+        _validateSignatures(messageHash, _signatures, _signers);
 
         _branch.precinctAddress = _precinctAddress;
         _branch.jurisdictionArea = _jurisdictionArea;
@@ -204,6 +213,7 @@ contract Ledger is EIP712 {
     function addModerator(
         uint _nonce,
         uint _stateCode,
+        uint _senderStateCode,
         address _officer, 
         string memory _name, 
         bytes32 _legalNumber, 
@@ -212,7 +222,7 @@ contract Ledger is EIP712 {
         Rank _rank,
         bytes memory _signature,
         address _signer
-    ) external onlyModerator(_stateCode) {
+    ) external onlyModerator(_senderStateCode) {
         
         // moderator cannot hire officers or detectives
         if (_rank != Rank.MODERATOR) { revert InvalidRank(); }
@@ -251,8 +261,48 @@ contract Ledger is EIP712 {
         address _signer
     ) external onlyModerator(_stateCode) {
         // moderator cannot hire officers or detectives
-        if (_rank < Rank.CAPTAIN) { revert InvalidRank(); }
+        if (_rank != Rank.CAPTAIN) { revert InvalidRank(); }
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
+    }
+
+    function updateAddress(
+        uint _nonce,
+        uint _stateCode,
+        address _officer,
+        address _newAddress,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+
+        if (_newAddress == address(0)) revert ZeroAddress();
+        if (_signer != msg.sender || _signer == _officer) revert InvalidSigner();
+        if (officers[_signer].rank != Rank.MODERATOR) revert InvalidSigner();
+        Officer memory officerToUpdate = officers[_officer];
+        officers[_newAddress] = officerToUpdate;
+        delete(officers[_officer]);
+
+        if (_stateCode != branches[officerToUpdate.branchId].stateCode) revert ModeratorOfDifferentState();
+
+        bytes32 messageHash = UpdateOfficer.hash(UpdateOfficer.UpdateRequest(
+            _newAddress,
+            _nonce,
+            officerToUpdate.name,
+            officerToUpdate.legalNumber,
+            officerToUpdate.badge,
+            officerToUpdate.branchId,
+            uint(officerToUpdate.rank), 
+            UpdateOfficer.UpdateType.ADDRESS
+        ));
+
+        _validateSignatures(messageHash, _signature, _signer);
+
+        emit OfficerAddressUpdated (
+            _officer,
+            _newAddress,
+            officerToUpdate.legalNumber, 
+            block.timestamp, 
+            msg.sender
+        );
     }
 
     function _onboard(
@@ -275,7 +325,9 @@ contract Ledger is EIP712 {
         if (_branchId == keccak256(abi.encode(""))) { revert InvalidBranch(); }
         if (_legalNumber == keccak256(abi.encode(""))) { revert InvalidLegalNumber(); }
         if (_rank == Rank.NULL) { revert InvalidRank(); }
-        if (!isValidBranch(_branchId)) { revert BranchDoesNotExists(); }
+        if (!isValidBranch(_branchId) && _rank != Rank.MODERATOR ) { revert BranchDoesNotExists(); }
+        if (_stateCode != branches[_branchId].stateCode && _rank != Rank.MODERATOR) revert ModeratorOfDifferentState();
+        if (officers[_signer].rank != Rank.MODERATOR) revert InvalidSigner();
 
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
             _officer,
@@ -288,7 +340,7 @@ contract Ledger is EIP712 {
             uint(_rank)
         ));
 
-        _validateSignatures(messageHash, _signature, _signer, _stateCode);
+        _validateSignatures(messageHash, _signature, _signer);
 
         _addOfficer(
             _stateCode,
@@ -343,6 +395,8 @@ contract Ledger is EIP712 {
         newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
         newOfficer.rank = _rank;
 
+        branches[_branchId].numberOfOfficers++;
+
         emit Onboard(
             _officer,
             _name,
@@ -358,15 +412,14 @@ contract Ledger is EIP712 {
     function _validateSignatures(
         bytes32 _hash,
         bytes[] memory _signatures,
-        address[] memory _signers,
-        uint _stateCode
+        address[] memory _signers
     ) private {
         bytes32 _messageHash = _hashTypedDataV4(_hash);
         if (replay[_messageHash]) revert SignatureReplay();
         replay[_messageHash] = true;
         for (uint i = 0; i < _signatures.length; ++i) {
             if(!(
-                SignatureChecker.isValidSignatureNow(_signers[i], _messageHash, _signatures[i]) && moderators[_signers[i]][_stateCode]
+                SignatureChecker.isValidSignatureNow(_signers[i], _messageHash, _signatures[i]) && officers[_signers[i]].rank == Rank.MODERATOR
             )) revert InvalidSignature();
         }   
     }
@@ -374,14 +427,13 @@ contract Ledger is EIP712 {
     function _validateSignatures(
         bytes32 _hash,
         bytes memory _signature,
-        address _signer,
-        uint _stateCode
+        address _signer
     ) private {
         bytes32 _messageHash = _hashTypedDataV4(_hash);
         if (replay[_messageHash]) revert SignatureReplay();
         replay[_messageHash] = true;
         if(!(
-            SignatureChecker.isValidSignatureNow(_signer, _messageHash, _signature) && moderators[_signer][_stateCode]
+            SignatureChecker.isValidSignatureNow(_signer, _messageHash, _signature)
         )) revert InvalidSignature();
     }
 
