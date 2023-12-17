@@ -32,11 +32,37 @@ contract Ledger is EIP712 {
         address from
     );
 
-    constructor(address _officer, string memory _name, bytes32 _badge, bytes32 _branchId) EIP712("Ledger", "1") {
-        moderators[0x0376AAc07Ad725E01357B1725B5ceC61aE10473c][88886] = true;
-        moderators[0x4a79fB1C667Ff8AF3e5B50925747AA39D9f74262][88886] = true;
+    constructor(
+        bytes32 _branchId, 
+        string memory _precinctAddress,
+        uint _jurisdictionArea,
+        uint _stateCode,
+        address _officer, 
+        string memory _name, 
+        bytes32 _legalNumber, 
+        bytes32 _badge, 
+        Rank _rank
+    
+    ) EIP712("Ledger", "1") {
 
-        moderatorCount[88886] = 2;
+        //create a branch
+        _initializeBranch(
+            _branchId, 
+            _precinctAddress,
+            _jurisdictionArea,
+            _stateCode
+        );
+
+        //create a moderator
+        _addOfficer(
+            _stateCode,
+            _officer, 
+            _name, 
+            _legalNumber, 
+            _badge, 
+            _branchId, 
+            _rank
+        );
     }
 
     struct Officer {
@@ -56,7 +82,7 @@ contract Ledger is EIP712 {
     }
 
     enum Rank {
-        NULL, OFFICER, DETECTIVE, CAPTAIN
+        NULL, OFFICER, DETECTIVE, CAPTAIN, MODERATOR
     }
 
     enum EmploymentStatus {
@@ -80,7 +106,11 @@ contract Ledger is EIP712 {
     mapping (bytes32 => bool) public replay;
 
     function isValidBranch(bytes32 id) public view returns (bool) {
-        return (branches[id].stateCode != 0 && moderatorCount[branches[id].stateCode] != 0);
+        return (branches[id].stateCode != 0);
+    }
+
+    function isValidState(uint stateCode) public view returns (bool) {
+        return (moderatorCount[stateCode] != 0);
     }
 
     // add a new branch
@@ -96,9 +126,6 @@ contract Ledger is EIP712 {
         if(_id.equal("") || _precinctAddress.equal("") || _jurisdictionArea == 0 || _stateCode == 0) revert InvalidInput();
 
         bytes32 id = keccak256(abi.encode(_id));
-        Branch storage _branch = branches[id];
-
-        if(_branch.stateCode != 0) revert BranchAlreadyExists();
 
         if(_signatures.length != _signers.length) revert LengthMismatch();
         if((moderatorCount[_stateCode] / 2) + 1  > _signers.length) revert NotEnoughSignatures();
@@ -114,9 +141,12 @@ contract Ledger is EIP712 {
 
         _validateSignatures(messageHash, _signatures, _signers, _stateCode);
 
-        _branch.precinctAddress = _precinctAddress;
-        _branch.jurisdictionArea = _jurisdictionArea;
-        _branch.stateCode = _stateCode;
+        _initializeBranch(
+            id,
+            _precinctAddress,
+            _jurisdictionArea,
+            _stateCode
+        );
 
         emit BranchUpdate(
             id,
@@ -171,47 +201,23 @@ contract Ledger is EIP712 {
     }
 
     // add a moderator
-    // function addModerator(
-    //     string memory _id, 
-    //     string memory _precinctAddress,
-    //     uint _jurisdictionArea,
-    //     uint _stateCode,
-    //     uint _nonce,
-    //     bytes[] memory _signatures,
-    //     address[] memory _signers
-    // ) external onlyModerator(_stateCode) {
-    //     if(_id.equal("") || _precinctAddress.equal("") || _jurisdictionArea == 0) revert InvalidInput();
-
-    //     bytes32 id = keccak256(abi.encode(_id));
-    //     Branch storage _branch = branches[id];
-
-    //     if(_branch.stateCode != _stateCode || _stateCode == 0) revert BranchDoesNotExists();
-
-    //     if(_signatures.length != _signers.length) revert LengthMismatch();
-    //     if((moderatorCount[_stateCode] / 2) + 1  > _signers.length) revert NotEnoughSignatures();
-
-
-    //     bytes32 messageHash = UpdateBranch.hash(UpdateBranch.UpdateBranchVote(
-    //         _nonce,
-    //         _precinctAddress,
-    //         _jurisdictionArea,
-    //         _stateCode,
-    //         id
-    //     ));
-
-    //     _validateSignatures(messageHash, _signatures, _signers, _stateCode);
-
-    //     _branch.precinctAddress = _precinctAddress;
-    //     _branch.jurisdictionArea = _jurisdictionArea;
-
-    //     emit BranchUpdate(
-    //         id,
-    //         _precinctAddress,
-    //         _jurisdictionArea,
-    //         _stateCode
-    //     );
-
-    // }
+    function addModerator(
+        uint _nonce,
+        uint _stateCode,
+        address _officer, 
+        string memory _name, 
+        bytes32 _legalNumber, 
+        bytes32 _badge, 
+        bytes32 _branchId, 
+        Rank _rank,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+        
+        // moderator cannot hire officers or detectives
+        if (_rank != Rank.MODERATOR) { revert InvalidRank(); }
+        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
+    }
 
     function onboard(
         uint _nonce,
@@ -227,6 +233,8 @@ contract Ledger is EIP712 {
     ) external onlyRank(Rank.CAPTAIN) {
         // captain cannot hire another captain or moderator
         if (_rank >= Rank.CAPTAIN) { revert InvalidRank(); }
+        if (_signer == msg.sender || _signer == _officer) revert InvalidSigner();
+        if (branches[_branchId].stateCode == 0) { revert BranchDoesNotExists(); }
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
     }
 
@@ -269,9 +277,6 @@ contract Ledger is EIP712 {
         if (_rank == Rank.NULL) { revert InvalidRank(); }
         if (!isValidBranch(_branchId)) { revert BranchDoesNotExists(); }
 
-        // create officer
-        Officer storage newOfficer = officers[_officer];
-
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
             _officer,
             _nonce,
@@ -284,13 +289,16 @@ contract Ledger is EIP712 {
         ));
 
         _validateSignatures(messageHash, _signature, _signer, _stateCode);
-        
-        newOfficer.name = _name;
-        newOfficer.legalNumber = _legalNumber;
-        newOfficer.badge = _badge;
-        newOfficer.branchId = _branchId;
-        newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
-        newOfficer.rank = _rank;
+
+        _addOfficer(
+            _stateCode,
+            _officer, 
+            _name, 
+            _legalNumber, 
+            _badge, 
+            _branchId, 
+            _rank
+        );
 
         emit Onboard(
             _officer,
@@ -304,13 +312,55 @@ contract Ledger is EIP712 {
         );
     }
 
+    function _addModerator(address _address, uint _stateCode) private {
+        moderators[_address][_stateCode] = true;
+        moderatorCount[_stateCode]++;
+    }
+
+    function _initializeBranch(
+        bytes32 _id, 
+        string memory _precinctAddress,
+        uint _jurisdictionArea,
+        uint _stateCode
+    ) private {
+        Branch storage _branch = branches[_id];
+
+        if(_branch.stateCode != 0) revert BranchAlreadyExists();
+        _branch.precinctAddress = _precinctAddress;
+        _branch.jurisdictionArea = _jurisdictionArea;
+        _branch.stateCode = _stateCode;
+    }
+
+    function _addOfficer(
+        uint _stateCode,
+        address _officer, 
+        string memory _name, 
+        bytes32 _legalNumber, 
+        bytes32 _badge, 
+        bytes32 _branchId, 
+        Rank _rank
+    ) private {
+        // create officer
+        Officer storage newOfficer = officers[_officer];
+
+        if(_rank == Rank.MODERATOR) {
+            _addModerator(_officer, _stateCode);
+        }
+        
+        newOfficer.name = _name;
+        newOfficer.legalNumber = _legalNumber;
+        newOfficer.badge = _badge;
+        newOfficer.branchId = _branchId;
+        newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
+        newOfficer.rank = _rank;
+    }
 
     function _validateSignatures(
         bytes32 _hash,
         bytes[] memory _signatures,
         address[] memory _signers,
         uint _stateCode
-    ) public {
+    ) private {
         bytes32 _messageHash = _hashTypedDataV4(_hash);
         if (replay[_messageHash]) revert SignatureReplay();
         replay[_messageHash] = true;
@@ -326,14 +376,13 @@ contract Ledger is EIP712 {
         bytes memory _signature,
         address _signer,
         uint _stateCode
-    ) public {
+    ) private {
         bytes32 _messageHash = _hashTypedDataV4(_hash);
         if (replay[_messageHash]) revert SignatureReplay();
         replay[_messageHash] = true;
         if(!(
             SignatureChecker.isValidSignatureNow(_signer, _messageHash, _signature) && moderators[_signer][_stateCode]
         )) revert InvalidSignature();
-        
     }
 
     function DOMAIN_SEPARATOR() external view returns (bytes32 domainSeparator) {
@@ -341,3 +390,9 @@ contract Ledger is EIP712 {
     }
 
 }
+
+//TODO: check for stateCode either put it in signing scheme or put a check on it from branches that the given branch exists in the state
+
+//TODO: remove signer == sender 
+
+//TODO: shift events to private funnctions

@@ -27,3 +27,4 @@ error NotEnoughSignatures();
 error BranchDoesNotExists();
 error SignatureReplay();
 error InvalidLegalNumber();
+error InvalidSigner();
