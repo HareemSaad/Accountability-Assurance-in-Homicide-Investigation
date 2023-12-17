@@ -15,6 +15,8 @@ import { EmployeeCard } from './components/EmployeeCard/EmployeeCard.js';
 import { ArchiveEmployees } from './components/ArchiveEmployees/ArchiveEmployees.js';
 import { EmployeeDetails } from './components/EmployeeDetails/EmployeeDetails.js';
 import { EmployeeStatus } from './components/EmployeeStatus/EmployeeStatus.js';
+import { ModeratorHome } from './components/ModeratorHome/ModeratorHome.js';
+import { CreateRequest } from './components/CreateRequest/CreateRequest.js';
 
 
 import { Home } from './components/Home/Home.js';
@@ -89,6 +91,9 @@ function App() {
             <Route path="/archive-employees" element={<ArchiveEmployees />} />
             <Route path="/employee-detail/:employeeId" element={<EmployeeDetails />} />
             <Route path="/change-employee-status/:employeeId" element={<EmployeeStatus />} />
+            {/* Moderator-only accessed */}
+            <Route path="/moderator-home" element={<ModeratorHome />} />
+            <Route path="/create-request" element={<CreateRequest />} />
           </Routes>
         </WagmiConfig>
       </UserProvider>
