@@ -299,17 +299,6 @@ contract Ledger is EIP712 {
             _branchId, 
             _rank
         );
-
-        emit Onboard(
-            _officer,
-            _name,
-            _legalNumber,
-            _badge,
-            _branchId,
-            _rank,
-            block.timestamp,
-            msg.sender
-        );
     }
 
     function _addModerator(address _address, uint _stateCode) private {
@@ -353,6 +342,17 @@ contract Ledger is EIP712 {
         newOfficer.branchId = _branchId;
         newOfficer.employmentStatus = EmploymentStatus.ACTIVE;
         newOfficer.rank = _rank;
+
+        emit Onboard(
+            _officer,
+            _name,
+            _legalNumber,
+            _badge,
+            _branchId,
+            _rank,
+            block.timestamp,
+            msg.sender
+        );
     }
 
     function _validateSignatures(
