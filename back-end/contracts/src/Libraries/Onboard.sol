@@ -4,6 +4,7 @@ pragma solidity ^0.8.13;
 library OfficerOnboard {
 
     struct OnboardVote {
+        address verifiedAddress;
         uint nonce;
         string name;
         bytes32 legalNumber;
@@ -16,6 +17,7 @@ library OfficerOnboard {
     bytes32 public constant REQUEST_TYPE_HASH =
     keccak256(
         "OnboardVote("
+        "address verifiedAddress,"
         "uint nonce,"
         "string name,"
         "bytes32 legalNumber,"
@@ -31,6 +33,7 @@ library OfficerOnboard {
             keccak256(
                 abi.encode(
                     REQUEST_TYPE_HASH,
+                    request.verifiedAddress,
                     request.nonce,
                     request.name,
                     request.legalNumber,

@@ -443,9 +443,60 @@ contract OfficersTest is Test {
         vm.stopPrank();
     }
 
-    function testOnboard() public {
+    function testCaptainOnboard() public {
         testNewBranch();
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            captain1,
+            1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            uint(Ledger.EmploymentStatus.ACTIVE),
+            uint(Ledger.Rank.CAPTAIN)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator1PrivateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        vm.startPrank(moderator1);
+
+        ledger.onboardCaptain(
+            1,
+            88886,
+            captain1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.CAPTAIN,
+            moderator1Signature,
+            moderator1
+        );
+
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(captain1);
+
+        assertEq(name, "Alice");
+        assertEq(legalNumber, keccak256(abi.encode("678843")));
+        assertEq(badge, keccak256(abi.encode("ALICE1")));
+        assertEq(branchId, PRECINCT1);
+        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.ACTIVE));
+        assertEq(uint(rank), uint(Ledger.Rank.CAPTAIN));
+
+        vm.stopPrank();
+    }
+
+    function testOnboard() public {
+        testCaptainOnboard();
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            detective1,
             1,
             "Alice",
             keccak256(abi.encode("678843")),
@@ -493,8 +544,9 @@ contract OfficersTest is Test {
     }
 
     function testOnboardInput() public {
-        testNewBranch();
+        testCaptainOnboard();
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            detective1,
             1,
             "Alice",
             keccak256(abi.encode("678843")),

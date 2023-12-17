@@ -56,7 +56,7 @@ contract Ledger is EIP712 {
     }
 
     enum Rank {
-        NULL, OFFICER, DETECTIVE, CAPTAIN, MODERATOR
+        NULL, OFFICER, DETECTIVE, CAPTAIN
     }
 
     enum EmploymentStatus {
@@ -64,7 +64,7 @@ contract Ledger is EIP712 {
     }
 
     modifier onlyRank(Rank rank) {
-        // if (officers[msg.sender].rank != rank) { revert InvalidRank(); }
+        if (officers[msg.sender].rank != rank) { revert InvalidRank(); }
         _;
     }
 
@@ -230,6 +230,23 @@ contract Ledger is EIP712 {
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
     }
 
+    function onboardCaptain(
+        uint _nonce,
+        uint _stateCode,
+        address _officer, 
+        string memory _name, 
+        bytes32 _legalNumber, 
+        bytes32 _badge, 
+        bytes32 _branchId, 
+        Rank _rank,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+        // moderator cannot hire officers or detectives
+        if (_rank < Rank.CAPTAIN) { revert InvalidRank(); }
+        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
+    }
+
     function _onboard(
         uint _nonce,
         uint _stateCode,
@@ -256,6 +273,7 @@ contract Ledger is EIP712 {
         Officer storage newOfficer = officers[_officer];
 
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            _officer,
             _nonce,
             _name,
             _legalNumber,
