@@ -84,8 +84,10 @@ export const Login = () => {
         <h2 className='login-welcome'> Welcome {user} </h2>
         <DropdownButton variant="light" id="rank" title={selectedValue ? selectedValue : "Select Your Rank"} className='mb-4 dropdown-rank'>
           <Dropdown.Item onClick={() => handleDropdownSelect('Captain')}>Captain</Dropdown.Item>
-          <Dropdown.Item onClick={() => handleDropdownSelect('Officer')}>Officer</Dropdown.Item>
           <Dropdown.Item onClick={() => handleDropdownSelect('Detective')}>Detective</Dropdown.Item>
+          <Dropdown.Item onClick={() => handleDropdownSelect('Officer')}>Officer</Dropdown.Item>
+          <Dropdown.Item onClick={() => handleDropdownSelect('Detective')}>Moderator</Dropdown.Item>
+          <Dropdown.Item onClick={() => handleDropdownSelect('Detective')}>Trustee</Dropdown.Item>
         </DropdownButton>
         <div>
           {connectors.map((connector) => (

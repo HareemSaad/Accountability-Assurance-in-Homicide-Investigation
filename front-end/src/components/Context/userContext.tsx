@@ -4,7 +4,7 @@ type UserContextProviderProps = {
   children: React.ReactNode;
 };
 
-type User = "Captain" | "Detective" | "Officer" | "Moderator" | "";
+type User = "Captain" | "Detective" | "Officer" | "Moderator" | "Trustee" | "";
 
 type UserContext  = {
   user: User;
