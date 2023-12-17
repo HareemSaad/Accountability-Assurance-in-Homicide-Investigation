@@ -5,6 +5,8 @@ import Card from 'react-bootstrap/Card';
 import { useNavigate } from "react-router-dom";
 import { createClient, cacheExchange, fetchExchange } from 'urql';
 import { useAccount } from 'wagmi';
+import { useUserContext } from '../Context/userContext.tsx';
+
 
 const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
 
@@ -14,6 +16,7 @@ const client = createClient({
 })
 
 export const CaseCard_Captain = () => {
+    const { user, setUser } = useUserContext();
 
     // const [CaptainCard, setCaptainCard] = useState([]);
     const [cardResponse, setCardResponse] = useState([]);
@@ -58,7 +61,7 @@ export const CaseCard_Captain = () => {
     return (
         <>
             <div className="d-flex justify-content-between">
-                <h1 className='m-4'>Cases</h1>
+                <h1 className='m-4'>Cases -- {user}</h1>
                 <div className="d-flex">
                     <button className='card-add-btn' name="add-case" onClick={(e) => goto(e)}>Add Case</button>
                     {/* <button className='card-add-btn' name="add-officer" onClick={(e) => goto(e)}>Add Officer</button> */}

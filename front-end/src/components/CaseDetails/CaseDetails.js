@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import Card from 'react-bootstrap/Card';
 import "./CaseDetails.css"
+import { useUserContext } from '../Context/userContext.tsx';
 import { createClient, cacheExchange, fetchExchange } from 'urql';
 
 const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
@@ -15,6 +16,8 @@ const client = createClient({
 const CaseDetailsPage = () => {
   const { caseId } = useParams();
   let navigate = useNavigate();
+
+  const { user, setUser } = useUserContext();
 
   const [caseOfficer, setCaseOfficer] = useState([]);
   const [caseEvidence, setCaseEvidence] = useState([]);
@@ -101,7 +104,7 @@ const CaseDetailsPage = () => {
           <h6 className='statusTagOpen ms-4'>#OPEN</h6>
         </div>
 
-        <button className='case-nav-btn m-4' name="change-case-status" onClick={(e) => goto(e)}>Change Status</button>
+        {user == "Captain" && (<button className='case-nav-btn m-4' name="change-case-status" onClick={(e) => goto(e)}>Change Status</button>)}
       </div>
 
 
@@ -121,10 +124,11 @@ const CaseDetailsPage = () => {
           }
         </div>
 
-        <div className='d-flex justify-content-around mt-5'>
+        {user === "Captain" && (<div className='d-flex justify-content-around mt-5'>
           <button className='case-nav-btn' name="add-officer-in-case" onClick={(e) => goto(e)}>Add to Team</button>
           <button className='case-nav-btn' name="drop-officer-from-case" onClick={(e) => goto(e)}>Drop from Team</button>
-        </div>
+        </div>)
+        }
       </div>
 
       {/* list of participant */}
@@ -160,7 +164,7 @@ const CaseDetailsPage = () => {
                 <Card.Subtitle className="mb-2 text-muted">{evidenceList[evidence.category]}</Card.Subtitle>
               </Card.Body>
             </Card>
-          )):
+          )) :
             <h4 style={{ textAlign: 'center' }} className='mb-2 mt-4'><em>No Evidence in this Case</em></h4>
           }
         </div>

@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import './CaseCard.css'
 import CaseDetailsPage from '../CaseDetails/CaseDetails';
 import Card from 'react-bootstrap/Card';
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; 
+
+import { useUserContext } from '../Context/userContext.tsx';
 
 export const CaseCard_Detective = ({ currentUser }) => {
+  // const user = useContext(UserContext);
+  const { user, setUser } = useUserContext();
 
   const [DetectiveCard, setDetectiveCard] = useState([]);
   let navigate = useNavigate();
@@ -30,7 +34,7 @@ export const CaseCard_Detective = ({ currentUser }) => {
   return (
     <>
       <div className="d-flex justify-content-between">
-        <h1 className='m-4'>Cases</h1>
+        <h1 className='m-4'>Cases -- {user}</h1>
         <div className="d-flex">
           <button className='card-add-btn' name="archive-cases" onClick={(e) => goto(e)}>Archive Cases</button>
         </div>
