@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import "./../src/Ledger.sol";
 import "./../src/Libraries/CreateBranch.sol";
 import "./../src/Libraries/UpdateBranch.sol";
+import "./../src/Libraries/Onboard.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract OfficersTest is Test {
@@ -14,6 +15,7 @@ contract OfficersTest is Test {
     Ledger ledger;
     address ZER0_ADDRESS = address(0);
     bytes32 PRECINCT1 = keccak256(abi.encode("PRECINCT 1"));
+    bytes32 PRECINCT2 = keccak256(abi.encode("PRECINCT 2"));
     uint256 _moderator1PrivateKey = 0xB0B;
     address moderator1 = vm.addr(_moderator1PrivateKey); //0x0376AAc07Ad725E01357B1725B5ceC61aE10473c
     uint256 _moderator2PrivateKey = 0xABB1;
@@ -441,6 +443,216 @@ contract OfficersTest is Test {
         vm.stopPrank();
     }
 
+    function testOnboard() public {
+        testNewBranch();
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            uint(Ledger.EmploymentStatus.ACTIVE),
+            uint(Ledger.Rank.DETECTIVE)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator1PrivateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        vm.startPrank(captain1);
+
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator1
+        );
+
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(detective1);
+
+        assertEq(name, "Alice");
+        assertEq(legalNumber, keccak256(abi.encode("678843")));
+        assertEq(badge, keccak256(abi.encode("ALICE1")));
+        assertEq(branchId, PRECINCT1);
+        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.ACTIVE));
+        assertEq(uint(rank), uint(Ledger.Rank.DETECTIVE));
+
+        vm.stopPrank();
+    }
+
+    function testOnboardInput() public {
+        testNewBranch();
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            uint(Ledger.EmploymentStatus.ACTIVE),
+            uint(Ledger.Rank.DETECTIVE)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator1PrivateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        vm.startPrank(captain1);
+
+        vm.expectRevert(InvalidRank.selector);
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.CAPTAIN,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.NULL,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(InvalidAddress.selector);
+        ledger.onboard(
+            1,
+            88886,
+            address(0),
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(InvalidString.selector);
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(InvalidBadge.selector);
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("")),
+            PRECINCT1,
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(InvalidBranch.selector);
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            keccak256(abi.encode("")),
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(InvalidLegalNumber.selector);
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(InvalidSignature.selector);
+        ledger.onboard(
+            1,
+            88882,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(BranchDoesNotExists.selector);
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT2,
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator1
+        );
+
+        vm.expectRevert(InvalidSignature.selector);
+        ledger.onboard(
+            1,
+            88886,
+            detective1,
+            "Alice",
+            keccak256(abi.encode("678843")),
+            keccak256(abi.encode("ALICE1")),
+            PRECINCT1,
+            Ledger.Rank.DETECTIVE,
+            moderator1Signature,
+            moderator2
+        );
+
+        vm.stopPrank();
+    }
+
+    //test isValidBranch
 
     function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
         return ECDSA.toTypedDataHash(ledger.DOMAIN_SEPARATOR(), structHash);
