@@ -995,6 +995,62 @@ contract OfficersTest is Test {
         );
     }
 
+    function testUpdateName() public {
+        testOnboard();
+        
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(detective1);
+
+        bytes32 messageHash = UpdateOfficer.hash(UpdateOfficer.UpdateRequest(
+            detective1,
+            2,
+            "poppy",
+            legalNumber,
+            badge,
+            branchId,
+            uint(rank), 
+            UpdateOfficer.UpdateType.ADDRESS
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        
+        vm.startPrank(moderator2);
+
+        ledger.updateName(
+            2,
+            88886,
+            detective1,
+            "poppy",
+            moderator2Signature,
+            moderator2
+        );
+
+        (
+            name,
+            legalNumber,
+            badge,
+            branchId,
+            employmentStatus,
+            rank
+        ) = ledger.officers(detective1);
+
+        assertEq(name, "poppy");
+        assertEq(legalNumber, keccak256(abi.encode("678843")));
+        assertEq(badge, keccak256(abi.encode("ALICE1")));
+        assertEq(branchId, PRECINCT2);
+        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.ACTIVE));
+        assertEq(uint(rank), uint(Ledger.Rank.DETECTIVE));
+
+        vm.stopPrank();
+    }
+
     //test isValidBranch
 
     function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {

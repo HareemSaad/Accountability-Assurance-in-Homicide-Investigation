@@ -41,6 +41,14 @@ contract Ledger is EIP712 {
         address from
     );
 
+    event OfficerNameUpdated (
+        address indexed officerAddress,
+        string indexed name,
+        bytes32 legalNumber, 
+        uint when, 
+        address from
+    );
+
     constructor(
         bytes32 _branchId, 
         string memory _precinctAddress,
@@ -299,6 +307,45 @@ contract Ledger is EIP712 {
         emit OfficerAddressUpdated (
             _officer,
             _newAddress,
+            officerToUpdate.legalNumber, 
+            block.timestamp, 
+            msg.sender
+        );
+    }
+
+    function updateName(
+        uint _nonce,
+        uint _stateCode,
+        address _officer,
+        string memory _newName,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+
+        if (_newName.equal("")) revert InvalidString();
+        if (_signer != msg.sender || _signer == _officer) revert InvalidSigner();
+        if (officers[_signer].rank != Rank.MODERATOR) revert InvalidSigner();
+        Officer memory officerToUpdate = officers[_officer];
+        officers[_officer].name = _newName;
+
+        if (_stateCode != branches[officerToUpdate.branchId].stateCode) revert ModeratorOfDifferentState();
+
+        bytes32 messageHash = UpdateOfficer.hash(UpdateOfficer.UpdateRequest(
+            _officer,
+            _nonce,
+            _newName,
+            officerToUpdate.legalNumber,
+            officerToUpdate.badge,
+            officerToUpdate.branchId,
+            uint(officerToUpdate.rank), 
+            UpdateOfficer.UpdateType.ADDRESS
+        ));
+
+        _validateSignatures(messageHash, _signature, _signer);
+
+        emit OfficerNameUpdated (
+            _officer,
+            _newName,
             officerToUpdate.legalNumber, 
             block.timestamp, 
             msg.sender
