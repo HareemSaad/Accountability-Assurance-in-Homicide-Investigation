@@ -19,6 +19,7 @@ import { EmployeeStatus } from './components/EmployeeStatus/EmployeeStatus.js';
 import { ModeratorHome } from './components/ModeratorHome/ModeratorHome.js';
 import { CreateRequest } from './components/CreateRequest/CreateRequest.js';
 import { CreateBranch } from './components/CreateRequest/CreateBranch.js';
+import { OfficerOnboard } from './components/CreateRequest/OfficerOnboard.js';
 
 
 import { Home } from './components/Home/Home.js';
@@ -97,6 +98,7 @@ function App() {
             <Route path="/moderator-home" element={<ModeratorHome />} />
             <Route path="/create-request" element={<CreateRequest />} />
             <Route path="/create-request/create-branch" element={<CreateBranch />} />
+            <Route path="/create-request/officer-onboard" element={<OfficerOnboard />} />
           </Routes>
         </WagmiConfig>
       </UserProvider>
