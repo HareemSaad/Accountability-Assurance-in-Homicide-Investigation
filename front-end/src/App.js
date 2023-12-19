@@ -20,6 +20,7 @@ import { ModeratorHome } from './components/ModeratorHome/ModeratorHome.js';
 import { CreateRequest } from './components/CreateRequest/CreateRequest.js';
 import { CreateBranch } from './components/CreateRequest/CreateBranch.js';
 import { OfficerOnboard } from './components/CreateRequest/OfficerOnboard.js';
+import { TrusteeRequest } from './components/CreateRequest/TrusteeRequest.js';
 
 
 import { Home } from './components/Home/Home.js';
@@ -99,6 +100,8 @@ function App() {
             <Route path="/create-request" element={<CreateRequest />} />
             <Route path="/create-request/create-branch" element={<CreateBranch />} />
             <Route path="/create-request/officer-onboard" element={<OfficerOnboard />} />
+            <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
+            <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
           </Routes>
         </WagmiConfig>
       </UserProvider>
