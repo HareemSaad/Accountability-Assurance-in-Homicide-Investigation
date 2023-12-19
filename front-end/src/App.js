@@ -15,8 +15,10 @@ import { EmployeeCard } from './components/EmployeeCard/EmployeeCard.js';
 import { ArchiveEmployees } from './components/ArchiveEmployees/ArchiveEmployees.js';
 import { EmployeeDetails } from './components/EmployeeDetails/EmployeeDetails.js';
 import { EmployeeStatus } from './components/EmployeeStatus/EmployeeStatus.js';
+// Requests - Moderator
 import { ModeratorHome } from './components/ModeratorHome/ModeratorHome.js';
 import { CreateRequest } from './components/CreateRequest/CreateRequest.js';
+import { CreateBranch } from './components/CreateRequest/CreateBranch.js';
 
 
 import { Home } from './components/Home/Home.js';
@@ -94,6 +96,7 @@ function App() {
             {/* Moderator-only accessed */}
             <Route path="/moderator-home" element={<ModeratorHome />} />
             <Route path="/create-request" element={<CreateRequest />} />
+            <Route path="/create-request/create-branch" element={<CreateBranch />} />
           </Routes>
         </WagmiConfig>
       </UserProvider>

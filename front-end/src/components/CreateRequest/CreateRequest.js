@@ -6,23 +6,12 @@ import { useNavigate } from "react-router-dom";
 
 export const CreateRequest = () => {
 
-    const archiveEmployee = ["Select Status", "Inactive", "Retired", "Fired"];
-    const [selectedValue, setSelectedValue] = useState(null);
-    const [statusValue, setStatusValue] = useState(0);
-
-    const requestCategory = ["Create Branch", "Officer Onboard", "Trustee Request", "Update Branch", "Update Officer"];
+    const requestCategory = [{"name": "Create Branch", "end-point": "create-branch"}, {"name": "Officer Onboard", "end-point": "officer-onboard"}, {"name": "Trustee Request", "end-point": "trustee-request"}, {"name": "Update Branch", "end-point": "update-branch"}, {"name": "Update Officer", "end-point": "update-officer"}];
 
     let navigate = useNavigate();
 
-
-    // Function to handle dropdown item selection
-    const handleDropdownSelect = (categoryValue) => {
-        setSelectedValue(categoryValue);
-        setStatusValue(categoryValue);
-    };
-
-    function print(cardId) {
-        navigate(`/employee-detail/${cardId}`);
+    function print(cardEndpoint) {
+        navigate(`/create-request/${cardEndpoint}`);
     }
 
     return (
@@ -36,9 +25,9 @@ export const CreateRequest = () => {
                 {requestCategory.map((card, index) => (
                     <Card key={index} style={{ width: '18rem' }} className='emp-case-card'>
                         <Card.Body>
-                            <Card.Title>{card}</Card.Title>
+                            <Card.Title>{card.name}</Card.Title>
                             <Card.Subtitle className="mb-2 text-muted">Request</Card.Subtitle>
-                            <button className='emp-card-btn' onClick={() => print(card)}>Create</button>
+                            <button className='emp-card-btn' onClick={() => print(card['end-point'])}>Create</button>
                         </Card.Body>
                     </Card>
                 ))}
