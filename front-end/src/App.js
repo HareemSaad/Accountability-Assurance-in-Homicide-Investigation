@@ -16,13 +16,16 @@ import { ArchiveEmployees } from './components/ArchiveEmployees/ArchiveEmployees
 import { EmployeeDetails } from './components/EmployeeDetails/EmployeeDetails.js';
 import { EmployeeStatus } from './components/EmployeeStatus/EmployeeStatus.js';
 // Requests - Moderator
+// Create - Moderator requests
 import { ModeratorHome } from './components/ModeratorHome/ModeratorHome.js';
 import { CreateRequest } from './components/CreateRequest/CreateRequest.js';
 import { CreateBranch } from './components/CreateRequest/CreateBranch.js';
 import { OfficerOnboard } from './components/CreateRequest/OfficerOnboard.js';
 import { TrusteeRequest } from './components/CreateRequest/TrusteeRequest.js';
 import { UpdateBranch } from './components/CreateRequest/UpdateBranch.js';
-
+import { UpdateOfficer } from './components/CreateRequest/UpdateOfficer.js';
+// View - Moderator requests
+import { ViewRequests } from './components/ViewRequest/ViewRequests.js';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -97,12 +100,16 @@ function App() {
             <Route path="/employee-detail/:employeeId" element={<EmployeeDetails />} />
             <Route path="/change-employee-status/:employeeId" element={<EmployeeStatus />} />
             {/* Moderator-only accessed */}
+            {/* Moderator-only create request */}
             <Route path="/moderator-home" element={<ModeratorHome />} />
             <Route path="/create-request" element={<CreateRequest />} />
             <Route path="/create-request/create-branch" element={<CreateBranch />} />
             <Route path="/create-request/officer-onboard" element={<OfficerOnboard />} />
             <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
             <Route path="/create-request/update-branch" element={<UpdateBranch />} />
+            <Route path="/create-request/update-officer" element={<UpdateOfficer />} />
+            {/* Moderator-only view requests */}
+            <Route path="/:reqName" element={<ViewRequests />} />
           </Routes>
         </WagmiConfig>
       </UserProvider>
