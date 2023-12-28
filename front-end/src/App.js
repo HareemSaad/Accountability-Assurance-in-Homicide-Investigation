@@ -27,6 +27,7 @@ import { UpdateBranch } from './components/CreateRequest/UpdateBranch.js';
 // View - Moderator requests
 import { ViewRequests } from './components/ViewRequest/ViewRequests.js';
 import { ViewCreateBranch } from './components/ViewRequest/ViewCreateBranch.js';
+import { ViewOfficerOnboard } from './components/ViewRequest/ViewOfficerOnboard.js';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -112,7 +113,7 @@ function App() {
             {/* Moderator-only view requests */}
             <Route path="/:reqName" element={<ViewRequests />} />
             <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />
-            {/* <Route path="/view-officer-onboard/:reqId" element={<ViewRequests />} /> */}
+            <Route path="/view-officer-onboard/:reqId" element={<ViewOfficerOnboard />} />
             {/* <Route path="/view-trustee-request/:reqId" element={<ViewRequests />} /> */}
             {/* <Route path="/view-update-branch/:reqId" element={<ViewRequests />} /> */}
             {/* <Route path="/view-update-officer/:reqId" element={<ViewRequests />} /> */}
