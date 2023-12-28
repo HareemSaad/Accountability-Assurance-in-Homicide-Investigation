@@ -23,9 +23,10 @@ import { CreateBranch } from './components/CreateRequest/CreateBranch.js';
 import { OfficerOnboard } from './components/CreateRequest/OfficerOnboard.js';
 import { TrusteeRequest } from './components/CreateRequest/TrusteeRequest.js';
 import { UpdateBranch } from './components/CreateRequest/UpdateBranch.js';
-import { UpdateOfficer } from './components/CreateRequest/UpdateOfficer.js';
+// import { UpdateOfficer } from './components/CreateRequest/UpdateOfficer.js';
 // View - Moderator requests
 import { ViewRequests } from './components/ViewRequest/ViewRequests.js';
+import { ViewCreateBranch } from './components/ViewRequest/ViewCreateBranch.js';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -107,9 +108,14 @@ function App() {
             <Route path="/create-request/officer-onboard" element={<OfficerOnboard />} />
             <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
             <Route path="/create-request/update-branch" element={<UpdateBranch />} />
-            <Route path="/create-request/update-officer" element={<UpdateOfficer />} />
+            {/* <Route path="/create-request/update-officer" element={<UpdateOfficer />} /> */}
             {/* Moderator-only view requests */}
             <Route path="/:reqName" element={<ViewRequests />} />
+            <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />
+            {/* <Route path="/view-officer-onboard/:reqId" element={<ViewRequests />} /> */}
+            {/* <Route path="/view-trustee-request/:reqId" element={<ViewRequests />} /> */}
+            {/* <Route path="/view-update-branch/:reqId" element={<ViewRequests />} /> */}
+            {/* <Route path="/view-update-officer/:reqId" element={<ViewRequests />} /> */}
           </Routes>
         </WagmiConfig>
       </UserProvider>

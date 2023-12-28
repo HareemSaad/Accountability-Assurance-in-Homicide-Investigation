@@ -18,7 +18,22 @@ export const ViewRequests = () => {
     }, []);
 
     function print(cardId) {
-        navigate(`/case-detail/${cardId}`);
+        // navigate(`/case-detail/${cardId}`);
+        if (reqName === "view-create-branch") {
+            navigate(`/view-create-branch/${cardId}`);
+        } 
+        else if (reqName === "view-officer-onboard") {
+            navigate(`/view-officer-onboard/${cardId}`);
+        } 
+        else if (reqName === "view-trustee-request") {
+            navigate(`/view-trustee-request/${cardId}`);
+        } 
+        else if (reqName === "view-update-branch") {
+            navigate(`/view-update-branch/${cardId}`);
+        } 
+        else if (reqName === "view-update-officer") {
+            navigate(`/view-update-officer/${cardId}`);
+        }
     }
 
     const goto = (e) => {
@@ -30,12 +45,12 @@ export const ViewRequests = () => {
     return (
         <>
             <div className="d-flex justify-content-between">
-                {reqName === "view-create-branch" ? <h1 className='m-4'>Create Branch Requests</h1> 
-                : reqName === "view-officer-onboard" ? <h1 className='m-4'>Officer Onboard Requests</h1> 
-                : reqName === "view-trustee-request" ? <h1 className='m-4'>Trustee Requests</h1> 
-                : reqName === "view-update-branch" ? <h1 className='m-4'>Update Branch Requests</h1> 
-                : reqName === "view-update-officer" ? <h1 className='m-4'>Update Officer Requests</h1> 
-                : <h1 className='m-4'>Requests</h1>}
+                {reqName === "view-create-branch" ? <h1 className='m-4'>Create Branch Requests</h1>
+                    : reqName === "view-officer-onboard" ? <h1 className='m-4'>Officer Onboard Requests</h1>
+                        : reqName === "view-trustee-request" ? <h1 className='m-4'>Trustee Requests</h1>
+                            : reqName === "view-update-branch" ? <h1 className='m-4'>Update Branch Requests</h1>
+                                : reqName === "view-update-officer" ? <h1 className='m-4'>Update Officer Requests</h1>
+                                    : <h1 className='m-4'>Requests</h1>}
             </div>
 
             <div className='card-container'>
