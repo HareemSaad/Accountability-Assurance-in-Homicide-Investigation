@@ -23,7 +23,7 @@ export const ViewOfficerOnboard = () => {
 
     return (
         <div className='container'>
-            <h2 className='m-3 mt-5 mb-4'>Officer Onboard Request# {reqId}</h2>
+            <h2 className='m-3 mt-5 mb-4'>Officer Onboard Request #{reqId}</h2>
             <form>
                 {/* Verified Address */}
                 <div className="row g-3 align-items-center m-3">

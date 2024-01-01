@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import "./view.css";
 
 export const ViewTrusteeRequest = () => {
+    const { reqId } = useParams();
 
     let navigate = useNavigate();
 
@@ -23,7 +24,7 @@ export const ViewTrusteeRequest = () => {
 
     return (
         <div className='container'>
-            <h2 className='m-3 mt-5 mb-4'>Trustee Request</h2>
+            <h2 className='m-3 mt-5 mb-4'>Trustee Request #{reqId}</h2>
             <form>
                 {/* Case Id */}
                 <div className="row g-3 align-items-center m-3">
