@@ -5,11 +5,17 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from 'react-bootstrap/Dropdown';
 
-export const OfficerOnboard = () => {
+export const UpdateOfficer = () => {
 
     let navigate = useNavigate();
 
     const [selectedRankValue, setSelectedRankValue] = useState(null);
+    const [employeeStatus, setEmployeeStatus] = useState("");
+
+    // Function to handle dropdown item selection
+    const [selectedStatusValue, setSelectedStatusValue] = useState(null);
+    const statusArray = ['Select a Status', 'Active', 'Inactive', 'Fired', 'Retired'];
+
     const [officerOnboardInfo, setOfficerOnboardInfo] = useState({
         verifiedAddress: '',
         name: '',
@@ -17,7 +23,7 @@ export const OfficerOnboard = () => {
         badge: '',
         branchId: '',
         rank: '',
-        // employmentStatus: ''
+        employmentStatus: ''
     });
 
     const rankArray = ['Null', 'Officer', 'Detective', 'Captain'];
@@ -43,20 +49,29 @@ export const OfficerOnboard = () => {
             notify("error", `Branch Id is empty`);
         } else if (officerOnboardInfo.rank === '' || officerOnboardInfo.rank === 0) {
             notify("error", `Select Officer Rank`);
+        } else if (officerOnboardInfo.employmentStatus === '' || officerOnboardInfo.employmentStatus === 0) {
+            notify("error", `Select Employment Status`);
         }
     }
 
-    // Function to handle dropdown item selection
-    const handleDropdownSelect = (categoryValue) => {
+    // Function to handle rank dropdown item selection
+    const handleRankDropdownSelect = (categoryValue) => {
         setSelectedRankValue(categoryValue);
         const name = 'rank';
         setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: categoryValue });
     };
 
+    // Function to handle employment status dropdown selection
+    const handleStatusDropdownSelect = (categoryValue) => {
+        setSelectedStatusValue(categoryValue);
+        const name = 'employmentStatus';
+        setOfficerOnboardInfo({ ...selectedStatusValue, [name]: categoryValue });
+    };
+
 
     return (
         <div className='container'>
-            <h2 className='m-3 mt-5 mb-4'>Officer Onboard</h2>
+            <h2 className='m-3 mt-5 mb-4'>Update Officer Onboard</h2>
             <form>
                 {/* Verified Address */}
                 <div className="row g-3 align-items-center m-3">
@@ -116,11 +131,11 @@ export const OfficerOnboard = () => {
 
                     <div className="col-9">
                         <Dropdown>
-                            <Dropdown.Toggle variant="secondary" id="rank" className='dropdown'> {selectedRankValue ? rankArray[selectedRankValue] : 'Select a Rank'} </Dropdown.Toggle>
+                            <Dropdown.Toggle variant="secondary" id="officerRank" className='dropdown'> {selectedRankValue ? rankArray[selectedRankValue] : 'Select a Rank'} </Dropdown.Toggle>
 
                             <Dropdown.Menu className='dropdown'>
                                 {rankArray.map((category, index) => (
-                                    <Dropdown.Item name='rank' key={index} onClick={() => handleDropdownSelect(index)}> {category} </Dropdown.Item>
+                                    <Dropdown.Item name='rank' key={index} onClick={() => handleRankDropdownSelect(index)}> {category} </Dropdown.Item>
                                 ))}
                             </Dropdown.Menu>
                         </Dropdown>
@@ -133,13 +148,21 @@ export const OfficerOnboard = () => {
                         <label htmlFor="employmentStatus" className="col-form-label"><b><em>Employment Status:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='employmentStatus' id="employmentStatus" className="form-control" value="Active" disabled />
+                        <Dropdown>
+                            <Dropdown.Toggle variant="secondary" id="employmentStatus" className='dropdown'> {selectedStatusValue ? statusArray[selectedStatusValue] : 'Select Status'} </Dropdown.Toggle>
+
+                            <Dropdown.Menu className='dropdown'>
+                                {statusArray.map((status, index) => (
+                                    <Dropdown.Item name='category' key={index} onClick={() => handleStatusDropdownSelect(index)}> {status} </Dropdown.Item>
+                                ))}
+                            </Dropdown.Menu>
+                        </Dropdown>
                     </div>
                 </div>
                 
                 {/* Submit button */}
                 <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
-                    Create Request for officer Onboarding
+                    Create Request for Update officer Information
                 </button>
 
             </form>
