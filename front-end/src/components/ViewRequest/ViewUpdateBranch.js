@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 
-export const ViewCreateBranch = () => {
+export const ViewUpdateBranch = () => {
     const { reqId } = useParams();
 
     let navigate = useNavigate();
@@ -22,7 +22,7 @@ export const ViewCreateBranch = () => {
 
     return (
         <div className='container'>
-            <h2 className='m-3 mt-5 mb-4'>Create Branch Request# {reqId}</h2>
+            <h2 className='m-3 mt-5 mb-4'>Update Branch Request #{reqId}</h2>
             <form>
                 {/* Precinct Address */}
                 <div className="row g-3 align-items-center m-3">
