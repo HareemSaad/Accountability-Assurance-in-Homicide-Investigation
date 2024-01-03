@@ -39,8 +39,7 @@ contract OfficersTest is Test {
             moderator2,
             "EDD",
             keccak256(abi.encode("34567")),
-            keccak256(abi.encode("EDD-1")),
-            Ledger.Rank.MODERATOR
+            keccak256(abi.encode("EDD-1"))
         );
 
         assertEq(ledger.moderators(moderator2,88886), true);
@@ -112,7 +111,6 @@ contract OfficersTest is Test {
             keccak256(abi.encode("98765")),
             keccak256(abi.encode("ABE-1")),
             PRECINCT3,
-            Ledger.Rank.MODERATOR,
             moderator2Signature,
             moderator2
         );
@@ -558,7 +556,6 @@ contract OfficersTest is Test {
             keccak256(abi.encode("678843")),
             keccak256(abi.encode("ALICE1")),
             PRECINCT2,
-            Ledger.Rank.CAPTAIN,
             moderator2Signature,
             moderator2
         );
@@ -608,7 +605,6 @@ contract OfficersTest is Test {
             keccak256(abi.encode("678843")),
             keccak256(abi.encode("ALICE1")),
             PRECINCT2,
-            Ledger.Rank.MODERATOR,
             moderator2Signature,
             moderator2
         );

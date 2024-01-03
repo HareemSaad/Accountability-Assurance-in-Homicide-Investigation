@@ -57,9 +57,7 @@ contract Ledger is EIP712 {
         address _officer, 
         string memory _name, 
         bytes32 _legalNumber, 
-        bytes32 _badge, 
-        Rank _rank
-    
+        bytes32 _badge
     ) EIP712("Ledger", "1") {
 
         //create a branch
@@ -78,7 +76,7 @@ contract Ledger is EIP712 {
             _legalNumber, 
             _badge, 
             _branchId, 
-            _rank
+            Rank.MODERATOR
         );
     }
 
@@ -226,15 +224,13 @@ contract Ledger is EIP712 {
         string memory _name, 
         bytes32 _legalNumber, 
         bytes32 _badge, 
-        bytes32 _branchId, 
-        Rank _rank,
+        bytes32 _branchId,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_senderStateCode) {
         
         // moderator cannot hire officers or detectives
-        if (_rank != Rank.MODERATOR) { revert InvalidRank(); }
-        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
+        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.MODERATOR, _signature, _signer);
     }
 
     function onboard(
@@ -263,14 +259,12 @@ contract Ledger is EIP712 {
         string memory _name, 
         bytes32 _legalNumber, 
         bytes32 _badge, 
-        bytes32 _branchId, 
-        Rank _rank,
+        bytes32 _branchId,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
         // moderator cannot hire officers or detectives
-        if (_rank != Rank.CAPTAIN) { revert InvalidRank(); }
-        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
+        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.CAPTAIN, _signature, _signer);
     }
 
     function updateAddress(
