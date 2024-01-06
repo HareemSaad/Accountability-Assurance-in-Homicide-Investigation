@@ -916,8 +916,8 @@ contract OfficersTest is Test {
             string memory name,
             bytes32 legalNumber,
             bytes32 badge,
-            bytes32 branchId,
-            Ledger.EmploymentStatus employmentStatus,
+            bytes32 branchId,,
+            // Ledger.EmploymentStatus employmentStatus,
             Ledger.Rank rank
         ) = ledger.officers(detective1);
 
@@ -1046,6 +1046,50 @@ contract OfficersTest is Test {
 
         vm.stopPrank();
     }
+
+    function testSuccessfulPromotion() public {
+        testOnboard();
+
+        // Promote the officer
+        vm.startPrank(moderator2);
+        ledger.promote(88886, detective1, Ledger.Rank.CAPTAIN);
+        vm.stopPrank();
+
+        // Check the officer's new rank
+        (,,,,,Ledger.Rank rank) = ledger.officers(detective1);
+        assertEq(uint(rank), uint(Ledger.Rank.CAPTAIN)); // Assuming the officer was initially at Rank.OFFICER
+    }
+
+    function testPromotionByNonModerator() public {
+        // Attempt to promote the officer by a non-moderator
+        vm.startPrank(captain1);
+        vm.expectRevert(OnlyModerator.selector);
+        ledger.promote(88886, detective1, Ledger.Rank.CAPTAIN);
+        vm.stopPrank();
+    }
+
+    function testPromotionDifferentStateCode() public {
+        testOnboard();
+
+        // Attempt to promote an officer with a different state code
+        vm.startPrank(moderator3);
+        vm.expectRevert(ModeratorOfDifferentState.selector);
+        ledger.promote(88888, detective1, Ledger.Rank.CAPTAIN);
+        vm.stopPrank();
+    }
+
+    function testPromotionToInvalidRank() public {
+        testOnboard();
+
+        // Attempt to promote a moderator (which should fail)
+        vm.startPrank(moderator2);
+        vm.expectRevert(InvalidRank.selector);
+        ledger.promote(88886, detective1, Ledger.Rank.DETECTIVE);
+        vm.expectRevert(InvalidRank.selector);
+        ledger.promote(88886, detective1, Ledger.Rank.NULL);
+        vm.stopPrank();
+    }
+
 
     //test isValidBranch
 

@@ -29,3 +29,4 @@ error SignatureReplay();
 error InvalidLegalNumber();
 error InvalidSigner();
 error ModeratorOfDifferentState();
+error InactiveOfficer();

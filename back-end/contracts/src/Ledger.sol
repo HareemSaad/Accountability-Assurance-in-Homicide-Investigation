@@ -49,6 +49,12 @@ contract Ledger is EIP712 {
         address from
     );
 
+    event Promotion (
+        address indexed officer,
+        Rank indexed prevRank,
+        Rank indexed newRank
+    );
+
     constructor(
         bytes32 _branchId, 
         string memory _precinctAddress,
@@ -265,6 +271,37 @@ contract Ledger is EIP712 {
     ) external onlyModerator(_stateCode) {
         // moderator cannot hire officers or detectives
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.CAPTAIN, _signature, _signer);
+    }
+
+    function promote(
+        uint _stateCode,
+        address _officerAddress, 
+        Rank _newRank
+    ) external onlyModerator(_stateCode) {
+
+        Officer memory _officer = officers[_officerAddress];
+        Rank _prevRank = _officer.rank;
+
+        // sanity checks
+        if (_officer.employmentStatus != EmploymentStatus.ACTIVE) { revert InactiveOfficer(); }
+        if (_officerAddress == address(0)) { revert InvalidAddress(); }
+        if (_newRank == Rank.NULL || _newRank == _prevRank) { revert InvalidRank(); }
+        // sanity check to check if moderator's and officer's state code are same
+        if (_stateCode != branches[_officer.branchId].stateCode) revert ModeratorOfDifferentState();
+
+        // state change
+        officers[_officerAddress].rank = _newRank;
+
+        // event
+        emit Promotion (
+            _officerAddress,
+            _prevRank,
+            _newRank
+        );
+
+        // gas opt
+        delete _officer;
+        delete _prevRank;
     }
 
     function updateAddress(
