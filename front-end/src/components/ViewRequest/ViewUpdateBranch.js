@@ -1,20 +1,29 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 
 export const ViewUpdateBranch = () => {
     const { reqId } = useParams();
 
     let navigate = useNavigate();
 
-    const requestDetail = {
-        precinctAddress: 'ABC Road',
-        jurisdictionArea: 'XYZ',
-        stateCode: '234',
-        branchId: 'DKFJ2311',
-    }
+    // const requestDetail = {
+    //     precinctAddress: 'ABC Road',
+    //     jurisdictionArea: 'XYZ',
+    //     stateCode: '234',
+    //     branchId: 'DKFJ2311',
+    // }
+
+    const [requestDetail, setRequestDetail] = useState({});
+
+    useEffect(() => {
+        axios.get(`http://localhost:3000/view-update-branch/:${reqId}`)
+        .then(result => setRequestDetail(result.data[0]))
+        .catch(err => console.log("error:: ", err))
+    }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
