@@ -3,6 +3,7 @@ import Card from 'react-bootstrap/Card';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
 // import { useUserContext } from '../Context/userContext.tsx';
+import axios from 'axios';
 
 
 export const ViewRequests = () => {
@@ -13,8 +14,12 @@ export const ViewRequests = () => {
     let navigate = useNavigate();
 
     useEffect(() => {
-        const allRequests = [{ id: 13, status: "Open" }, { id: 27, status: "Open" }, { id: 36, status: "Open" }, { id: 45, status: "Open" }];
+        // const allRequests = [{ id: 13, status: "Open" }, { id: 27, status: "Open" }, { id: 36, status: "Open" }, { id: 45, status: "Open" }];
         setAllRequests(allRequests);
+        // axios.get(`http://localhost:3000/view-create-branch`)
+        axios.get(`http://localhost:3000/${reqName}`)
+        .then(result => setAllRequests(result.data))
+        .catch(err => console.log("error:: ", err))
     }, []);
 
     function print(cardId) {
@@ -56,7 +61,7 @@ export const ViewRequests = () => {
             <div className='card-container'>
                 {allRequests.map((card, index) => (
                     <Card className='case-card'>
-                        <h2 className='mb-3 mt-3 pb-5'>Request# {card.id}</h2>
+                        <h2 className='mb-3 mt-3 pb-5'>Request #{card.id}</h2>
                         <button className='card-btn' onClick={() => print(card.id, card.status)}>View</button>
                     </Card>
                 ))}

@@ -1,28 +1,32 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from 'axios';
 
 export const ViewCreateBranch = () => {
     const { reqId } = useParams();
 
     let navigate = useNavigate();
 
-    const requestDetail = {
-        precinctAddress: 'ABC Road',
-        jurisdictionArea: 'XYZ',
-        stateCode: '234',
-        branchId: 'DKFJ2311',
-    }
+    const [requestDetail, setRequestDetail] = useState({});
+
+    useEffect(() => {
+        axios.get(`http://localhost:3000/view-create-branch/:${reqId}`)
+        .then(result => setRequestDetail(result.data[0]))
+        .catch(err => console.log("error:: ", err))
+    }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // axiospost - update the array of signers/signatures...
     }
 
     return (
         <div className='container'>
-            <h2 className='m-3 mt-5 mb-4'>Create Branch Request# {reqId}</h2>
+            {console.log("requestDetail:: ", requestDetail)}
+            <h2 className='m-3 mt-5 mb-4'>Create Branch Request #{reqId}</h2>
             <form>
                 {/* Precinct Address */}
                 <div className="row g-3 align-items-center m-3">

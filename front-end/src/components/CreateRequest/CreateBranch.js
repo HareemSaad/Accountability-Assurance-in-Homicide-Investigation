@@ -3,10 +3,12 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from 'axios';
 
 export const CreateBranch = () => {
 
     let navigate = useNavigate();
+    const [isButtonDisabled, setButtonDisabled] = useState(false);
 
     const [createBranchInfo, setCreateBranchInfo] = useState({
         precinctAddress: '',
@@ -33,6 +35,18 @@ export const CreateBranch = () => {
             notify("error", `State Code is empty`);
         } else if (createBranchInfo.branchId === '') {
             notify("error", `Branch Id is empty`);
+        }
+        else {
+            setButtonDisabled(true);
+            setTimeout(() => {
+                setButtonDisabled(false);
+            }, 5000);
+            axios.post("http://localhost:3000/create-request/create-branch", createBranchInfo)
+            .then(res => notify("success", "Create Branch Request Created successfully"))
+            .catch(err => {
+                // console.log("error:: ", err);
+                notify("error", `An Error Occured when Creating Create Branch Request`);
+            })
         }
     }
 
@@ -81,7 +95,7 @@ export const CreateBranch = () => {
                     </div>
                 </div>
 
-                <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
+                <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)} disabled={isButtonDisabled}>
                     Create Request for Create Branch
                 </button>
 
