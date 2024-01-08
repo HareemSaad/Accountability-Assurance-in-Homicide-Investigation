@@ -1,24 +1,40 @@
-import React from 'react'
+import React, { useState, useEffect }from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate, useParams } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
+import axios from 'axios';
 
 export const ViewOfficerOnboard = () => {
     const { reqId } = useParams();
     let navigate = useNavigate();
 
-    const requestDetail = {
-        verifiedAddress: 'X12345345TIOWEHAESDG',
-        name: 'Jane Doe',
-        legalNumber: '235231',
-        badge: '3452',
-        branchId: '444',
-        rank: 'Detective',
-        employmentStatus: 'Retired'
-    };
+    const [requestDetail, setRequestDetail] = useState({});
+
+    useEffect(() => {
+        axios.get(`http://localhost:3000/view-officer-onboard/:${reqId}`)
+        .then(result => setRequestDetail(result.data[0]))
+        .catch(err => console.log("error:: ", err))
+    }, [])
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+    }
+
+    // converting rank (number) from backend to string for readability
+    const rankName = (officerRank) => {
+        console.log("officerRank:: ", officerRank)
+        if (officerRank == 1){
+            setRequestDetail({ ...requestDetail, ['rank']: "Officer" });
+            console.log("requestDetail0:: ", requestDetail)
+        } else if (officerRank == 2) {
+            setRequestDetail({ ...requestDetail, ['rank']: "Detective" });
+            console.log("requestDetail-1:: ", requestDetail)
+        } else if (officerRank == 3) {
+            setRequestDetail({ ...requestDetail, ['rank']: "Captain" });
+            console.log("requestDetail2:: ", requestDetail)
+        }
+
+        return requestDetail.rank;
     }
 
     return (
@@ -81,7 +97,7 @@ export const ViewOfficerOnboard = () => {
                         <label htmlFor="officerRank" className="col-form-label"><b><em>Officer Rank:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='rank' id="rank" className="form-control" value={requestDetail.rank} disabled></input>
+                        <input type="text" name='rank' id="rank" className="form-control" value={rankName(requestDetail.rank)} disabled></input>
                     </div>
                 </div>
 
