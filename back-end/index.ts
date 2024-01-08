@@ -18,7 +18,7 @@ const app = express();
 app.use(express.json())
 app.use(cors());
 app.use(bodyParser.json());
-
+require("./model/mongooseConnection.js");
 
 const officerContractAddress = process.env.OFFICER_CONTRACT_ADDRESS;
 const caseContractAddress = process.env.CASE_CONTRACT_ADDRESS;
@@ -38,7 +38,7 @@ main().catch(err => console.log(err));
 
 async function main() {
 
-  const x = await mongoose.connect('mongodb+srv://hareemsaad:rJFaQFBXzXNFiVRF@cluster0.mhwju6z.mongodb.net/');
+  // const x = await mongoose.connect('mongodb+srv://hareemsaad:rJFaQFBXzXNFiVRF@cluster0.mhwju6z.mongodb.net/');
   // await validateOfficer('0x86D5cA9d24ecE1d8c35a45b83Ba15B1B9e11BD50');
 
   try {
