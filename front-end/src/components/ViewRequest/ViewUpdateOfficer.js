@@ -1,24 +1,56 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from 'react-bootstrap/Dropdown';
+import axios from 'axios';
 
 export const ViewUpdateOfficer = () => {
     const { reqId } = useParams();
 
     let navigate = useNavigate();
 
-    const requestDetail = {
-        verifiedAddress: '0X1JKFH23489',
-        name: 'John',
-        legalNumber: '123',
-        badge: '345',
-        branchId: '937',
-        rank: 'Officer',
-        employmentStatus: 'Inactive'
-    };
+    const [requestDetail, setRequestDetail] = useState({});
+
+    useEffect(() => {
+        axios.get(`http://localhost:3000/view-update-officer/:${reqId}`)
+        .then(result => setRequestDetail(result.data[0]))
+        .catch(err => console.log("error:: ", err))
+    }, [])
+
+    // converting rank (number) from backend to string for readability
+    const rankName = (officerRank) => {
+        console.log("officerRank:: ", officerRank)
+        if (officerRank == 1){
+            setRequestDetail({ ...requestDetail, ['rank']: "Officer" });
+            console.log("requestDetail0:: ", requestDetail)
+        } else if (officerRank == 2) {
+            setRequestDetail({ ...requestDetail, ['rank']: "Detective" });
+            console.log("requestDetail-1:: ", requestDetail)
+        } else if (officerRank == 3) {
+            setRequestDetail({ ...requestDetail, ['rank']: "Captain" });
+            console.log("requestDetail2:: ", requestDetail)
+        }
+
+        return requestDetail.rank;
+    }
+
+    // converting employmentStatus(number) from backend to string for readability
+    const employmentStatusName = (employmentStatus) => {
+        console.log("employeeStatus:: ", employmentStatus)
+        if (employmentStatus == 1){
+            setRequestDetail({ ...requestDetail, ['employmentStatus']: "Active" });
+        } else if (employmentStatus == 2) {
+            setRequestDetail({ ...requestDetail, ['employmentStatus']: "Inactive" });
+        } else if (employmentStatus == 3) {
+            setRequestDetail({ ...requestDetail, ['employmentStatus']: "Fired" });
+        } else if (employmentStatus == 4) {
+            setRequestDetail({ ...requestDetail, ['employmentStatus']: "Retired" });
+        }
+
+        return requestDetail.employmentStatus;
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -85,7 +117,7 @@ export const ViewUpdateOfficer = () => {
                     </div>
 
                     <div className="col-9 input">
-                        <input type="text" name='officerRank' id="officerRank" className="form-control" value={requestDetail.rank} disabled></input>
+                        <input type="text" name='officerRank' id="officerRank" className="form-control" value={rankName(requestDetail.rank)} disabled></input>
                     </div>
                 </div>
 
@@ -95,7 +127,7 @@ export const ViewUpdateOfficer = () => {
                         <label htmlFor="employmentStatus" className="col-form-label"><b><em>Employment Status:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='employmentStatus' id="employmentStatus" className="form-control" value={requestDetail.employmentStatus} disabled></input>
+                        <input type="text" name='employmentStatus' id="employmentStatus" className="form-control" value={employmentStatusName(requestDetail.employmentStatus)} disabled></input>
                     </div>
                 </div>
 
