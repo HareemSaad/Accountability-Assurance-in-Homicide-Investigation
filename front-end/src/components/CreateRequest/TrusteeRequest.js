@@ -3,15 +3,17 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from 'axios';
 
 export const TrusteeRequest = () => {
 
     let navigate = useNavigate();
 
+    const [isButtonDisabled, setButtonDisabled] = useState(false);
     const [trusteeRequestInfo, setTrusteeRequestInfo] = useState({
         caseId: '',
-        trusteeAddress: '',
-        captainAddress: '',
+        trustee: '',
+        captain: '',
         branchId: '',
     });
 
@@ -27,12 +29,23 @@ export const TrusteeRequest = () => {
         e.preventDefault();
         if (trusteeRequestInfo.caseId === '') {
             notify("error", `Case Id is empty`);
-        } else if (trusteeRequestInfo.trusteeAddress === '') {
+        } else if (trusteeRequestInfo.trustee === '') {
             notify("error", `Trustee Address is empty`);
-        } else if (trusteeRequestInfo.captainAddress === '') {
+        } else if (trusteeRequestInfo.captain === '') {
             notify("error", `Captain Address is empty`);
         } else if (trusteeRequestInfo.branchId === '') {
             notify("error", `Branch Id is empty`);
+        } else {
+            setButtonDisabled(true);
+            setTimeout(() => {
+                setButtonDisabled(false);
+            }, 5000);
+            axios.post("http://localhost:3000/create-request/trustee-request", trusteeRequestInfo)
+            .then(res => notify("success", "Trustee Request Created successfully"))
+            .catch(err => {
+                // console.log("error:: ", err);
+                notify("error", `An Error Occured when Creating Trustee Request`);
+            })
         }
     }
 
@@ -57,7 +70,7 @@ export const TrusteeRequest = () => {
                         <label htmlFor="trusteeAddress" className="col-form-label"><b><em>Trustee Address:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='trusteeAddress' id="trusteeAddress" placeholder='Enter Trustee Here' className="form-control" onChange={handleChange}></input>
+                        <input type="text" name='trustee' id="trustee" placeholder='Enter Trustee Here' className="form-control" onChange={handleChange}></input>
                     </div>
                 </div>
 
@@ -67,7 +80,7 @@ export const TrusteeRequest = () => {
                         <label htmlFor="captainAddress" className="col-form-label"><b><em>Captain Address:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='captainAddress' id="captainAddress" placeholder='Enter captain Here' className="form-control" onChange={handleChange}></input>
+                        <input type="text" name='captain' id="captain" placeholder='Enter captain Here' className="form-control" onChange={handleChange}></input>
                     </div>
                 </div>
 
@@ -82,7 +95,7 @@ export const TrusteeRequest = () => {
                 </div>
 
                 {/* submit button */}
-                <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
+                <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)} disabled={isButtonDisabled}>
                     Create Trustee Request
                 </button>
 
