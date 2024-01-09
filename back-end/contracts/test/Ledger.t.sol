@@ -5,6 +5,8 @@ import "./Base.t.sol";
 
 contract OfficersTest is BaseTest {
 
+    bytes32 nullBytes32;
+
     function setUp() public {
         ledger = new Ledger(
             branch1.branchId,
@@ -1387,6 +1389,210 @@ contract OfficersTest is BaseTest {
         vm.stopPrank();
     }
 
+    function testOffboard() public {
+        testOnboard();
+
+        bytes32 messageHash = OfficerOffboard.hash(OfficerOffboard.OffboardVote(
+            detective1.publicKey,
+            2,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            uint(Ledger.EmploymentStatus.INACTIVE),
+            uint(detective1.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+        ledger.offboard(
+            2,
+            detective1.publicKey,
+            detective1.branch.stateCode,
+            detective1.branch.branchId,
+            Ledger.EmploymentStatus.INACTIVE,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(detective1.publicKey);
+
+        assertEq(name, detective1.name);
+        assertEq(legalNumber, detective1.legalNumber);
+        assertEq(badge, nullBytes32);
+        assertEq(branchId, nullBytes32);
+        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.INACTIVE));
+        assertEq(uint(rank), 0);
+
+        assertFalse(ledger.badge(detective1.badge));
+
+        vm.stopPrank();
+    }
+
+    function testOffboardCaptain() public {
+        testOnboard();
+
+        bytes32 messageHash = OfficerOffboard.hash(OfficerOffboard.OffboardVote(
+            captain1.publicKey,
+            2,
+            captain1.name,
+            captain1.legalNumber,
+            captain1.badge,
+            captain1.branch.branchId,
+            uint(Ledger.EmploymentStatus.FIRED),
+            uint(captain1.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+        ledger.offboardCaptain(
+            2,
+            captain1.publicKey,
+            captain1.branch.stateCode,
+            captain1.branch.branchId,
+            Ledger.EmploymentStatus.FIRED,
+            captain1.rank,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(captain1.publicKey);
+
+        assertEq(name, captain1.name);
+        assertEq(legalNumber, captain1.legalNumber);
+        assertEq(badge, nullBytes32);
+        assertEq(branchId, nullBytes32);
+        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.FIRED));
+        assertEq(uint(rank), 0);
+
+        assertFalse(ledger.badge(captain1.badge));
+
+        vm.stopPrank();
+    }
+
+    function testOffboardModerators() public {
+        testOnboard();
+        addModerator4();
+
+        bytes32 messageHash = OfficerOffboard.hash(OfficerOffboard.OffboardVote(
+            moderator4.publicKey,
+            2,
+            moderator4.name,
+            moderator4.legalNumber,
+            moderator4.badge,
+            moderator4.branch.branchId,
+            uint(Ledger.EmploymentStatus.RETIRED),
+            uint(moderator4.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+        ledger.offboardModerator(
+            2,
+            moderator4.publicKey,
+            moderator4.branch.stateCode,
+            moderator4.branch.branchId,
+            Ledger.EmploymentStatus.RETIRED,
+            moderator4.rank,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(moderator4.publicKey);
+
+        assertEq(name, moderator4.name);
+        assertEq(legalNumber, moderator4.legalNumber);
+        assertEq(badge, nullBytes32);
+        assertEq(branchId, nullBytes32);
+        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.RETIRED));
+        assertEq(uint(rank), 0);
+
+        assertFalse(ledger.badge(moderator4.badge));
+        assertFalse(ledger.moderators(moderator4.publicKey, moderator4.branch.stateCode));
+        assertEq(ledger.moderatorCount(moderator4.branch.stateCode), 1);
+
+        vm.stopPrank();
+    }
+
+    function testOffboardLastModerator() public {
+        testOnboard();
+
+        bytes32 messageHash = OfficerOffboard.hash(OfficerOffboard.OffboardVote(
+            moderator1.publicKey,
+            2,
+            moderator1.name,
+            moderator1.legalNumber,
+            moderator1.badge,
+            moderator1.branch.branchId,
+            uint(Ledger.EmploymentStatus.INACTIVE),
+            uint(moderator1.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+        vm.expectRevert(StateNeedsAtleastOneModerator.selector);
+        ledger.offboardModerator(
+            2,
+            moderator1.publicKey,
+            moderator1.branch.stateCode,
+            moderator1.branch.branchId,
+            Ledger.EmploymentStatus.INACTIVE,
+            moderator1.rank,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(moderator1.publicKey);
+
+        assertEq(name, moderator1.name);
+        assertEq(legalNumber, moderator1.legalNumber);
+        assertEq(badge, moderator1.badge);
+        assertEq(branchId, moderator1.branch.branchId);
+        assertEq(uint(employmentStatus), uint(moderator1.employmentStatus));
+        assertEq(uint(rank), uint(moderator1.rank));
+
+        assertTrue(ledger.badge(moderator1.badge));
+
+        vm.stopPrank();
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
@@ -1482,6 +1688,36 @@ contract OfficersTest is BaseTest {
             moderator2.legalNumber,
             moderator2.badge,
             moderator2.branch.branchId,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+    }
+
+    function addModerator4() private {
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            moderator4.publicKey,
+            2,
+            moderator4.name,
+            moderator4.legalNumber,
+            moderator4.badge,
+            moderator4.branch.branchId,
+            uint(moderator4.employmentStatus),
+            uint(moderator4.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+        ledger.addModerator(
+            2,
+            moderator4.branch.stateCode,
+            moderator1.branch.stateCode,
+            moderator4.publicKey,
+            moderator4.name,
+            moderator4.legalNumber,
+            moderator4.badge,
+            moderator4.branch.branchId,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1677,6 +1913,3 @@ contract OfficersTest is BaseTest {
         return ECDSA.toTypedDataHash(ledger.DOMAIN_SEPARATOR(), structHash);
     }
 }
-
-// TODO: Documentation: you can add a mod if branch does not exist so only added mods can create a branch
-// TODO: mapping for legal number and badge id to check for duplicates

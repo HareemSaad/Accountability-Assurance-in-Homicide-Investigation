@@ -8,6 +8,7 @@ import "./Utils/Error.sol";
 import "./Libraries/CreateBranch.sol";
 import "./Libraries/UpdateBranch.sol";
 import "./Libraries/Onboard.sol";
+import "./Libraries/Offboard.sol";
 import "./Libraries/UpdateOfficer.sol";
 import "./Libraries/TransferBranch.sol";
 import "forge-std/Test.sol";
@@ -46,6 +47,18 @@ contract Ledger is EIP712 {
         bytes32 badge, 
         bytes32 indexed branchId, 
         Rank indexed rank, 
+        uint when, 
+        address from
+    );
+
+    /// @dev Emitted when a new officer is offboarded
+    /// @param officer Address of the offboarded officer
+    /// @param employmentStatus Status of the offboarded officer
+    /// @param when Timestamp of when the officer was offboarded
+    /// @param from Address of the moderator who offboarded the officer
+    event Offboard (
+        address indexed officer, 
+        EmploymentStatus indexed employmentStatus, 
         uint when, 
         address from
     );
@@ -198,12 +211,25 @@ contract Ledger is EIP712 {
         _;
     }
 
+    /// @dev address of officer to officer data
     mapping (address => Officer) public officers;
+
+    /// @dev address of moderator => state code 
     mapping (address => mapping (uint => bool)) public moderators;
+
+    /// @dev how many moderators does a state have
     mapping (uint => uint) public moderatorCount;
+
+    /// @dev keccak(branchId) to branch data 
     mapping (bytes32 => Branch) public branches;
+
+    /// @dev saves executed transactions to protect against replay
     mapping (bytes32 => bool) public replay;
+
+    /// @dev to ensure legalNumber uniqeness
     mapping (bytes32 => bool) public legalNumber;
+
+    /// @dev to ensure badge uniqeness
     mapping (bytes32 => bool) public badge;
 
     /// @dev Checks if a given branch ID represents a valid branch.
@@ -225,14 +251,23 @@ contract Ledger is EIP712 {
     /// @param _branchId The branch identifier to check against the officer's branch.
     /// @param _stateCode The state code to verify against the officer's branch's state code.
     /// @param _badge The badge number to verify against the officer's badge number.
+    /// @param _rank Rank of the officer
     /// @return True if the officer's employment status is active, and their branch ID, state code, and badge match the provided parameters. Otherwise, returns false.
-    function isValidEmployment(bytes32 _branchId, uint _stateCode, bytes32 _badge) public view returns (bool) {
+    function isValidEmployment(bytes32 _branchId, uint _stateCode, bytes32 _badge, Rank _rank) public view returns (bool) {
         Officer memory _officer = officers[msg.sender];
-        if (_officer.branchId == _branchId && branches[_officer.branchId].stateCode == _stateCode) {
-            if (_officer.employmentStatus == EmploymentStatus.ACTIVE && _officer.badge == _badge) {
-                return true;
-            }
+        if (_officer.branchId == _branchId && branches[_officer.branchId].stateCode == _stateCode && _officer.employmentStatus == EmploymentStatus.ACTIVE && _officer.badge == _badge && _officer.rank == _rank) {
+            return true;
         }
+        return false;
+    }
+
+    /// @notice Checks if the specified officer has the specified rank
+    /// @dev Compares the rank of the officer at the given address with the provided rank
+    /// @param officer The address of the officer to check
+    /// @param rank The rank to be verified against the officer's rank
+    /// @return True if the officer's rank matches the provided rank, false otherwise
+    function isValidRank(address officer, Rank rank) public view returns(bool) {
+        if (officers[officer].rank == rank) { return true; }
         return false;
     }
 
@@ -673,6 +708,140 @@ contract Ledger is EIP712 {
         );
     }
 
+    /// @notice Offboards an officer or detective from their current position
+    /// @dev Only a moderator can call this function. It cannot be used to offboard captains or moderators.
+    /// @param _nonce Nonce for the operation to ensure uniqueness
+    /// @param _officer Address of the officer or detective to be offboarded
+    /// @param _stateCode State code of the branch from which the officer is being offboarded
+    /// @param _branchId Branch ID from which the officer is being offboarded
+    /// @param _employmentStatus The new employment status to be set for the officer
+    /// @param _rank The rank of the officer being offboarded
+    /// @param _signature Signature of the moderator authorizing the offboarding
+    /// @param _signer Address of the moderator performing the offboarding
+    function offboard(
+        uint256 _nonce,
+        address _officer, 
+        uint256 _stateCode,
+        bytes32 _branchId, 
+        EmploymentStatus _employmentStatus, 
+        Rank _rank,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+        //captain cannot offboard another aptain or moderator
+        if (_rank >= Rank.CAPTAIN || _rank == Rank.NULL) { revert InvalidRank(); }
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _signature, _signer);
+    }
+
+    /// @notice Offboards a captain from their current position
+    /// @dev Only a moderator can call this function.
+    /// @param _nonce Nonce for the operation to ensure uniqueness
+    /// @param _officer Address of the captain to be offboarded
+    /// @param _stateCode State code of the branch from which the captain is being offboarded
+    /// @param _branchId Branch ID from which the captain is being offboarded
+    /// @param _employmentStatus The new employment status to be set for the captain
+    /// @param _rank The rank of the officer, should be CAPTAIN
+    /// @param _signature Signature of the moderator authorizing the offboarding
+    /// @param _signer Address of the moderator performing the offboarding
+    function offboardCaptain(
+        uint256 _nonce,
+        address _officer,
+        uint256 _stateCode, 
+        bytes32 _branchId, 
+        EmploymentStatus _employmentStatus, 
+        Rank _rank,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+        if (_rank != Rank.CAPTAIN) { revert InvalidRank(); }
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _signature, _signer);
+    }
+
+    /// @notice Offboards a moderator from their current position
+    /// @dev Only a moderator can call this function. Cannot offboard the last remaining moderator of a state.
+    /// @dev you can add a moderator for a state that does not exist, the created moderator will have the power to create branches in that state
+    /// @param _nonce Nonce for the operation to ensure uniqueness
+    /// @param _officer Address of the moderator to be offboarded
+    /// @param _stateCode State code of the branch from which the moderator is being offboarded
+    /// @param _branchId Branch ID from which the moderator is being offboarded
+    /// @param _employmentStatus The new employment status to be set for the moderator
+    /// @param _rank The rank of the officer, should be MODERATOR
+    /// @param _signature Signature of the moderator authorizing the offboarding
+    /// @param _signer Address of the moderator performing the offboarding
+    function offboardModerator(
+        uint256 _nonce,
+        address _officer, 
+        uint256 _stateCode,
+        bytes32 _branchId, 
+        EmploymentStatus _employmentStatus, 
+        Rank _rank,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+        if (_rank != Rank.MODERATOR) { revert InvalidRank(); }
+        if (moderatorCount[_stateCode] == 1) { revert StateNeedsAtleastOneModerator(); }
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _signature, _signer);
+    }
+
+    /// @dev Internal function to handle the logic of offboarding an officer, captain, or moderator
+    /// @param _nonce Nonce for the operation to ensure uniqueness
+    /// @param _officer Address of the person being offboarded
+    /// @param _stateCode State code of the branch from which the person is being offboarded
+    /// @param _branchId Branch ID from which the person is being offboarded
+    /// @param _employmentStatus The new employment status to be set for the person
+    /// @param _rank The rank of the person being offboarded
+    /// @param _signature Signature of the person authorizing the offboarding
+    /// @param _signer Address of the person performing the offboarding
+    function _offboard(
+        uint256 _nonce,
+        address _officer, 
+        uint256 _stateCode,
+        bytes32 _branchId, 
+        EmploymentStatus _employmentStatus, 
+        Rank _rank,
+        bytes memory _signature,
+        address _signer
+    ) internal {
+        if (_officer == address(0)) { revert InvalidAddress(); }
+        if (!isValidRank(_officer, _rank)) { revert InvalidOfficer(); }
+        if (_employmentStatus == EmploymentStatus.ACTIVE) { revert InvalidStatus(); }
+        if (branches[_branchId].stateCode == 0) { revert NonexistingBranch(); }
+        if (_stateCode != branches[_branchId].stateCode) revert ModeratorOfDifferentState();
+        
+        Officer storage newOfficer = officers[_officer];
+
+        bytes32 messageHash = OfficerOffboard.hash(OfficerOffboard.OffboardVote(
+            _officer,
+            _nonce,
+            newOfficer.name,
+            newOfficer.legalNumber,
+            newOfficer.badge,
+            _branchId,
+            uint(_employmentStatus),
+            uint(_rank)
+        ));
+
+        _validateSignatures(messageHash, _signature, _signer);
+
+        newOfficer.employmentStatus = _employmentStatus;
+        branches[newOfficer.branchId].numberOfOfficers--;
+        delete badge[newOfficer.badge];
+        delete newOfficer.rank;
+        delete newOfficer.badge;
+        delete newOfficer.branchId;
+
+        if (_rank == Rank.MODERATOR) {
+            _removeModerator(_officer, _stateCode);
+        }
+
+        emit Offboard(
+            _officer, 
+            newOfficer.employmentStatus,
+            block.timestamp,
+            msg.sender
+        );
+    }
+
     /// @notice Internal function to onboard a new officer or moderator
     /// @param _nonce Nonce for signature verification
     /// @param _stateCode State code for moderator verification
@@ -734,11 +903,27 @@ contract Ledger is EIP712 {
         );
     }
 
+    /// @dev Adds a moderator to the ledger.
+    /// @param _address Address of the moderator to add.
+    /// @param _stateCode State code where the moderator will have authority.
     function _addModerator(address _address, uint _stateCode) private {
         moderators[_address][_stateCode] = true;
         moderatorCount[_stateCode]++;
     }
 
+    /// @dev Removes a moderator from the ledger.
+    /// @param _address Address of the moderator to remove.
+    /// @param _stateCode State code from which the moderator's authority will be removed.
+    function _removeModerator(address _address, uint _stateCode) private {
+        moderators[_address][_stateCode] = false;
+        moderatorCount[_stateCode]--;
+    }
+
+    /// @dev Initializes a branch in the ledger.
+    /// @param _id Unique identifier for the branch.
+    /// @param _precinctAddress Physical address of the branch.
+    /// @param _jurisdictionArea Jurisdiction area of the branch.
+    /// @param _stateCode State code of the branch.
     function _initializeBranch(
         bytes32 _id, 
         string memory _precinctAddress,
@@ -753,6 +938,14 @@ contract Ledger is EIP712 {
         _branch.stateCode = _stateCode;
     }
 
+    /// @dev Adds an officer to the ledger.
+    /// @param _stateCode State code where the officer will serve.
+    /// @param _officer Address of the officer.
+    /// @param _name Name of the officer.
+    /// @param _legalNumber Legal identification number of the officer.
+    /// @param _badge Badge number of the officer.
+    /// @param _branchId Branch ID where the officer will serve.
+    /// @param _rank Rank of the officer.
     function _addOfficer(
         uint _stateCode,
         address _officer, 
@@ -792,6 +985,10 @@ contract Ledger is EIP712 {
         );
     }
 
+    /// @dev Validates a set of signatures.
+    /// @param _hash The hash of the data being signed.
+    /// @param _signatures Array of signatures to validate.
+    /// @param _signers Array of addresses corresponding to the signers of the signatures.
     function _validateSignatures(
         bytes32 _hash,
         bytes[] memory _signatures,
@@ -807,6 +1004,10 @@ contract Ledger is EIP712 {
         }   
     }
 
+    /// @dev Validates a single signature.
+    /// @param _hash The hash of the data being signed.
+    /// @param _signature The signature to validate.
+    /// @param _signer The address of the signer of the signature.
     function _validateSignatures(
         bytes32 _hash,
         bytes memory _signature,
@@ -820,6 +1021,9 @@ contract Ledger is EIP712 {
         )) revert InvalidSignature();
     }
 
+    /// @notice Retrieves the domain separator used in EIP712 domain separation.
+    /// @dev This is used to prevent certain types of replay attacks in EIP712 signing.
+    /// @return domainSeparator The domain separator as per EIP712 specification.
     function DOMAIN_SEPARATOR() external view returns (bytes32 domainSeparator) {
         domainSeparator = _domainSeparatorV4();
     }
