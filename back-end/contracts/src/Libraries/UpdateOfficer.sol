@@ -6,9 +6,7 @@ library UpdateOfficer {
     enum UpdateType {
         ADDRESS,
         NAME,
-        BADGE,
-        BRANCH,
-        RANK
+        BADGE
     }
 
     struct UpdateRequest {

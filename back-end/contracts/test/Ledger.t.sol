@@ -1025,6 +1025,62 @@ contract OfficersTest is BaseTest {
         vm.stopPrank();
     }
 
+    function testUpdateBadge() public {
+        testOnboard();
+        
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(detective1.publicKey);
+
+        bytes32 messageHash = UpdateOfficer.hash(UpdateOfficer.UpdateRequest(
+            detective1.publicKey,
+            2,
+            detective1.name,
+            detective1.legalNumber,
+            "DET-23",
+            detective1.branch.branchId,
+            uint(detective1.rank), 
+            UpdateOfficer.UpdateType.BADGE
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        vm.startPrank(moderator1.publicKey);
+
+        ledger.updateBadge(
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            "DET-23",
+            moderator1Signature,
+            moderator1.publicKey
+        );
+
+        (
+            name,
+            legalNumber,
+            badge,
+            branchId,
+            employmentStatus,
+            rank
+        ) = ledger.officers(detective1.publicKey);
+
+        assertEq(name, detective1.name);
+        assertEq(legalNumber, detective1.legalNumber);
+        assertEq(badge, "DET-23");
+        assertEq(branchId, detective1.branch.branchId);
+        assertEq(uint(employmentStatus), uint(detective1.employmentStatus));
+        assertEq(uint(rank), uint(detective1.rank));
+
+        vm.stopPrank();
+    }
+
     function testSuccessfulPromotion() public {
         testOnboard();
 

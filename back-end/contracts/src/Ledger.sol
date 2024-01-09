@@ -50,6 +50,14 @@ contract Ledger is EIP712 {
         address from
     );
 
+    event OfficerBadgeUpdated (
+        address indexed officerAddress,
+        bytes32 indexed badge,
+        bytes32 legalNumber, 
+        uint when, 
+        address from
+    );
+
     event Promotion (
         address indexed officer,
         Rank indexed prevRank,
@@ -404,6 +412,45 @@ contract Ledger is EIP712 {
         emit OfficerAddressUpdated (
             _officer,
             _newAddress,
+            officerToUpdate.legalNumber, 
+            block.timestamp, 
+            msg.sender
+        );
+    }
+
+    function updateBadge(
+        uint _nonce,
+        uint _stateCode,
+        address _officer,
+        bytes32 _newBadge,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+
+        if (_newBadge == keccak256(abi.encode(""))) { revert InvalidBadge(); }
+        if (_signer != msg.sender || _signer == _officer) revert InvalidSigner();
+        if (officers[_signer].rank != Rank.MODERATOR) revert InvalidSigner();
+        Officer memory officerToUpdate = officers[_officer];
+        officers[_officer].badge = _newBadge;
+
+        if (_stateCode != branches[officerToUpdate.branchId].stateCode) revert ModeratorOfDifferentState();
+
+        bytes32 messageHash = UpdateOfficer.hash(UpdateOfficer.UpdateRequest(
+            _officer,
+            _nonce,
+            officerToUpdate.name,
+            officerToUpdate.legalNumber,
+            _newBadge,
+            officerToUpdate.branchId,
+            uint(officerToUpdate.rank), 
+            UpdateOfficer.UpdateType.BADGE
+        ));
+
+        _validateSignatures(messageHash, _signature, _signer);
+
+        emit OfficerBadgeUpdated (
+            _officer,
+            _newBadge,
             officerToUpdate.legalNumber, 
             block.timestamp, 
             msg.sender
