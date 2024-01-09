@@ -9,6 +9,7 @@ import "./Libraries/CreateBranch.sol";
 import "./Libraries/UpdateBranch.sol";
 import "./Libraries/Onboard.sol";
 import "./Libraries/UpdateOfficer.sol";
+import "./Libraries/TransferBranch.sol";
 import "forge-std/Test.sol";
 
 contract Ledger is EIP712 {
@@ -53,6 +54,12 @@ contract Ledger is EIP712 {
         address indexed officer,
         Rank indexed prevRank,
         Rank indexed newRank
+    );
+    
+    event OfficerTransferred(
+        address indexed officer,
+        bytes32 indexed fromBranchId,
+        bytes32 indexed toBranchId
     );
 
     constructor(
@@ -302,6 +309,65 @@ contract Ledger is EIP712 {
         // gas opt
         delete _officer;
         delete _prevRank;
+    }
+
+    function transferOfficer(
+        uint _nonce,
+        uint _stateCode,
+        address _officerAddress,
+        bytes32 _toBranchId,
+        bytes[2] memory _signatures,
+        address[2] memory _signers
+    ) external onlyModerator(_stateCode) {
+        Officer memory _officer = officers[_officerAddress];
+        // Check state code consistency
+        if(branches[_officer.branchId].stateCode != _stateCode) { revert ModeratorOfDifferentState(); }
+
+        // Signature verification
+        if(_signatures.length == _signers.length && _signatures.length != 2) { revert NotEnoughSignatures(); }
+        
+        TransferBranch.TransferBranchRequest memory request = TransferBranch.TransferBranchRequest({
+            verifiedAddress: _officerAddress,
+            nonce: _nonce,
+            name: _officer.name,
+            legalNumber: _officer.legalNumber,
+            badge: _officer.badge,
+            branchId: _officer.branchId,
+            toBranchId: _toBranchId,
+            employmentStatus: uint(_officer.employmentStatus),
+            rank: uint(_officer.rank),
+            reciever: false
+        });
+
+        bytes32 messageHash = TransferBranch.hash(request);
+
+        if(officers[_signers[0]].rank != Rank.CAPTAIN || officers[_signers[1]].rank != Rank.CAPTAIN) { revert SignerNotCaptain(); }
+        if(officers[_signers[0]].branchId != _officer.branchId || officers[_signers[1]].branchId != _toBranchId) { revert InvalidBranch(); }
+
+        _validateSignatures(messageHash, _signatures[0], _signers[0]);
+
+        request.reciever = true;
+        messageHash = TransferBranch.hash(request);
+
+        _validateSignatures(messageHash, _signatures[1], _signers[1]);
+
+        // State changes
+        Branch storage fromBranch = branches[_officer.branchId];
+        Branch storage toBranch = branches[_toBranchId];
+
+        fromBranch.numberOfOfficers--;
+        toBranch.numberOfOfficers++;
+        officers[_officerAddress].branchId = _toBranchId;
+
+        // Emit event
+        emit OfficerTransferred(
+            _officerAddress,
+            request.branchId,
+            request.toBranchId
+        );
+
+        delete request;
+        delete _officer;
     }
 
     function updateAddress(

@@ -1088,48 +1088,266 @@ contract OfficersTest is BaseTest {
         vm.stopPrank();
     }
 
-    // function testTransferBranch() public {
-    //     addCaptain1();
-    //     addDetective1();
-    //     addBranch3();
+    function testTransferBranch() public {
+        addBranch3();
+        addCaptain1();
+        addCaptain3();
+        addDetective1();
 
-    //     // struct TransferBranchRequest {
-    //     //     address verifiedAddress;
-    //     //     uint nonce;
-    //     //     string name;
-    //     //     bytes32 legalNumber;
-    //     //     bytes32 badge;
-    //     //     bytes32 branchId;
-    //     //     bytes32 toBranchId;
-    //     //     uint employmentStatus;
-    //     //     uint rank;
-    //     //     bool reciever;
-    //     // }
+        bytes32 messageHash = TransferBranch.hash(TransferBranch.TransferBranchRequest(
+            detective1.publicKey,
+            7,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            branch3.branchId,
+            uint(detective1.employmentStatus),
+            uint(detective1.rank),
+            false
+        ));
 
-    //     bytes32 messageHash = TransferBranch.hash(TransferBranch.TransferBranchRequest(
-    //         detective1,
-    //         7,
-    //         "Alice",
-    //         keccak256(abi.encode("678843")),
-    //         keccak256(abi.encode("ALICE1")),
-    //         PRECINCT2,
-    //         uint(Ledger.EmploymentStatus.ACTIVE),
-    //         uint(Ledger.Rank.CAPTAIN)
-    //     ));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(captain1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory captain1Signature = abi.encodePacked(r, s, v);
 
-    //     (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-    //     bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        messageHash = TransferBranch.hash(TransferBranch.TransferBranchRequest(
+            detective1.publicKey,
+            7,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            branch3.branchId,
+            uint(detective1.employmentStatus),
+            uint(detective1.rank),
+            true
+        ));
 
-    //     ledger.transferOfficer(
-    //         88886,
-    //         detective1,
-    //         PRECINCT3,
-    //         7,
-    //         [],
-    //         []
-    //     );
+        (v, r, s) = vm.sign(captain3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory captain3Signature = abi.encodePacked(r, s, v);
 
-    // }
+        vm.prank(moderator1.publicKey);
+        ledger.transferOfficer(
+            7,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            PRECINCT3,
+            [captain1Signature, captain3Signature],
+            [captain1.publicKey, captain3.publicKey]
+        );
+
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(detective1.publicKey);
+
+        assertEq(name, detective1.name);
+        assertEq(legalNumber, detective1.legalNumber);
+        assertEq(badge, detective1.badge);
+        assertEq(branchId, branch3.branchId);
+        assertEq(uint(employmentStatus), uint(detective1.employmentStatus));
+        assertEq(uint(rank), uint(detective1.rank));
+
+        // (
+        //     ,,,
+        //     uint numberOfOfficers
+        // ) = ledger.branches(PRECINCT3);
+
+        // assertEq(numberOfOfficers, 1);
+
+        // (
+        //     ,,,
+        //     numberOfOfficers
+        // ) = ledger.branches(PRECINCT1);
+
+        // assertEq(numberOfOfficers, 1);
+
+    }
+    
+    function testTransferOfficerByNonModerator() public {
+        addBranch3();
+        addCaptain1();
+        addDetective1();
+
+        bytes[2] memory signatures;
+        address[2] memory signers = [captain1.publicKey, captain1.publicKey]; // Dummy signers
+
+        vm.startPrank(detective1.publicKey); // Non-moderator
+        vm.expectRevert(OnlyModerator.selector);
+        ledger.transferOfficer(
+            1, 
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            PRECINCT3, 
+            signatures, 
+            signers
+        );
+        vm.stopPrank();
+    }
+
+    function testTransferOfficerInconsistentStateCode() public {
+        addBranch3();
+        addCaptain1();
+        addDetective1();
+
+        bytes[2] memory signatures;
+        address[2] memory signers = [captain1.publicKey, captain1.publicKey]; // Dummy signers
+
+        vm.startPrank(moderator3.publicKey);
+        vm.expectRevert(ModeratorOfDifferentState.selector);
+        ledger.transferOfficer(
+            1, 
+            branch3.stateCode, // Incorrect state code 
+            detective1.publicKey, 
+            PRECINCT3, 
+            signatures, 
+            signers
+        );
+        vm.stopPrank();
+    }
+
+    function testTransferOfficerSignersNotCaptains() public {
+        addBranch3();
+        addCaptain1();
+        addCaptain3();
+        addDetective1();
+
+        bytes[2] memory signatures; // Dummy signatures
+        address[2] memory signers = [detective1.publicKey, detective2.publicKey]; // Detectives, not captains
+
+        vm.startPrank(moderator1.publicKey);
+        vm.expectRevert(SignerNotCaptain.selector);
+        ledger.transferOfficer(
+            1, 
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            PRECINCT3, 
+            signatures, 
+            signers
+        );
+        vm.stopPrank();
+    }
+
+    function testTransferOfficerInvalidBranch() public {
+        addModerator2();
+        addBranch3();
+        addBranch2();
+        addCaptain1();
+        addCaptain2();
+        addCaptain3();
+        addDetective1();
+
+        bytes[2] memory signatures; // Dummy signatures
+        address[2] memory signers = [captain2.publicKey, captain3.publicKey];
+
+        vm.startPrank(moderator1.publicKey);
+        vm.expectRevert(InvalidBranch.selector);
+        ledger.transferOfficer(
+            1, 
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            PRECINCT3, 
+            signatures, 
+            signers
+        );
+
+        signers = [captain1.publicKey, captain2.publicKey];
+        vm.expectRevert(InvalidBranch.selector);
+        ledger.transferOfficer(
+            1, 
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            PRECINCT3, 
+            signatures, 
+            signers
+        );
+
+        signers = [captain2.publicKey, captain2.publicKey];
+        vm.expectRevert(InvalidBranch.selector);
+        ledger.transferOfficer(
+            1, 
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            PRECINCT3, 
+            signatures, 
+            signers
+        );
+        vm.stopPrank();
+    }
+
+    function addBranch3() public {
+        bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
+            1,
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            branch3.branchId
+        ));
+
+        bytes[] memory signatures = new bytes[](1);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
+
+        signatures[0] = moderator3Signature;
+
+        address[] memory signers = new address[](1);
+
+        signers[0] = moderator3.publicKey;
+        
+        vm.startPrank(moderator3.publicKey);
+
+        ledger.createBranch(
+            "PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            1,
+            signatures,
+            signers
+        );
+
+        vm.stopPrank();
+    }
+
+    function addBranch2() public {
+        bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
+            1,
+            branch2.precinctAddress,
+            branch2.jurisdictionArea,
+            branch2.stateCode,
+            branch2.branchId
+        ));
+
+        bytes[] memory signatures = new bytes[](1);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator2.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
+
+        signatures[0] = moderator3Signature;
+
+        address[] memory signers = new address[](1);
+
+        signers[0] = moderator2.publicKey;
+        
+        vm.startPrank(moderator2.publicKey);
+
+        ledger.createBranch(
+            "PRECINCT 2",
+            branch2.precinctAddress,
+            branch2.jurisdictionArea,
+            branch2.stateCode,
+            1,
+            signatures,
+            signers
+        );
+
+        vm.stopPrank();
+    }
 
     function addModerator2() private {
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
@@ -1203,10 +1421,10 @@ contract OfficersTest is BaseTest {
             uint(captain2.rank)
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator2.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
 
-        vm.prank(moderator1.publicKey);
+        vm.prank(moderator2.publicKey);
 
         ledger.onboardCaptain(
             2,
@@ -1216,8 +1434,8 @@ contract OfficersTest is BaseTest {
             captain2.legalNumber,
             captain2.badge,
             captain2.branch.branchId,
-            moderator1Signature,
-            moderator1.publicKey
+            moderator2Signature,
+            moderator2.publicKey
         );
     }
 
@@ -1233,10 +1451,10 @@ contract OfficersTest is BaseTest {
             uint(captain3.rank)
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
         bytes memory moderator1Signature = abi.encodePacked(r, s, v);
 
-        vm.prank(moderator1.publicKey);
+        vm.prank(moderator3.publicKey);
 
         ledger.onboardCaptain(
             2,
@@ -1247,7 +1465,7 @@ contract OfficersTest is BaseTest {
             captain3.badge,
             captain3.branch.branchId,
             moderator1Signature,
-            moderator1.publicKey
+            moderator3.publicKey
         );
     }
 
