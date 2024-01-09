@@ -1593,6 +1593,59 @@ contract OfficersTest is BaseTest {
         vm.stopPrank();
     }
 
+    function testRehire() public {
+        testOffboard();
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            detective1.publicKey,
+            3,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            uint(detective1.employmentStatus),
+            uint(detective1.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(captain1.publicKey);
+
+        ledger.onboard(
+            3,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+
+        (
+            string memory name,
+            bytes32 legalNumber,
+            bytes32 badge,
+            bytes32 branchId,
+            Ledger.EmploymentStatus employmentStatus,
+            Ledger.Rank rank
+        ) = ledger.officers(detective1.publicKey);
+
+        assertEq(name, detective1.name);
+        assertEq(legalNumber, detective1.legalNumber);
+        assertEq(badge, detective1.badge);
+        assertEq(branchId, detective1.branch.branchId);
+        assertEq(uint(employmentStatus), uint(detective1.employmentStatus));
+        assertEq(uint(rank), uint(detective1.rank));
+
+        assertTrue(ledger.legalNumber(detective1.legalNumber));
+        assertTrue(ledger.badge(detective1.badge));
+
+        vm.stopPrank();
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,

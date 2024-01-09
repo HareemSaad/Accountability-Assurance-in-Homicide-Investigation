@@ -436,6 +436,35 @@ contract Ledger is EIP712 {
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
     }
 
+    /// @notice Onboards an existing officer or detective after validation and authorization. (Rehiring)
+    /// @dev Called by the captain of the onboarding branch
+    /// @dev Onboarding signed by a moderator of the same state code
+    /// @param _nonce A nonce for the operation to prevent replay attacks.
+    /// @param _stateCode State code of the branch.
+    /// @param _officerAddress Address of the new officer or moderator.
+    /// @param _badge Badge number.
+    /// @param _branchId Branch ID where the officer or moderator is being assigned.
+    /// @param _rank Rank of the new officer or moderator.
+    /// @param _signature Signature of the authorizing officer.
+    /// @param _signer Address of the authorizing officer.
+    function onboard(
+        uint _nonce,
+        uint _stateCode,
+        address _officerAddress, 
+        bytes32 _badge, 
+        bytes32 _branchId, 
+        Rank _rank,
+        bytes memory _signature,
+        address _signer
+    ) external onlyModerator(_stateCode) {
+        // captain cannot hire another captain or moderator
+        if (_rank != Rank.NULL) { revert InvalidRank(); }
+        if (_signer == msg.sender || _signer == _officerAddress) revert InvalidSigner();
+        if (branches[_branchId].stateCode == 0) { revert BranchDoesNotExists(); }
+        Officer memory _officer = officers[_officerAddress];
+        _onboard(_nonce, _stateCode, _officerAddress, _officer.name, _officer.legalNumber, _badge, _branchId, _rank, _signature, _signer);
+    }
+
     /// @notice Onboards a new captain after validation and authorization by a moderator.
     /// @dev Onboarding signed by a moderator of the same state code
     /// @param _nonce A nonce for the operation to prevent replay attacks.
@@ -873,7 +902,7 @@ contract Ledger is EIP712 {
         if (_branchId == keccak256(abi.encode(""))) { revert InvalidBranch(); }
         if (_legalNumber == keccak256(abi.encode(""))) { revert InvalidLegalNumber(); }
         if (badge[_badge]) { revert InvalidBadge(); }
-        if (legalNumber[_legalNumber]) { revert InvalidLegalNumber(); }
+        if (officers[_officer].legalNumber == keccak256(abi.encode("")) && legalNumber[_legalNumber]) { revert InvalidLegalNumber(); }
         if (_rank == Rank.NULL) { revert InvalidRank(); }
         if (!isValidBranch(_branchId) && _rank != Rank.MODERATOR ) { revert BranchDoesNotExists(); }
         if (_stateCode != branches[_branchId].stateCode && _rank != Rank.MODERATOR) revert ModeratorOfDifferentState();
