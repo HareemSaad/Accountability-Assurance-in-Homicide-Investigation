@@ -1,58 +1,33 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.13;
 
-import "forge-std/Test.sol";
-import "./../src/Ledger.sol";
-import "./../src/Libraries/CreateBranch.sol";
-import "./../src/Libraries/UpdateBranch.sol";
-import "./../src/Libraries/Onboard.sol";
-import "./../src/Libraries/UpdateOfficer.sol";
-import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "./Base.t.sol";
 
-contract OfficersTest is Test {
-
-    using CreateBranch for CreateBranch.CreateBranchVote;
-
-    Ledger ledger;
-    address ZER0_ADDRESS = address(0);
-    bytes32 PRECINCT1 = keccak256(abi.encode("PRECINCT 1"));
-    bytes32 PRECINCT2 = keccak256(abi.encode("PRECINCT 2"));
-    bytes32 PRECINCT3 = keccak256(abi.encode("PRECINCT 3"));
-    uint256 _moderator1PrivateKey = 0xB0B;
-    address moderator1 = vm.addr(_moderator1PrivateKey); //0x0376AAc07Ad725E01357B1725B5ceC61aE10473c
-    uint256 _moderator2PrivateKey = 0xABB1;
-    address moderator2 = vm.addr(_moderator2PrivateKey); //0x4a79fB1C667Ff8AF3e5B50925747AA39D9f74262
-    uint256 _moderator3PrivateKey = 0xABE;
-    address moderator3 = vm.addr(_moderator3PrivateKey);
-    address captain1 = address(2); //E11
-    address captain2 = address(3);
-    uint256 _alicePrivateKey = 0xA11CE;
-    address detective1 = vm.addr(_alicePrivateKey); //0xe05fcC23807536bEe418f142D19fa0d21BB0cfF7
-    address detective2 = address(88);
+contract OfficersTest is BaseTest {
 
     function setUp() public {
         ledger = new Ledger(
-            PRECINCT2,
-            "7th Avenue",
-            3,
-            88886,
-            moderator2,
-            "EDD",
-            keccak256(abi.encode("34567")),
-            keccak256(abi.encode("EDD-1"))
+            branch1.branchId,
+            branch1.precinctAddress,
+            branch1.jurisdictionArea,
+            branch1.stateCode,
+            moderator1.publicKey,
+            moderator1.name,
+            moderator1.legalNumber,
+            moderator1.badge
         );
 
-        assertEq(ledger.moderators(moderator2,88886), true);
+        assertEq(ledger.moderators(moderator1.publicKey,branch1.stateCode), true);
         (
             string memory precinctAddress,
             uint jurisdictionArea,
             uint stateCode,
             uint numberOfOfficers
-        ) = ledger.branches(PRECINCT2);
+        ) = ledger.branches(PRECINCT1);
 
-        assertEq(precinctAddress, "7th Avenue");
-        assertEq(stateCode, 88886);
-        assertEq(jurisdictionArea, 3);
+        assertEq(precinctAddress, branch1.precinctAddress);
+        assertEq(stateCode, branch1.stateCode);
+        assertEq(jurisdictionArea, branch1.jurisdictionArea);
         assertEq(numberOfOfficers, 1);
 
         // create a new branch
@@ -88,31 +63,31 @@ contract OfficersTest is Test {
 
         // add moderator
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
-            moderator3,
+            moderator3.publicKey,
             2,
-            "Abe",
-            keccak256(abi.encode("98765")),
-            keccak256(abi.encode("ABE-1")),
-            PRECINCT3,
-            uint(Ledger.EmploymentStatus.ACTIVE),
-            uint(Ledger.Rank.MODERATOR)
+            moderator3.name,
+            moderator3.legalNumber,
+            moderator3.badge,
+            moderator3.branch.branchId,
+            uint(moderator3.employmentStatus),
+            uint(moderator3.rank)
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
 
-        vm.prank(moderator2);
+        vm.prank(moderator1.publicKey);
         ledger.addModerator(
             2,
-            88888,
-            88886,
-            moderator3,
-            "Abe",
-            keccak256(abi.encode("98765")),
-            keccak256(abi.encode("ABE-1")),
-            PRECINCT3,
-            moderator2Signature,
-            moderator2
+            moderator3.branch.stateCode,
+            moderator1.branch.stateCode,
+            moderator3.publicKey,
+            moderator3.name,
+            moderator3.legalNumber,
+            moderator3.badge,
+            moderator3.branch.branchId,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
     } 
@@ -120,30 +95,30 @@ contract OfficersTest is Test {
     function testNewBranch() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
-            "5th Avenue",
-            123456,
-            88886,
-            PRECINCT1
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            branch3.branchId
         ));
 
         bytes[] memory signatures = new bytes[](1);
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
 
-        signatures[0] = moderator2Signature;
+        signatures[0] = moderator3Signature;
 
         address[] memory signers = new address[](1);
 
-        signers[0] = moderator2;
+        signers[0] = moderator3.publicKey;
         
-        vm.startPrank(moderator2);
+        vm.startPrank(moderator3.publicKey);
 
         ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
-            123456,
-            88886,
+            "PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -154,46 +129,47 @@ contract OfficersTest is Test {
             uint jurisdictionArea,
             uint stateCode,
             uint numberOfOfficers
-        ) = ledger.branches(PRECINCT1);
+        ) = ledger.branches(PRECINCT3);
 
-        assertEq(precinctAddress, "5th Avenue");
-        assertEq(stateCode, 88886);
-        assertEq(jurisdictionArea, 123456);
-        assertEq(numberOfOfficers, 0);
+        assertEq(precinctAddress, branch3.precinctAddress);
+        assertEq(stateCode, branch3.stateCode);
+        assertEq(jurisdictionArea, branch3.jurisdictionArea);
+        assertEq(numberOfOfficers, 1);
 
         vm.stopPrank();
     }
 
     function testReplayBranch() public {
+        testNewBranch();
+        
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
-            "5th Avenue",
-            123456,
-            88886,
-            PRECINCT1
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            branch3.branchId
         ));
 
         bytes[] memory signatures = new bytes[](1);
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
 
-        signatures[0] = moderator2Signature;
+        signatures[0] = moderator3Signature;
 
         address[] memory signers = new address[](1);
 
-        signers[0] = moderator2;
-
-        testNewBranch();
-
-        vm.startPrank(moderator2);
+        signers[0] = moderator3.publicKey;
+        
+        vm.startPrank(moderator3.publicKey);
 
         vm.expectRevert(SignatureReplay.selector);
+
         ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
-            123456,
-            88886,
+            "PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -203,36 +179,37 @@ contract OfficersTest is Test {
     }
 
     function testDuplicateBranch() public {
+        testNewBranch();
+        
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
-            1,
-            "5th Avenue",
-            123456,
-            88886,
-            PRECINCT1
+            2,
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            branch3.branchId
         ));
 
         bytes[] memory signatures = new bytes[](1);
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
 
-        signatures[0] = moderator2Signature;
+        signatures[0] = moderator3Signature;
 
         address[] memory signers = new address[](1);
 
-        signers[0] = moderator2;
+        signers[0] = moderator3.publicKey;
+        
+        vm.startPrank(moderator3.publicKey);
 
-        testNewBranch();
+        vm.expectRevert(BranchAlreadyExists.selector);
 
-        vm.startPrank(moderator2);
-
-        vm.expectRevert(SignatureReplay.selector);
         ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
-            123456,
-            88886,
-            1,
+            "PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            2,
             signatures,
             signers
         );
@@ -244,35 +221,35 @@ contract OfficersTest is Test {
 
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
-            "5th Avenue",
-            123456,
-            88886,
-            PRECINCT1
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            branch3.branchId
         ));
 
         bytes[] memory signatures = new bytes[](1);
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
 
-        signatures[0] = moderator2Signature;
+        signatures[0] = moderator3Signature;
 
         address[] memory signers = new address[](1);
 
-        signers[0] = moderator2;
+        signers[0] = moderator3.publicKey;
 
         bytes[] memory signaturesHalf = new bytes[](0);
 
         address[] memory signersHalf = new address[](0);
-
-        vm.startPrank(moderator2);
+        
+        vm.startPrank(moderator3.publicKey);
 
         vm.expectRevert(InvalidInput.selector);
         ledger.createBranch(
             "",
-            "5th Avenue",
-            123456,
-            88886,
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -280,10 +257,10 @@ contract OfficersTest is Test {
 
         vm.expectRevert(InvalidInput.selector);
         ledger.createBranch(
-            "PRECINCT 1",
+            "PRECINCT 3",
             "",
-            123456,
-            88886,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -291,9 +268,9 @@ contract OfficersTest is Test {
 
         vm.expectRevert(OnlyModerator.selector);
         ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
-            123456,
+            "PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
             0,
             1,
             signatures,
@@ -302,10 +279,10 @@ contract OfficersTest is Test {
 
         vm.expectRevert(InvalidInput.selector);
         ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
+            "PRECINCT 3",
+            branch3.precinctAddress,
             0,
-            88886,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -313,34 +290,33 @@ contract OfficersTest is Test {
 
         vm.expectRevert(LengthMismatch.selector);
         ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
-            123456,
-            88886,
+            "PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signaturesHalf,
             signers
         );
 
         vm.expectRevert(NotEnoughSignatures.selector);
-        ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
-            123456,
-            88886,
+        ledger.createBranch("PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signaturesHalf,
             signersHalf
         );
 
-        signers[0] = moderator1;
+        signers[0] = moderator1.publicKey;
 
         vm.expectRevert(InvalidSignature.selector);
         ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
-            123456,
-            88886,
+            "PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -349,10 +325,10 @@ contract OfficersTest is Test {
 
         vm.expectRevert(InvalidSignature.selector);
         ledger.createBranch(
-            "PRECINCT 1",
-            "5th Avenue",
-            123456,
-            88886,
+            "PRECINCT 3",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             0,
             signatures,
             signers
@@ -362,33 +338,34 @@ contract OfficersTest is Test {
     }
 
     function testUpdateBranch() public {
-
+        testNewBranch();
+        
         bytes32 messageHash = UpdateBranch.hash(UpdateBranch.UpdateBranchVote(
             1,
             "6th Avenue",
-            123456,
-            88886,
-            PRECINCT2
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            branch3.branchId
         ));
 
         bytes[] memory signatures = new bytes[](1);
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
 
-        signatures[0] = moderator2Signature;
+        signatures[0] = moderator3Signature;
 
         address[] memory signers = new address[](1);
 
-        signers[0] = moderator2;
+        signers[0] = moderator3.publicKey;
         
-        vm.startPrank(moderator2);
+        vm.startPrank(moderator3.publicKey);
 
         ledger.updateBranch(
-            "PRECINCT 2",
+            "PRECINCT 3",
             "6th Avenue",
-            123456,
-            88886,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -399,11 +376,11 @@ contract OfficersTest is Test {
             uint jurisdictionArea,
             uint stateCode,
             uint numberOfOfficers
-        ) = ledger.branches(PRECINCT2);
+        ) = ledger.branches(PRECINCT3);
 
         assertEq(precinctAddress, "6th Avenue");
-        assertEq(stateCode, 88886);
-        assertEq(jurisdictionArea, 123456);
+        assertEq(stateCode, branch3.stateCode);
+        assertEq(jurisdictionArea, branch3.jurisdictionArea);
         assertEq(numberOfOfficers, 1);
 
         vm.stopPrank();
@@ -411,38 +388,39 @@ contract OfficersTest is Test {
 
     function testUpdateBranchIncorrectInput() public {
 
+        testNewBranch();
+        
         bytes32 messageHash = UpdateBranch.hash(UpdateBranch.UpdateBranchVote(
             1,
             "6th Avenue",
-            123456,
-            88886,
-            PRECINCT1
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            branch3.branchId
         ));
 
         bytes[] memory signatures = new bytes[](1);
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
 
-        signatures[0] = moderator2Signature;
+        signatures[0] = moderator3Signature;
 
         address[] memory signers = new address[](1);
 
-        signers[0] = moderator2;
+        signers[0] = moderator3.publicKey;
 
         bytes[] memory signaturesHalf = new bytes[](0);
+
         address[] memory signersHalf = new address[](0);
-
-        testNewBranch(); 
-
-        vm.startPrank(moderator2);
+        
+        vm.startPrank(moderator3.publicKey);
 
         vm.expectRevert(InvalidInput.selector);
         ledger.updateBranch(
             "",
             "6th Avenue",
-            123456,
-            88886,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -450,10 +428,10 @@ contract OfficersTest is Test {
 
         vm.expectRevert(InvalidInput.selector);
         ledger.updateBranch(
-            "PRECINCT 1",
+            "PRECINCT 3",
             "",
-            123456,
-            88886,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -461,9 +439,9 @@ contract OfficersTest is Test {
 
         vm.expectRevert(OnlyModerator.selector);
         ledger.updateBranch(
-            "PRECINCT 1",
+            "PRECINCT 3",
             "6th Avenue",
-            123456,
+            branch3.jurisdictionArea,
             0,
             1,
             signatures,
@@ -472,10 +450,10 @@ contract OfficersTest is Test {
 
         vm.expectRevert(InvalidInput.selector);
         ledger.updateBranch(
-            "PRECINCT 1",
+            "PRECINCT 3",
             "6th Avenue",
             0,
-            88886,
+            branch3.stateCode,
             1,
             signatures,
             signers
@@ -483,10 +461,10 @@ contract OfficersTest is Test {
 
         vm.expectRevert(LengthMismatch.selector);
         ledger.updateBranch(
-            "PRECINCT 1",
+            "PRECINCT 3",
             "6th Avenue",
-            123456,
-            88886,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signaturesHalf,
             signers
@@ -494,32 +472,31 @@ contract OfficersTest is Test {
 
         vm.expectRevert(NotEnoughSignatures.selector);
         ledger.updateBranch(
-            "PRECINCT 1",
+            "PRECINCT 3",
             "6th Avenue",
-            123456,
-            88886,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signaturesHalf,
             signersHalf
         );
 
-        signers[0] = moderator1;
+        signers[0] = moderator1.publicKey;
 
         vm.expectRevert(InvalidSignature.selector);
         ledger.updateBranch(
-            "PRECINCT 1",
+            "PRECINCT 3",
             "6th Avenue",
-            123456,
-            88886,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
             1,
             signatures,
             signers
         );
 
-
-        vm.expectRevert(InvalidSignature.selector);
+        vm.expectRevert(OnlyModerator.selector);
         ledger.updateBranch(
-            "PRECINCT 1",
+            "PRECINCT 3",
             "6th Avenue",
             123456,
             88886,
@@ -533,31 +510,31 @@ contract OfficersTest is Test {
 
     function testCaptainOnboard() public {
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
-            captain1,
-            1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            uint(Ledger.EmploymentStatus.ACTIVE),
-            uint(Ledger.Rank.CAPTAIN)
+            captain1.publicKey,
+            2,
+            captain1.name,
+            captain1.legalNumber,
+            captain1.badge,
+            captain1.branch.branchId,
+            uint(captain1.employmentStatus),
+            uint(captain1.rank)
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
-        
-        vm.startPrank(moderator2);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
 
         ledger.onboardCaptain(
-            1,
-            88886,
-            captain1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            moderator2Signature,
-            moderator2
+            2,
+            captain1.branch.stateCode,
+            captain1.publicKey,
+            captain1.name,
+            captain1.legalNumber,
+            captain1.badge,
+            captain1.branch.branchId,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         (
@@ -567,46 +544,46 @@ contract OfficersTest is Test {
             bytes32 branchId,
             Ledger.EmploymentStatus employmentStatus,
             Ledger.Rank rank
-        ) = ledger.officers(captain1);
+        ) = ledger.officers(captain1.publicKey);
 
-        assertEq(name, "Alice");
-        assertEq(legalNumber, keccak256(abi.encode("678843")));
-        assertEq(badge, keccak256(abi.encode("ALICE1")));
-        assertEq(branchId, PRECINCT2);
-        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.ACTIVE));
-        assertEq(uint(rank), uint(Ledger.Rank.CAPTAIN));
+        assertEq(name, captain1.name);
+        assertEq(legalNumber, captain1.legalNumber);
+        assertEq(badge, captain1.badge);
+        assertEq(branchId, captain1.branch.branchId);
+        assertEq(uint(employmentStatus), uint(captain1.employmentStatus));
+        assertEq(uint(rank), uint(captain1.rank));
 
         vm.stopPrank();
     }
 
     function testModeratorOnboard() public {
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
-            moderator1,
-            1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            uint(Ledger.EmploymentStatus.ACTIVE),
-            uint(Ledger.Rank.MODERATOR)
+            moderator2.publicKey,
+            2,
+            moderator2.name,
+            moderator2.legalNumber,
+            moderator2.badge,
+            moderator2.branch.branchId,
+            uint(moderator2.employmentStatus),
+            uint(moderator2.rank)
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
-        
-        vm.startPrank(moderator2);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
 
         ledger.addModerator(
-            1,
-            88886,
-            88886,
-            moderator1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            moderator2Signature,
-            moderator2
+            2,
+            moderator2.branch.stateCode,
+            moderator1.branch.stateCode,
+            moderator2.publicKey,
+            moderator2.name,
+            moderator2.legalNumber,
+            moderator2.badge,
+            moderator2.branch.branchId,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         (
@@ -616,14 +593,14 @@ contract OfficersTest is Test {
             bytes32 branchId,
             Ledger.EmploymentStatus employmentStatus,
             Ledger.Rank rank
-        ) = ledger.officers(moderator1);
+        ) = ledger.officers(moderator1.publicKey);
 
-        assertEq(name, "Alice");
-        assertEq(legalNumber, keccak256(abi.encode("678843")));
-        assertEq(badge, keccak256(abi.encode("ALICE1")));
-        assertEq(branchId, PRECINCT2);
-        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.ACTIVE));
-        assertEq(uint(rank), uint(Ledger.Rank.MODERATOR));
+        assertEq(name, moderator1.name);
+        assertEq(legalNumber, moderator1.legalNumber);
+        assertEq(badge, moderator1.badge);
+        assertEq(branchId, moderator1.branch.branchId);
+        assertEq(uint(employmentStatus), uint(moderator1.employmentStatus));
+        assertEq(uint(rank), uint(moderator1.rank));
 
         vm.stopPrank();
     }
@@ -631,32 +608,32 @@ contract OfficersTest is Test {
     function testOnboard() public {
         testCaptainOnboard();
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
-            detective1,
-            1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            uint(Ledger.EmploymentStatus.ACTIVE),
-            uint(Ledger.Rank.DETECTIVE)
+            detective1.publicKey,
+            2,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            uint(detective1.employmentStatus),
+            uint(detective1.rank)
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
-        
-        vm.startPrank(captain1);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(captain1.publicKey);
 
         ledger.onboard(
-            1,
-            88886,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         (
@@ -666,14 +643,15 @@ contract OfficersTest is Test {
             bytes32 branchId,
             Ledger.EmploymentStatus employmentStatus,
             Ledger.Rank rank
-        ) = ledger.officers(detective1);
+        ) = ledger.officers(detective1.publicKey);
 
-        assertEq(name, "Alice");
-        assertEq(legalNumber, keccak256(abi.encode("678843")));
-        assertEq(badge, keccak256(abi.encode("ALICE1")));
-        assertEq(branchId, PRECINCT2);
-        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.ACTIVE));
-        assertEq(uint(rank), uint(Ledger.Rank.DETECTIVE));
+        assertEq(name, detective1.name);
+        assertEq(legalNumber, detective1.legalNumber);
+        assertEq(badge, detective1.badge);
+        assertEq(branchId, detective1.branch.branchId);
+        assertEq(uint(employmentStatus), uint(detective1.employmentStatus));
+        assertEq(uint(rank), uint(detective1.rank));
+
 
         vm.stopPrank();
     }
@@ -681,173 +659,173 @@ contract OfficersTest is Test {
     function testOnboardInput() public {
         testCaptainOnboard();
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
-            detective1,
+            detective1.publicKey,
             2,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            uint(Ledger.EmploymentStatus.ACTIVE),
-            uint(Ledger.Rank.DETECTIVE)
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            uint(detective1.employmentStatus),
+            uint(detective1.rank)
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
-        
-        vm.startPrank(captain1);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.startPrank(captain1.publicKey);
 
         vm.expectRevert(InvalidRank.selector);
         ledger.onboard(
-            1,
-            88886,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
             Ledger.Rank.CAPTAIN,
-            moderator2Signature,
-            moderator2
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(InvalidRank.selector);
         ledger.onboard(
-            1,
-            88886,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
             Ledger.Rank.NULL,
-            moderator2Signature,
-            moderator2
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(InvalidAddress.selector);
         ledger.onboard(
-            1,
-            88886,
+            2,
+            detective1.branch.stateCode,
             address(0),
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(InvalidString.selector);
         ledger.onboard(
-            1,
-            88886,
-            detective1,
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
             "",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(InvalidBadge.selector);
         ledger.onboard(
-            1,
-            88886,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
             keccak256(abi.encode("")),
-            PRECINCT2,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(BranchDoesNotExists.selector);
         ledger.onboard(
-            1,
-            88886,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            keccak256(abi.encode("")),
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            PRECINCT2,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(InvalidLegalNumber.selector);
         ledger.onboard(
-            1,
-            88886,
-            detective1,
-            "Alice",
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
             keccak256(abi.encode("")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(ModeratorOfDifferentState.selector);
         ledger.onboard(
-            1,
+            2,
             88882,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(BranchDoesNotExists.selector);
         ledger.onboard(
-            1,
-            88886,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
             PRECINCT3,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(InvalidSigner.selector);
         ledger.onboard(
-            1,
-            88886,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator1
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator2.publicKey
         );
 
         vm.expectRevert(InvalidSignature.selector);
         ledger.onboard(
             1,
-            88886,
-            detective1,
-            "Alice",
-            keccak256(abi.encode("678843")),
-            keccak256(abi.encode("ALICE1")),
-            PRECINCT2,
-            Ledger.Rank.DETECTIVE,
-            moderator2Signature,
-            moderator2
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.stopPrank();
@@ -863,31 +841,31 @@ contract OfficersTest is Test {
             bytes32 branchId,
             Ledger.EmploymentStatus employmentStatus,
             Ledger.Rank rank
-        ) = ledger.officers(detective1);
+        ) = ledger.officers(detective1.publicKey);
 
         bytes32 messageHash = UpdateOfficer.hash(UpdateOfficer.UpdateRequest(
             address(99),
             2,
-            name,
-            legalNumber,
-            badge,
-            branchId,
-            uint(rank), 
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            uint(detective1.rank), 
             UpdateOfficer.UpdateType.ADDRESS
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
         
-        vm.startPrank(moderator2);
+        vm.startPrank(moderator1.publicKey);
 
         ledger.updateAddress(
             2,
-            88886,
-            detective1,
+            detective1.branch.stateCode,
+            detective1.publicKey,
             address(99),
-            moderator2Signature,
-            moderator2
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         (
@@ -899,12 +877,12 @@ contract OfficersTest is Test {
             rank
         ) = ledger.officers(address(99));
 
-        assertEq(name, "Alice");
-        assertEq(legalNumber, keccak256(abi.encode("678843")));
-        assertEq(badge, keccak256(abi.encode("ALICE1")));
-        assertEq(branchId, PRECINCT2);
-        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.ACTIVE));
-        assertEq(uint(rank), uint(Ledger.Rank.DETECTIVE));
+        assertEq(name, detective1.name);
+        assertEq(legalNumber,detective1.legalNumber);
+        assertEq(badge, detective1.badge);
+        assertEq(branchId, detective1.branch.branchId);
+        assertEq(uint(employmentStatus), uint(detective1.employmentStatus));
+        assertEq(uint(rank), uint(detective1.rank));
 
         vm.stopPrank();
     }
@@ -912,82 +890,82 @@ contract OfficersTest is Test {
     function testUpdateAddressIncorrectInput() public {
         testOnboard();
         
-        (
-            string memory name,
-            bytes32 legalNumber,
-            bytes32 badge,
-            bytes32 branchId,,
-            // Ledger.EmploymentStatus employmentStatus,
-            Ledger.Rank rank
-        ) = ledger.officers(detective1);
+        // (
+        //     string memory name,
+        //     bytes32 legalNumber,
+        //     bytes32 badge,
+        //     bytes32 branchId,
+        //     Ledger.EmploymentStatus employmentStatus,
+        //     Ledger.Rank rank
+        // ) = ledger.officers(detective1.publicKey);
 
         bytes32 messageHash = UpdateOfficer.hash(UpdateOfficer.UpdateRequest(
             address(99),
             2,
-            name,
-            legalNumber,
-            badge,
-            branchId,
-            uint(rank), 
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            uint(detective1.rank), 
             UpdateOfficer.UpdateType.ADDRESS
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
         
-        vm.startPrank(moderator2);
+        vm.startPrank(moderator1.publicKey);
 
         vm.expectRevert(ZeroAddress.selector);
         ledger.updateAddress(
             2,
-            88886,
-            detective1,
+            detective1.branch.stateCode,
+            detective1.publicKey,
             address(0),
-            moderator2Signature,
-            moderator2
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(OnlyModerator.selector);
         ledger.updateAddress(
             2,
             88888,
-            detective1,
+            detective1.publicKey,
             address(99),
-            moderator2Signature,
-            moderator2
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.expectRevert(InvalidSigner.selector);
         ledger.updateAddress(
             2,
-            88886,
-            detective1,
+            detective1.branch.stateCode,
+            detective1.publicKey,
             address(99),
-            moderator2Signature,
-            moderator1
+            moderator1Signature,
+            moderator2.publicKey
         );
 
         vm.expectRevert(ModeratorOfDifferentState.selector);
         ledger.updateAddress(
             2,
-            88886,
-            detective2,
+            detective1.branch.stateCode,
+            detective2.publicKey,
             address(99),
-            moderator2Signature,
-            moderator2
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         vm.stopPrank();
 
-        vm.prank(moderator1);
+        vm.prank(moderator3.publicKey);
         vm.expectRevert(OnlyModerator.selector);
         ledger.updateAddress(
             2,
-            88886,
-            detective1,
+            detective1.branch.stateCode,
+            detective1.publicKey,
             address(99),
-            moderator2Signature,
-            moderator1
+            moderator1Signature,
+            moderator1.publicKey
         );
     }
 
@@ -1001,31 +979,31 @@ contract OfficersTest is Test {
             bytes32 branchId,
             Ledger.EmploymentStatus employmentStatus,
             Ledger.Rank rank
-        ) = ledger.officers(detective1);
+        ) = ledger.officers(detective1.publicKey);
 
         bytes32 messageHash = UpdateOfficer.hash(UpdateOfficer.UpdateRequest(
-            detective1,
+            detective1.publicKey,
             2,
             "poppy",
-            legalNumber,
-            badge,
-            branchId,
-            uint(rank), 
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            uint(detective1.rank), 
             UpdateOfficer.UpdateType.ADDRESS
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
         
-        vm.startPrank(moderator2);
+        vm.startPrank(moderator1.publicKey);
 
         ledger.updateName(
             2,
-            88886,
-            detective1,
+            detective1.branch.stateCode,
+            detective1.publicKey,
             "poppy",
-            moderator2Signature,
-            moderator2
+            moderator1Signature,
+            moderator1.publicKey
         );
 
         (
@@ -1035,14 +1013,14 @@ contract OfficersTest is Test {
             branchId,
             employmentStatus,
             rank
-        ) = ledger.officers(detective1);
+        ) = ledger.officers(detective1.publicKey);
 
         assertEq(name, "poppy");
-        assertEq(legalNumber, keccak256(abi.encode("678843")));
-        assertEq(badge, keccak256(abi.encode("ALICE1")));
-        assertEq(branchId, PRECINCT2);
-        assertEq(uint(employmentStatus), uint(Ledger.EmploymentStatus.ACTIVE));
-        assertEq(uint(rank), uint(Ledger.Rank.DETECTIVE));
+        assertEq(legalNumber, detective1.legalNumber);
+        assertEq(badge, detective1.badge);
+        assertEq(branchId, detective1.branch.branchId);
+        assertEq(uint(employmentStatus), uint(detective1.employmentStatus));
+        assertEq(uint(rank), uint(detective1.rank));
 
         vm.stopPrank();
     }
@@ -1051,20 +1029,28 @@ contract OfficersTest is Test {
         testOnboard();
 
         // Promote the officer
-        vm.startPrank(moderator2);
-        ledger.promote(88886, detective1, Ledger.Rank.CAPTAIN);
+        vm.startPrank(moderator1.publicKey);
+        ledger.promote(
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            Ledger.Rank.CAPTAIN
+        );
         vm.stopPrank();
 
         // Check the officer's new rank
-        (,,,,,Ledger.Rank rank) = ledger.officers(detective1);
+        (,,,,,Ledger.Rank rank) = ledger.officers(detective1.publicKey);
         assertEq(uint(rank), uint(Ledger.Rank.CAPTAIN)); // Assuming the officer was initially at Rank.OFFICER
     }
 
     function testPromotionByNonModerator() public {
         // Attempt to promote the officer by a non-moderator
-        vm.startPrank(captain1);
+        vm.startPrank(captain1.publicKey);
         vm.expectRevert(OnlyModerator.selector);
-        ledger.promote(88886, detective1, Ledger.Rank.CAPTAIN);
+        ledger.promote(
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            Ledger.Rank.CAPTAIN
+        );
         vm.stopPrank();
     }
 
@@ -1072,9 +1058,13 @@ contract OfficersTest is Test {
         testOnboard();
 
         // Attempt to promote an officer with a different state code
-        vm.startPrank(moderator3);
+        vm.startPrank(moderator3.publicKey);
         vm.expectRevert(ModeratorOfDifferentState.selector);
-        ledger.promote(88888, detective1, Ledger.Rank.CAPTAIN);
+        ledger.promote(
+            88888, 
+            detective1.publicKey, 
+            Ledger.Rank.CAPTAIN
+        );
         vm.stopPrank();
     }
 
@@ -1082,18 +1072,285 @@ contract OfficersTest is Test {
         testOnboard();
 
         // Attempt to promote a moderator (which should fail)
-        vm.startPrank(moderator2);
+        vm.startPrank(moderator1.publicKey);
         vm.expectRevert(InvalidRank.selector);
-        ledger.promote(88886, detective1, Ledger.Rank.DETECTIVE);
+        ledger.promote(
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            Ledger.Rank.DETECTIVE
+        );
         vm.expectRevert(InvalidRank.selector);
-        ledger.promote(88886, detective1, Ledger.Rank.NULL);
+        ledger.promote(
+            detective1.branch.stateCode, 
+            detective1.publicKey, 
+            Ledger.Rank.NULL
+        );
         vm.stopPrank();
     }
 
+    // function testTransferBranch() public {
+    //     addCaptain1();
+    //     addDetective1();
+    //     addBranch3();
 
-    //test isValidBranch
+    //     // struct TransferBranchRequest {
+    //     //     address verifiedAddress;
+    //     //     uint nonce;
+    //     //     string name;
+    //     //     bytes32 legalNumber;
+    //     //     bytes32 badge;
+    //     //     bytes32 branchId;
+    //     //     bytes32 toBranchId;
+    //     //     uint employmentStatus;
+    //     //     uint rank;
+    //     //     bool reciever;
+    //     // }
+
+    //     bytes32 messageHash = TransferBranch.hash(TransferBranch.TransferBranchRequest(
+    //         detective1,
+    //         7,
+    //         "Alice",
+    //         keccak256(abi.encode("678843")),
+    //         keccak256(abi.encode("ALICE1")),
+    //         PRECINCT2,
+    //         uint(Ledger.EmploymentStatus.ACTIVE),
+    //         uint(Ledger.Rank.CAPTAIN)
+    //     ));
+
+    //     (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
+    //     bytes memory moderator2Signature = abi.encodePacked(r, s, v);
+
+    //     ledger.transferOfficer(
+    //         88886,
+    //         detective1,
+    //         PRECINCT3,
+    //         7,
+    //         [],
+    //         []
+    //     );
+
+    // }
+
+    function addModerator2() private {
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            moderator2.publicKey,
+            2,
+            moderator2.name,
+            moderator2.legalNumber,
+            moderator2.badge,
+            moderator2.branch.branchId,
+            uint(moderator2.employmentStatus),
+            uint(moderator2.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+        ledger.addModerator(
+            2,
+            moderator2.branch.stateCode,
+            moderator1.branch.stateCode,
+            moderator2.publicKey,
+            moderator2.name,
+            moderator2.legalNumber,
+            moderator2.badge,
+            moderator2.branch.branchId,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+    }
+
+    function addCaptain1() private {
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            captain1.publicKey,
+            2,
+            captain1.name,
+            captain1.legalNumber,
+            captain1.badge,
+            captain1.branch.branchId,
+            uint(captain1.employmentStatus),
+            uint(captain1.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+
+        ledger.onboardCaptain(
+            2,
+            captain1.branch.stateCode,
+            captain1.publicKey,
+            captain1.name,
+            captain1.legalNumber,
+            captain1.badge,
+            captain1.branch.branchId,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+    }
+
+    function addCaptain2() private {
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            captain2.publicKey,
+            2,
+            captain2.name,
+            captain2.legalNumber,
+            captain2.badge,
+            captain2.branch.branchId,
+            uint(captain2.employmentStatus),
+            uint(captain2.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+
+        ledger.onboardCaptain(
+            2,
+            captain2.branch.stateCode,
+            captain2.publicKey,
+            captain2.name,
+            captain2.legalNumber,
+            captain2.badge,
+            captain2.branch.branchId,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+    }
+
+    function addCaptain3() private {
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            captain3.publicKey,
+            2,
+            captain3.name,
+            captain3.legalNumber,
+            captain3.badge,
+            captain3.branch.branchId,
+            uint(captain3.employmentStatus),
+            uint(captain3.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+
+        ledger.onboardCaptain(
+            2,
+            captain3.branch.stateCode,
+            captain3.publicKey,
+            captain3.name,
+            captain3.legalNumber,
+            captain3.badge,
+            captain3.branch.branchId,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+    }
+
+    function addDetective1() private {
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            detective1.publicKey,
+            2,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            uint(detective1.employmentStatus),
+            uint(detective1.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(captain1.publicKey);
+
+        ledger.onboard(
+            2,
+            detective1.branch.stateCode,
+            detective1.publicKey,
+            detective1.name,
+            detective1.legalNumber,
+            detective1.badge,
+            detective1.branch.branchId,
+            detective1.rank,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+        
+    }
+
+    function addDetective2() private {
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            detective2.publicKey,
+            2,
+            detective2.name,
+            detective2.legalNumber,
+            detective2.badge,
+            detective2.branch.branchId,
+            uint(detective2.employmentStatus),
+            uint(detective2.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(captain2.publicKey);
+
+        ledger.onboard(
+            2,
+            detective2.branch.stateCode,
+            detective2.publicKey,
+            detective2.name,
+            detective2.legalNumber,
+            detective2.badge,
+            detective2.branch.branchId,
+            detective2.rank,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+        
+    }
+
+    function addDetective3() private {
+        bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
+            detective3.publicKey,
+            2,
+            detective3.name,
+            detective3.legalNumber,
+            detective3.badge,
+            detective3.branch.branchId,
+            uint(detective3.employmentStatus),
+            uint(detective3.rank)
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(captain3.publicKey);
+
+        ledger.onboard(
+            2,
+            detective3.branch.stateCode,
+            detective3.publicKey,
+            detective3.name,
+            detective3.legalNumber,
+            detective3.badge,
+            detective3.branch.branchId,
+            detective3.rank,
+            moderator1Signature,
+            moderator1.publicKey
+        );
+        
+    }
 
     function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
         return ECDSA.toTypedDataHash(ledger.DOMAIN_SEPARATOR(), structHash);
     }
 }
+
+// TODO: Documentation: you can add a mod if branch does not exist so only added mods can create a branch
+// TODO: mapping for legal number and badge id to check for duplicates
