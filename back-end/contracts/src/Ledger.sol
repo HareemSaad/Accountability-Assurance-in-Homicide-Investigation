@@ -140,6 +140,8 @@ contract Ledger is EIP712 {
     mapping (uint => uint) public moderatorCount;
     mapping (bytes32 => Branch) public branches;
     mapping (bytes32 => bool) public replay;
+    mapping (bytes32 => bool) public legalNumber;
+    mapping (bytes32 => bool) public badge;
 
     function isValidBranch(bytes32 id) public view returns (bool) {
         return (branches[id].stateCode != 0);
@@ -428,10 +430,10 @@ contract Ledger is EIP712 {
     ) external onlyModerator(_stateCode) {
 
         if (_newBadge == keccak256(abi.encode(""))) { revert InvalidBadge(); }
+        if (badge[_newBadge]) { revert InvalidBadge(); }
         if (_signer != msg.sender || _signer == _officer) revert InvalidSigner();
         if (officers[_signer].rank != Rank.MODERATOR) revert InvalidSigner();
         Officer memory officerToUpdate = officers[_officer];
-        officers[_officer].badge = _newBadge;
 
         if (_stateCode != branches[officerToUpdate.branchId].stateCode) revert ModeratorOfDifferentState();
 
@@ -447,6 +449,10 @@ contract Ledger is EIP712 {
         ));
 
         _validateSignatures(messageHash, _signature, _signer);
+
+        badge[officerToUpdate.badge] = false;
+        badge[_newBadge] = true;
+        officers[_officer].badge = _newBadge;
 
         emit OfficerBadgeUpdated (
             _officer,
@@ -515,6 +521,8 @@ contract Ledger is EIP712 {
         if (_badge == keccak256(abi.encode(""))) { revert InvalidBadge(); }
         if (_branchId == keccak256(abi.encode(""))) { revert InvalidBranch(); }
         if (_legalNumber == keccak256(abi.encode(""))) { revert InvalidLegalNumber(); }
+        if (badge[_badge]) { revert InvalidBadge(); }
+        if (legalNumber[_legalNumber]) { revert InvalidLegalNumber(); }
         if (_rank == Rank.NULL) { revert InvalidRank(); }
         if (!isValidBranch(_branchId) && _rank != Rank.MODERATOR ) { revert BranchDoesNotExists(); }
         if (_stateCode != branches[_branchId].stateCode && _rank != Rank.MODERATOR) revert ModeratorOfDifferentState();
@@ -587,6 +595,8 @@ contract Ledger is EIP712 {
         newOfficer.rank = _rank;
 
         branches[_branchId].numberOfOfficers++;
+        badge[newOfficer.badge] = true;
+        legalNumber[newOfficer.legalNumber] = true;
 
         emit Onboard(
             _officer,
