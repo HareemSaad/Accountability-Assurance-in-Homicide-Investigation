@@ -12,10 +12,17 @@ import "./Libraries/UpdateOfficer.sol";
 import "./Libraries/TransferBranch.sol";
 import "forge-std/Test.sol";
 
+/// @title Ledger Contract
+/// @notice Manages officer records and branch details for a law enforcement agency
 contract Ledger is EIP712 {
 
     using Strings for string;
 
+    /// @notice Emitted when a branch is updated
+    /// @param id Unique identifier of the branch
+    /// @param precinctAddress Address of the branch
+    /// @param jurisdictionArea Jurisdiction area code of the branch
+    /// @param stateCode State code of the branch
     event BranchUpdate(
         bytes32 indexed id,
         string precinctAddress,
@@ -23,6 +30,15 @@ contract Ledger is EIP712 {
         uint indexed stateCode
     );
 
+    /// @dev Emitted when a new officer is onboarded
+    /// @param officer Address of the onboarded officer
+    /// @param name Name of the onboarded officer
+    /// @param legalNumber Legal identification number of the onboarded officer
+    /// @param badge Badge number of the onboarded officer
+    /// @param branchId Identifier of the officer's assigned branch
+    /// @param rank Rank of the onboarded officer
+    /// @param when Timestamp of when the officer was onboarded
+    /// @param from Address of the moderator who onboarded the officer
     event Onboard (
         address indexed officer, 
         string name, 
@@ -34,6 +50,12 @@ contract Ledger is EIP712 {
         address from
     );
 
+    /// @dev Emitted when an officer's address is updated
+    /// @param oldAddr Previous address of the officer
+    /// @param newAddr New address of the officer
+    /// @param legalNumber Legal identification number of the officer
+    /// @param when Timestamp of the update
+    /// @param from Address of the moderator who updated the officer's address
     event OfficerAddressUpdated (
         address indexed oldAddr,
         address indexed newAddr,
@@ -42,6 +64,12 @@ contract Ledger is EIP712 {
         address from
     );
 
+    /// @dev Emitted when an officer's name is updated
+    /// @param officerAddress Address of the officer whose name is updated
+    /// @param name New name of the officer
+    /// @param legalNumber Legal identification number of the officer
+    /// @param when Timestamp of the name update
+    /// @param from Address of the moderator who updated the officer's name
     event OfficerNameUpdated (
         address indexed officerAddress,
         string indexed name,
@@ -50,6 +78,12 @@ contract Ledger is EIP712 {
         address from
     );
 
+    /// @dev Emitted when an officer's badge number is updated
+    /// @param officerAddress Address of the officer whose badge number is updated
+    /// @param badge New badge number of the officer
+    /// @param legalNumber Legal identification number of the officer
+    /// @param when Timestamp of the badge number update
+    /// @param from Address of the moderator who updated the officer's badge number
     event OfficerBadgeUpdated (
         address indexed officerAddress,
         bytes32 indexed badge,
@@ -58,18 +92,37 @@ contract Ledger is EIP712 {
         address from
     );
 
+    /// @dev Emitted when an officer is promoted to a new rank
+    /// @param officer Address of the officer who is promoted
+    /// @param prevRank Previous rank of the officer
+    /// @param newRank New rank of the officer
     event Promotion (
         address indexed officer,
         Rank indexed prevRank,
         Rank indexed newRank
     );
     
+    /// @dev Emitted when an officer is transferred from one branch to another
+    /// @param officer Address of the transferred officer
+    /// @param fromBranchId Identifier of the officer's previous branch
+    /// @param toBranchId Identifier of the officer's new branch
     event OfficerTransferred(
         address indexed officer,
         bytes32 indexed fromBranchId,
         bytes32 indexed toBranchId
     );
 
+    /// @notice Initializes a new Ledger contract with a branch and a moderator
+    /// @param _branchId Unique identifier for the initial branch
+    /// @param _precinctAddress Address of the initial branch
+    /// @param _jurisdictionArea Jurisdiction area of the initial branch
+    /// @param _stateCode State code of the initial branch
+    /// @param _officer Address of the initial moderator
+    /// @param _name Name of the initial moderator
+    /// @param _legalNumber Legal identification number of the initial moderator
+    /// @param _badge Badge number of the initial moderator
+    /// @dev creates a branch using `_branchId`
+    /// @dev creates a moderator for said branch for `_officer`
     constructor(
         bytes32 _branchId, 
         string memory _precinctAddress,
@@ -101,6 +154,12 @@ contract Ledger is EIP712 {
         );
     }
 
+    /// @param name name of the officer
+    /// @param legalNumber hash of a real world identification number; like social security number
+    /// @param badge hash of the badge number
+    /// @param branchId hash of branchId
+    /// @param employmentStatus status of employment see `EmploymentStatus`
+    /// @param rank rank of officer see `Rank`
     struct Officer {
         string name;
         bytes32 legalNumber;
@@ -110,6 +169,10 @@ contract Ledger is EIP712 {
         Rank rank;
     }
 
+    /// @param precinctAddress address of precinct
+    /// @param jurisdictionArea jurisdiction area code e.g zip code
+    /// @param stateCode state code e.g city code
+    /// @param numberOfOfficers number of officers in a branch
     struct Branch {
         string precinctAddress;
         uint jurisdictionArea; //postal code
@@ -143,15 +206,47 @@ contract Ledger is EIP712 {
     mapping (bytes32 => bool) public legalNumber;
     mapping (bytes32 => bool) public badge;
 
+    /// @dev Checks if a given branch ID represents a valid branch.
+    /// @param id The branch identifier to check.
+    /// @return True if the branch is valid, otherwise false.
     function isValidBranch(bytes32 id) public view returns (bool) {
         return (branches[id].stateCode != 0);
     }
 
+    /// @dev Checks if a given state code has at least one moderator.
+    /// @param stateCode The state code to check.
+    /// @return True if the state has moderators, otherwise false.
     function isValidState(uint stateCode) public view returns (bool) {
         return (moderatorCount[stateCode] != 0);
     }
 
-    // add a new branch
+    /// @notice Checks if the calling officer's employment status is valid based on branch ID, state code, and badge.
+    /// @dev The function verifies if the calling officer is active, in the specified branch, and matches the badge number.
+    /// @param _branchId The branch identifier to check against the officer's branch.
+    /// @param _stateCode The state code to verify against the officer's branch's state code.
+    /// @param _badge The badge number to verify against the officer's badge number.
+    /// @return True if the officer's employment status is active, and their branch ID, state code, and badge match the provided parameters. Otherwise, returns false.
+    function isValidEmployment(bytes32 _branchId, uint _stateCode, bytes32 _badge) public view returns (bool) {
+        Officer memory _officer = officers[msg.sender];
+        if (_officer.branchId == _branchId && branches[_officer.branchId].stateCode == _stateCode) {
+            if (_officer.employmentStatus == EmploymentStatus.ACTIVE && _officer.badge == _badge) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// @notice Creates a new branch with required signatures from moderators
+    /// @param _id Unique string identifier for the new branch
+    /// @param _precinctAddress Address of the new branch
+    /// @param _jurisdictionArea Jurisdiction area code of the new branch
+    /// @param _stateCode State code of the new branch
+    /// @param _nonce Nonce for signature verification
+    /// @param _signatures Array of signatures from moderators
+    /// @param _signers Array of addresses corresponding to the moderators who signed
+    /// @dev to create a branch a moderator for that branch's stateCode should exist
+    /// @dev needs to be signed by more than half of the state's moderators to be passed
+    /// @dev moderator's should sign `CreateBranch` struct
     function createBranch(
         string memory _id, 
         string memory _precinctAddress,
@@ -195,7 +290,15 @@ contract Ledger is EIP712 {
 
     }
     
-    // update a pre existing branch
+    /// @notice Updates an existing branch after verification and authorization by moderators.
+    /// @dev Has to be signed by atleast half of the moderators of state
+    /// @param _id The unique identifier of the branch.
+    /// @param _precinctAddress The new address of the branch.
+    /// @param _jurisdictionArea The new jurisdiction area of the branch.
+    /// @param _stateCode The state code of the branch.
+    /// @param _nonce A nonce for signature verification.
+    /// @param _signatures Signatures from moderators to authorize the branch update.
+    /// @param _signers Addresses of moderators who provided the signatures.
     function updateBranch(
         string memory _id, 
         string memory _precinctAddress,
@@ -238,7 +341,17 @@ contract Ledger is EIP712 {
 
     }
 
-    // add a moderator
+    /// @notice Adds a new moderator to a branch.
+    /// @param _nonce A nonce for the operation to prevent replay attacks.
+    /// @param _stateCode State code of the branch.
+    /// @param _senderStateCode State code of the sender (moderator).
+    /// @param _officer Address of the new moderator.
+    /// @param _name Name of the new moderator.
+    /// @param _legalNumber Legal identification number of the new moderator.
+    /// @param _badge Badge number of the new moderator.
+    /// @param _branchId Branch ID where the moderator is being assigned.
+    /// @param _signature Signature of the existing moderator authorizing the addition.
+    /// @param _signer Address of the existing moderator.
     function addModerator(
         uint _nonce,
         uint _stateCode,
@@ -256,6 +369,19 @@ contract Ledger is EIP712 {
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.MODERATOR, _signature, _signer);
     }
 
+    /// @notice Onboards a new officer or detective after validation and authorization.
+    /// @dev Called by the captain of the onboarding branch
+    /// @dev Onboarding signed by a moderator of the same state code
+    /// @param _nonce A nonce for the operation to prevent replay attacks.
+    /// @param _stateCode State code of the branch.
+    /// @param _officer Address of the new officer or moderator.
+    /// @param _name Name of the new officer or moderator.
+    /// @param _legalNumber Legal identification number.
+    /// @param _badge Badge number.
+    /// @param _branchId Branch ID where the officer or moderator is being assigned.
+    /// @param _rank Rank of the new officer or moderator.
+    /// @param _signature Signature of the authorizing officer.
+    /// @param _signer Address of the authorizing officer.
     function onboard(
         uint _nonce,
         uint _stateCode,
@@ -275,6 +401,17 @@ contract Ledger is EIP712 {
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
     }
 
+    /// @notice Onboards a new captain after validation and authorization by a moderator.
+    /// @dev Onboarding signed by a moderator of the same state code
+    /// @param _nonce A nonce for the operation to prevent replay attacks.
+    /// @param _stateCode State code of the branch.
+    /// @param _officer Address of the new captain.
+    /// @param _name Name of the new captain.
+    /// @param _legalNumber Legal identification number.
+    /// @param _badge Badge number.
+    /// @param _branchId Branch ID where the captain is being assigned.
+    /// @param _signature Signature of the authorizing moderator.
+    /// @param _signer Address of the authorizing moderator.
     function onboardCaptain(
         uint _nonce,
         uint _stateCode,
@@ -290,6 +427,10 @@ contract Ledger is EIP712 {
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.CAPTAIN, _signature, _signer);
     }
 
+    /// @notice Promotes an existing officer to a new rank.
+    /// @param _stateCode State code of the branch.
+    /// @param _officerAddress Address of the officer being promoted.
+    /// @param _newRank The new rank to which the officer is being promoted.
     function promote(
         uint _stateCode,
         address _officerAddress, 
@@ -321,6 +462,15 @@ contract Ledger is EIP712 {
         delete _prevRank;
     }
 
+    /// @notice Validates and processes officer transfer request between branches
+    /// @dev Requires signatures from captains of both the current and target branch
+    /// @dev If branches are in different StateCodes its needs to be called by the moderator of the current state
+    /// @param _nonce Nonce for signature verification
+    /// @param _stateCode State code for moderator verification
+    /// @param _officerAddress Address of the officer to be transferred
+    /// @param _toBranchId Identifier of the target branch for transfer
+    /// @param _signatures Array containing two signatures for the transfer
+    /// @param _signers Array containing addresses of the signers (captains)
     function transferOfficer(
         uint _nonce,
         uint _stateCode,
@@ -380,6 +530,13 @@ contract Ledger is EIP712 {
         delete _officer;
     }
 
+    /// @notice Updates the address of an officer
+    /// @param _nonce Nonce for signature verification
+    /// @param _stateCode State code for moderator verification
+    /// @param _officer Address of the officer to update
+    /// @param _newAddress New address of the officer
+    /// @param _signature Signature of the moderator authorizing the update
+    /// @param _signer Address of the moderator who signed the update request
     function updateAddress(
         uint _nonce,
         uint _stateCode,
@@ -420,6 +577,13 @@ contract Ledger is EIP712 {
         );
     }
 
+    /// @notice Updates the badge number of an officer
+    /// @param _nonce Nonce for signature verification
+    /// @param _stateCode State code for moderator verification
+    /// @param _officer Address of the officer to update
+    /// @param _newBadge New badge number of the officer
+    /// @param _signature Signature of the moderator authorizing the update
+    /// @param _signer Address of the moderator who signed the update request
     function updateBadge(
         uint _nonce,
         uint _stateCode,
@@ -463,6 +627,13 @@ contract Ledger is EIP712 {
         );
     }
 
+    /// @notice Updates the name of an officer
+    /// @param _nonce Nonce for signature verification
+    /// @param _stateCode State code for moderator verification
+    /// @param _officer Address of the officer to update
+    /// @param _newName New name of the officer
+    /// @param _signature Signature of the moderator authorizing the update
+    /// @param _signer Address of the moderator who signed the update request
     function updateName(
         uint _nonce,
         uint _stateCode,
@@ -502,6 +673,17 @@ contract Ledger is EIP712 {
         );
     }
 
+    /// @notice Internal function to onboard a new officer or moderator
+    /// @param _nonce Nonce for signature verification
+    /// @param _stateCode State code for moderator verification
+    /// @param _officer Address of the new officer
+    /// @param _name Name of the new officer
+    /// @param _legalNumber Legal identification number of the new officer
+    /// @param _badge Badge number of the new officer
+    /// @param _branchId Identifier of the officer's assigned branch
+    /// @param _rank Rank of the new officer
+    /// @param _signature Signature of the moderator authorizing the onboarding
+    /// @param _signer Address of the moderator who signed the onboarding request
     function _onboard(
         uint _nonce,
         uint _stateCode,
