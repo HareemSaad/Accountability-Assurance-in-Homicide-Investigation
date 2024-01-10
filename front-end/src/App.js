@@ -21,6 +21,8 @@ import { ModeratorHome } from './components/ModeratorHome/ModeratorHome.js';
 import { CreateRequest } from './components/CreateRequest/CreateRequest.js';
 import { CreateBranch } from './components/CreateRequest/CreateBranch.js';
 import { OfficerOnboard } from './components/CreateRequest/OfficerOnboard.js';
+import { OfficerOffboard } from './components/CreateRequest/OfficerOffboard.js';
+import { TransferOfficerBranch } from './components/CreateRequest/TransferOfficerBranch.js';
 import { TrusteeRequest } from './components/CreateRequest/TrusteeRequest.js';
 import { UpdateBranch } from './components/CreateRequest/UpdateBranch.js';
 import { UpdateOfficer } from './components/CreateRequest/UpdateOfficer.js';
@@ -28,6 +30,7 @@ import { UpdateOfficer } from './components/CreateRequest/UpdateOfficer.js';
 import { ViewRequests } from './components/ViewRequest/ViewRequests.js';
 import { ViewCreateBranch } from './components/ViewRequest/ViewCreateBranch.js';
 import { ViewOfficerOnboard } from './components/ViewRequest/ViewOfficerOnboard.js';
+import { ViewOfficerOffboard } from './components/ViewRequest/ViewOfficerOffboard.js';
 import { ViewTrusteeRequest } from './components/ViewRequest/ViewTrusteeRequest.js';
 import { ViewUpdateBranch } from './components/ViewRequest/ViewUpdateBranch.js';
 import { ViewUpdateOfficer } from './components/ViewRequest/ViewUpdateOfficer.js';
@@ -113,6 +116,8 @@ function App() {
             <Route path="/create-request" element={<CreateRequest />} />
             <Route path="/create-request/create-branch" element={<CreateBranch />} />
             <Route path="/create-request/officer-onboard" element={<OfficerOnboard />} />
+            <Route path="/create-request/officer-offboard" element={<OfficerOffboard />} />
+            <Route path="/create-request/transfer-officer-branch" element={<TransferOfficerBranch />} />
             <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
             <Route path="/create-request/update-branch" element={<UpdateBranch />} />
             <Route path="/create-request/update-officer" element={<UpdateOfficer />} />
@@ -120,6 +125,7 @@ function App() {
             <Route path="/:reqName" element={<ViewRequests />} />
             <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />
             <Route path="/view-officer-onboard/:reqId" element={<ViewOfficerOnboard />} />
+            <Route path="/view-officer-offboard/:reqId" element={<ViewOfficerOffboard />} />
             <Route path="/view-trustee-request/:reqId" element={<ViewTrusteeRequest />} />
             <Route path="/view-update-branch/:reqId" element={<ViewUpdateBranch />} />
             <Route path="/view-update-officer/:reqId" element={<ViewUpdateOfficer />} />

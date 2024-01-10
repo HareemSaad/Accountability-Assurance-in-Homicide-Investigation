@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 export const CreateRequest = () => {
 
-    const requestCategory = [{"name": "Create Branch", "end-point": "create-branch"}, {"name": "Officer Onboard", "end-point": "officer-onboard"}, {"name": "Trustee Request", "end-point": "trustee-request"}, {"name": "Update Branch", "end-point": "update-branch"}, {"name": "Update Officer", "end-point": "update-officer"}];
+    const requestCategory = [{ "name": "Create Branch", "end-point": "create-branch" }, { "name": "Officer Onboard", "end-point": "officer-onboard" }, { "name": "Officer Offboard", "end-point": "officer-offboard" }, { "name": "Transfer Officer Branch", "end-point": "transfer-officer-branch" }, { "name": "Trustee Request", "end-point": "trustee-request" }, { "name": "Update Branch", "end-point": "update-branch" }, { "name": "Update Officer", "end-point": "update-officer" }];
 
     let navigate = useNavigate();
 
