@@ -5,6 +5,7 @@ import { fetchOfficerInfo, validateOfficer } from "../scripts/OfficerInfo";
 
 const createBranchRoute = require("../scripts/createBranchRoute")
 const OfficerOnboard = require('../scripts/officerOnboardRoute')
+const OfficerOffboard = require('../scripts/officerOffboardRoute')
 const TrusteeRequest = require('../scripts/trusteeRequestRoute')
 const UpdateBranch = require('../scripts/updateBranchRoute')
 const UpdateOfficer = require('../scripts/updateOfficerRoute')
@@ -17,6 +18,7 @@ router.get('/validateOfficer', validateOfficer);
 
 router.use(createBranchRoute);
 router.use(OfficerOnboard);
+router.use(OfficerOffboard);
 router.use(TrusteeRequest);
 router.use(UpdateBranch);
 router.use(UpdateOfficer);
