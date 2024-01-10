@@ -49,6 +49,7 @@ import { ToastContainer } from "react-toastify";
 
 // CONTEXT
 import { UserContext, UserProvider } from './components/Context/userContext.tsx';
+import { UserAddressContextProvider } from './components/Context/userAddressContext.tsx';
 
 // Configure chains & providers with the Alchemy provider.
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
@@ -82,6 +83,8 @@ function App() {
 
   return (
     <>
+    <UserAddressContextProvider>
+
       <UserProvider>
         <ToastContainer />
         <WagmiConfig config={config}>
@@ -123,6 +126,7 @@ function App() {
           </Routes>
         </WagmiConfig>
       </UserProvider>
+    </UserAddressContextProvider>
     </>
   );
 }
