@@ -48,4 +48,14 @@ router.get('/view-trustee-request/:reqId', async (req, res) => {
     .catch(err => console.log("errorr:: ", err))
 })
 
+// sign trustee request - push signer address in signers array (if not already exists)
+router.post('/view-trustee-request/:reqId', async (req, res) => {
+    // console.log("req.params:: ", req.params)
+    let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
+    // console.log("matches:: ", idParam)
+    await TrusteeRequest.updateOne({'id': `${idParam}`}, {$addToSet: { signers: req.body.userAddress }})
+    .then(requests => res.status(200))
+    .catch(err => console.log("errorr:: ", err))
+})
+
 module.exports = router
