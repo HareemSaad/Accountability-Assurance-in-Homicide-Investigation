@@ -46,4 +46,14 @@ router.get('/view-update-officer/:reqId', async (req, res) => {
     .catch(err => console.log("errorr:: ", err))
 })
 
+// sign update officer request - push signer address in signers array (if not already exists)
+router.post('/view-update-officer/:reqId', async (req, res) => {
+    // console.log("req.params:: ", req.params)
+    let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
+    // console.log("matches:: ", idParam)
+    await UpdateOfficer.updateOne({'id': `${idParam}`}, {$addToSet: { signers: req.body.userAddress }})
+    .then(requests => res.status(200))
+    .catch(err => console.log("errorr:: ", err))
+})
+
 module.exports = router
