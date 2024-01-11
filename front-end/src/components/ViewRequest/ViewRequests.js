@@ -33,6 +33,9 @@ export const ViewRequests = () => {
         else if (reqName === "view-officer-offboard") {
             navigate(`/view-officer-offboard/${cardId}`);
         } 
+        else if (reqName === "view-transfer-officer-branch") {
+            navigate(`/view-transfer-officer-branch/${cardId}`);
+        } 
         else if (reqName === "view-trustee-request") {
             navigate(`/view-trustee-request/${cardId}`);
         } 
@@ -56,6 +59,7 @@ export const ViewRequests = () => {
                 {reqName === "view-create-branch" ? <h1 className='m-4'>Create Branch Requests</h1>
                     : reqName === "view-officer-onboard" ? <h1 className='m-4'>Officer Onboard Requests</h1>
                     : reqName === "view-officer-offboard" ? <h1 className='m-4'>Officer Offboard Requests</h1>
+                    : reqName === "view-transfer-officer-branch" ? <h1 className='m-4'>Transfer Officer Branch Requests</h1>
                     : reqName === "view-trustee-request" ? <h1 className='m-4'>Trustee Requests</h1>
                     : reqName === "view-update-branch" ? <h1 className='m-4'>Update Branch Requests</h1>
                     : reqName === "view-update-officer" ? <h1 className='m-4'>Update Officer Requests</h1>
