@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
@@ -6,55 +6,67 @@ import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
 
-export const OfficerOffboard = () => {
+export const TransferOfficerBranch = () => {
   let navigate = useNavigate();
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [selectedRankValue, setSelectedRankValue] = useState(null);
+  // const [employeeStatus, setEmployeeStatus] = useState("");
+
   // Function to handle dropdown item selection
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
-  const [OfficerOffboardInfo, setOfficerOffboardInfo] = useState({
+
+  const [transferOfficerInfo, setTransferOfficerInfo] = useState({
     verifiedAddress: "",
     name: "",
     legalNumber: "",
     badge: "",
     branchId: "",
+    toBranchId: "",
     rank: "",
     employmentStatus: "",
   });
 
   const rankArray = ["Null", "Officer", "Detective", "Captain"];
-  const statusArray = ["Select a Status", "Fired", "Retired"];
+  const statusArray = [
+    "Select a Status",
+    "Active",
+    "Inactive",
+    "Fired",
+    "Retired",
+  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: value });
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: value });
     console.log("params :: ", name);
     console.log("value :: ", value);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (OfficerOffboardInfo.verifiedAddress === "") {
+    if (transferOfficerInfo.verifiedAddress === "") {
       notify("error", `Verified Address is empty`);
-    } else if (OfficerOffboardInfo.name === "") {
+    } else if (transferOfficerInfo.name === "") {
       notify("error", `Name is empty`);
-    } else if (OfficerOffboardInfo.legalNumber === "") {
+    } else if (transferOfficerInfo.legalNumber === "") {
       notify("error", `Legal Number is empty`);
-    } else if (OfficerOffboardInfo.badge === "") {
+    } else if (transferOfficerInfo.badge === "") {
       notify("error", `Badge is empty`);
-    } else if (OfficerOffboardInfo.branchId === "") {
+    } else if (transferOfficerInfo.branchId === "") {
       notify("error", `Branch Id is empty`);
+    } else if (transferOfficerInfo.toBranchId === "") {
+      notify("error", `To Branch Id is empty`);
     } else if (
-      OfficerOffboardInfo.rank === "" ||
-      OfficerOffboardInfo.rank === 0
+      transferOfficerInfo.rank === "" ||
+      transferOfficerInfo.rank === 0
     ) {
       notify("error", `Select Officer Rank`);
     } else if (
-        OfficerOffboardInfo.employmentStatus === "" ||
-        OfficerOffboardInfo.employmentStatus === 0
-        ) {
-        notify("error", `Select Employment Status`);
+      transferOfficerInfo.employmentStatus === "" ||
+      transferOfficerInfo.employmentStatus === 0
+    ) {
+      notify("error", `Select Employment Status`);
     } else {
       setButtonDisabled(true);
       setTimeout(() => {
@@ -62,41 +74,43 @@ export const OfficerOffboard = () => {
       }, 5000);
       axios
         .post(
-          "http://localhost:3000/create-request/officer-offboard",
-          OfficerOffboardInfo
+          "http://localhost:3000/create-request/transfer-officer-branch",
+          transferOfficerInfo
         )
         .then((res) =>
-          notify("success", "Officer Onboard Request Created successfully")
+          notify("success", "Update Officer Request Created successfully")
         )
         .catch((err) => {
           // console.log("error:: ", err);
           notify(
             "error",
-            `An Error Occured when Creating Officer Onboard Request`
+            `An Error Occured when Creating Update Officer Request`
           );
         });
     }
   };
 
-  // Function to handle dropdown item selection
-  const handleDropdownSelect = (categoryValue) => {
+  useEffect(() => {
+    console.log("transferOfficerInfo:: ", transferOfficerInfo);
+  }, [transferOfficerInfo]);
+
+  // Function to handle rank dropdown item selection
+  const handleRankDropdownSelect = (categoryValue) => {
     setSelectedRankValue(categoryValue);
     const name = "rank";
-    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue});
   };
 
   // Function to handle employment status dropdown selection
   const handleStatusDropdownSelect = (categoryValue) => {
     setSelectedStatusValue(categoryValue);
     const name = "employmentStatus";
-    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
-    console.log("params :: ", name);
-    console.log("value :: ", categoryValue);
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
   };
 
   return (
     <div className="container">
-      <h2 className="m-3 mt-5 mb-4">Officer Offboard Request</h2>
+      <h2 className="m-3 mt-5 mb-4">Transfer Officer Request</h2>
       <form>
         {/* Verified Address */}
         <div className="row g-3 align-items-center m-3">
@@ -203,6 +217,27 @@ export const OfficerOffboard = () => {
           </div>
         </div>
 
+        {/* To Branch Id */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="toBranchId" className="col-form-label">
+              <b>
+                <em>To Branch Id:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="number"
+              name="toBranchId"
+              id="toBranchId"
+              placeholder="Enter To Branch Id Here"
+              className="form-control"
+              onChange={handleChange}
+            ></input>
+          </div>
+        </div>
+
         {/* Officer Rank dropdown */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -217,7 +252,7 @@ export const OfficerOffboard = () => {
             <Dropdown>
               <Dropdown.Toggle
                 variant="secondary"
-                id="rank"
+                id="officerRank"
                 className="dropdown"
               >
                 {" "}
@@ -231,7 +266,7 @@ export const OfficerOffboard = () => {
                   <Dropdown.Item
                     name="rank"
                     key={index}
-                    onClick={() => handleDropdownSelect(index)}
+                    onClick={() => handleRankDropdownSelect(index)}
                   >
                     {" "}
                     {category}{" "}
@@ -252,7 +287,7 @@ export const OfficerOffboard = () => {
             </label>
           </div>
           <div className="col-9 input">
-          <Dropdown>
+            <Dropdown>
               <Dropdown.Toggle
                 variant="secondary"
                 id="employmentStatus"
@@ -287,7 +322,7 @@ export const OfficerOffboard = () => {
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}
         >
-          Create Request for officer Offboarding
+          Create Request for Transfer Officer Branch
         </button>
       </form>
     </div>

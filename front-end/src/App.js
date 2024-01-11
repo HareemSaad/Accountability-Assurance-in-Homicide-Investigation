@@ -31,6 +31,7 @@ import { ViewRequests } from './components/ViewRequest/ViewRequests.js';
 import { ViewCreateBranch } from './components/ViewRequest/ViewCreateBranch.js';
 import { ViewOfficerOnboard } from './components/ViewRequest/ViewOfficerOnboard.js';
 import { ViewOfficerOffboard } from './components/ViewRequest/ViewOfficerOffboard.js';
+import { ViewTransferOfficerBranch } from './components/ViewRequest/ViewTransferOfficerBranch.js';
 import { ViewTrusteeRequest } from './components/ViewRequest/ViewTrusteeRequest.js';
 import { ViewUpdateBranch } from './components/ViewRequest/ViewUpdateBranch.js';
 import { ViewUpdateOfficer } from './components/ViewRequest/ViewUpdateOfficer.js';
@@ -126,6 +127,7 @@ function App() {
             <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />
             <Route path="/view-officer-onboard/:reqId" element={<ViewOfficerOnboard />} />
             <Route path="/view-officer-offboard/:reqId" element={<ViewOfficerOffboard />} />
+            <Route path="/view-transfer-officer-branch/:reqId" element={<ViewTransferOfficerBranch />} />
             <Route path="/view-trustee-request/:reqId" element={<ViewTrusteeRequest />} />
             <Route path="/view-update-branch/:reqId" element={<ViewUpdateBranch />} />
             <Route path="/view-update-officer/:reqId" element={<ViewUpdateOfficer />} />
