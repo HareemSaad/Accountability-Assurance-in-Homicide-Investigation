@@ -4,9 +4,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from 'axios';
+import { useUserAddressContext } from '../Context/userAddressContext.tsx';
 
 export const ViewCreateBranch = () => {
     const { reqId } = useParams();
+    const { userAddress, setUserAddress } = useUserAddressContext();
+
+    const [isButtonDisabled, setButtonDisabled] = useState(false);
 
     let navigate = useNavigate();
 
@@ -20,12 +24,21 @@ export const ViewCreateBranch = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setButtonDisabled(true);
+        setTimeout(() => {
+            setButtonDisabled(false);
+        }, 5000);
         // axiospost - update the array of signers/signatures...
+        axios.post(`http://localhost:3000/view-create-branch/:${reqId}`, {"userAddress": userAddress})
+            .then(res => notify("success", "Signed successfully"))
+            .catch(err => {
+                // console.log("error:: ", err);
+                notify("error", `An Error Occured when Signing`);
+            })
     }
 
     return (
         <div className='container'>
-            {console.log("requestDetail:: ", requestDetail)}
             <h2 className='m-3 mt-5 mb-4'>Create Branch Request #{reqId}</h2>
             <form>
                 {/* Precinct Address */}
@@ -69,7 +82,7 @@ export const ViewCreateBranch = () => {
                 </div>
 
                 {/* sign button */}
-                <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
+                <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)} disabled={isButtonDisabled}>
                     Sign 
                 </button>
 
