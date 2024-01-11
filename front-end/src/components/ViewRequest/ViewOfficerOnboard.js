@@ -1,13 +1,17 @@
 import React, { useState, useEffect }from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useNavigate, useParams } from "react-router-dom";
+import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from 'axios';
+import { useUserAddressContext } from '../Context/userAddressContext.tsx';
 
 export const ViewOfficerOnboard = () => {
     const { reqId } = useParams();
+    const { userAddress, setUserAddress } = useUserAddressContext();
     let navigate = useNavigate();
 
+    const [isButtonDisabled, setButtonDisabled] = useState(false);
     const [requestDetail, setRequestDetail] = useState({});
 
     useEffect(() => {
@@ -18,6 +22,17 @@ export const ViewOfficerOnboard = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setButtonDisabled(true);
+        setTimeout(() => {
+            setButtonDisabled(false);
+        }, 5000);
+        // axiospost - update the array of signers/signatures...
+        axios.post(`http://localhost:3000/view-officer-onboard/:${reqId}`, {"userAddress": userAddress})
+            .then(res => notify("success", "Signed successfully"))
+            .catch(err => {
+                // console.log("error:: ", err);
+                notify("error", `An Error Occured when Signing`);
+            })
     }
 
     // converting rank (number) from backend to string for readability
@@ -112,7 +127,7 @@ export const ViewOfficerOnboard = () => {
                 </div>
 
                 {/* sign button */}
-                <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
+                <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)} disabled={isButtonDisabled}>
                     Sign 
                 </button>
 

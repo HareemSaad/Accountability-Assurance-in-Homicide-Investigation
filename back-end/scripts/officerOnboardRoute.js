@@ -47,4 +47,14 @@ router.get('/view-officer-onboard/:reqId', async (req, res) => {
     .catch(err => console.log("errorr:: ", err))
 })
 
+// sign officer onboard request - push signer address in signers array (if not already exists)
+router.post('/view-officer-onboard/:reqId', async (req, res) => {
+    // console.log("req.params:: ", req.params)
+    let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
+    // console.log("matches:: ", idParam)
+    await OfficerOnboard.updateOne({'id': `${idParam}`}, {$addToSet: { signers: req.body.userAddress }})
+    .then(requests => res.status(200))
+    .catch(err => console.log("errorr:: ", err))
+})
+
 module.exports = router
