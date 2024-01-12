@@ -31,3 +31,5 @@ error InvalidSigner();
 error ModeratorOfDifferentState();
 error InactiveOfficer();
 error SignerNotCaptain();
+error StateNeedsAtleastOneModerator();
+error Expired();

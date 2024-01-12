@@ -6,6 +6,7 @@ import "./../src/Ledger.sol";
 import "./../src/Libraries/CreateBranch.sol";
 import "./../src/Libraries/UpdateBranch.sol";
 import "./../src/Libraries/Onboard.sol";
+import "./../src/Libraries/Offboard.sol";
 import "./../src/Libraries/UpdateOfficer.sol";
 import "./../src/Libraries/TransferBranch.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -92,6 +93,17 @@ contract BaseTest is Test {
         "Abe",
         "1236",
         "MOD-3",
+        Ledger.EmploymentStatus.ACTIVE,
+        Ledger.Rank.MODERATOR
+    );
+
+    Officer moderator4 = Officer(
+        0xE11E,
+        vm.addr(0xE11E),
+        branch1,
+        "Elle",
+        "12444",
+        "MOD-4",
         Ledger.EmploymentStatus.ACTIVE,
         Ledger.Rank.MODERATOR
     );
