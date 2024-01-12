@@ -279,6 +279,7 @@ contract Ledger is EIP712 {
     /// @param _nonce Nonce for signature verification
     /// @param _signatures Array of signatures from moderators
     /// @param _signers Array of addresses corresponding to the moderators who signed
+    /// @param _expiry expiry date
     /// @dev to create a branch a moderator for that branch's stateCode should exist
     /// @dev needs to be signed by more than half of the state's moderators to be passed
     /// @dev moderator's should sign `CreateBranch` struct
@@ -288,9 +289,12 @@ contract Ledger is EIP712 {
         uint _jurisdictionArea,
         uint _stateCode,
         uint _nonce,
+        uint _expiry,
         bytes[] memory _signatures,
         address[] memory _signers
     ) external onlyModerator(_stateCode) {
+        _validateExpiry(_expiry);
+
         if(_id.equal("") || _precinctAddress.equal("") || _jurisdictionArea == 0 || _stateCode == 0) revert InvalidInput();
 
         bytes32 id = keccak256(abi.encode(_id));
@@ -304,7 +308,8 @@ contract Ledger is EIP712 {
             _precinctAddress,
             _jurisdictionArea,
             _stateCode,
-            id
+            id,
+            _expiry
         ));
 
         _validateSignatures(messageHash, _signatures, _signers);
@@ -334,15 +339,19 @@ contract Ledger is EIP712 {
     /// @param _nonce A nonce for signature verification.
     /// @param _signatures Signatures from moderators to authorize the branch update.
     /// @param _signers Addresses of moderators who provided the signatures.
+    /// @param _expiry expiry date
     function updateBranch(
         string memory _id, 
         string memory _precinctAddress,
         uint _jurisdictionArea,
         uint _stateCode,
         uint _nonce,
+        uint _expiry,
         bytes[] memory _signatures,
         address[] memory _signers
     ) external onlyModerator(_stateCode) {
+        _validateExpiry(_expiry);
+
         if(_id.equal("") || _precinctAddress.equal("") || _jurisdictionArea == 0) revert InvalidInput();
 
         bytes32 id = keccak256(abi.encode(_id));
@@ -359,7 +368,8 @@ contract Ledger is EIP712 {
             _precinctAddress,
             _jurisdictionArea,
             _stateCode,
-            id
+            id,
+            _expiry
         ));
 
         _validateSignatures(messageHash, _signatures, _signers);
@@ -387,6 +397,7 @@ contract Ledger is EIP712 {
     /// @param _branchId Branch ID where the moderator is being assigned.
     /// @param _signature Signature of the existing moderator authorizing the addition.
     /// @param _signer Address of the existing moderator.
+    /// @param _expiry expiry date
     function addModerator(
         uint _nonce,
         uint _stateCode,
@@ -396,12 +407,13 @@ contract Ledger is EIP712 {
         bytes32 _legalNumber, 
         bytes32 _badge, 
         bytes32 _branchId,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_senderStateCode) {
         
         // moderator cannot hire officers or detectives
-        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.MODERATOR, _signature, _signer);
+        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.MODERATOR, _expiry, _signature, _signer);
     }
 
     /// @notice Onboards a new officer or detective after validation and authorization.
@@ -417,6 +429,7 @@ contract Ledger is EIP712 {
     /// @param _rank Rank of the new officer or moderator.
     /// @param _signature Signature of the authorizing officer.
     /// @param _signer Address of the authorizing officer.
+    /// @param _expiry expiry date
     function onboard(
         uint _nonce,
         uint _stateCode,
@@ -426,6 +439,7 @@ contract Ledger is EIP712 {
         bytes32 _badge, 
         bytes32 _branchId, 
         Rank _rank,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyRank(Rank.CAPTAIN) {
@@ -433,7 +447,7 @@ contract Ledger is EIP712 {
         if (_rank >= Rank.CAPTAIN) { revert InvalidRank(); }
         if (_signer == msg.sender || _signer == _officer) revert InvalidSigner();
         if (branches[_branchId].stateCode == 0) { revert BranchDoesNotExists(); }
-        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _signature, _signer);
+        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, _rank, _expiry, _signature, _signer);
     }
 
     /// @notice Onboards an existing officer or detective after validation and authorization. (Rehiring)
@@ -447,6 +461,7 @@ contract Ledger is EIP712 {
     /// @param _rank Rank of the new officer or moderator.
     /// @param _signature Signature of the authorizing officer.
     /// @param _signer Address of the authorizing officer.
+    /// @param _expiry expiry date
     function onboard(
         uint _nonce,
         uint _stateCode,
@@ -454,6 +469,7 @@ contract Ledger is EIP712 {
         bytes32 _badge, 
         bytes32 _branchId, 
         Rank _rank,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
@@ -462,7 +478,7 @@ contract Ledger is EIP712 {
         if (_signer == msg.sender || _signer == _officerAddress) revert InvalidSigner();
         if (branches[_branchId].stateCode == 0) { revert BranchDoesNotExists(); }
         Officer memory _officer = officers[_officerAddress];
-        _onboard(_nonce, _stateCode, _officerAddress, _officer.name, _officer.legalNumber, _badge, _branchId, _rank, _signature, _signer);
+        _onboard(_nonce, _stateCode, _officerAddress, _officer.name, _officer.legalNumber, _badge, _branchId, _rank, _expiry, _signature, _signer);
     }
 
     /// @notice Onboards a new captain after validation and authorization by a moderator.
@@ -476,6 +492,7 @@ contract Ledger is EIP712 {
     /// @param _branchId Branch ID where the captain is being assigned.
     /// @param _signature Signature of the authorizing moderator.
     /// @param _signer Address of the authorizing moderator.
+    /// @param _expiry expiry date
     function onboardCaptain(
         uint _nonce,
         uint _stateCode,
@@ -484,11 +501,12 @@ contract Ledger is EIP712 {
         bytes32 _legalNumber, 
         bytes32 _badge, 
         bytes32 _branchId,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
         // moderator cannot hire officers or detectives
-        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.CAPTAIN, _signature, _signer);
+        _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.CAPTAIN, _expiry, _signature, _signer);
     }
 
     /// @notice Promotes an existing officer to a new rank.
@@ -535,14 +553,18 @@ contract Ledger is EIP712 {
     /// @param _toBranchId Identifier of the target branch for transfer
     /// @param _signatures Array containing two signatures for the transfer
     /// @param _signers Array containing addresses of the signers (captains)
+    /// @param _expiry expiry date
     function transferOfficer(
         uint _nonce,
         uint _stateCode,
         address _officerAddress,
         bytes32 _toBranchId,
+        uint _expiry,
         bytes[2] memory _signatures,
         address[2] memory _signers
     ) external onlyModerator(_stateCode) {
+        _validateExpiry(_expiry);
+
         Officer memory _officer = officers[_officerAddress];
         // Check state code consistency
         if(branches[_officer.branchId].stateCode != _stateCode) { revert ModeratorOfDifferentState(); }
@@ -560,7 +582,8 @@ contract Ledger is EIP712 {
             toBranchId: _toBranchId,
             employmentStatus: uint(_officer.employmentStatus),
             rank: uint(_officer.rank),
-            reciever: false
+            reciever: false,
+            expiry: _expiry
         });
 
         bytes32 messageHash = TransferBranch.hash(request);
@@ -601,14 +624,17 @@ contract Ledger is EIP712 {
     /// @param _newAddress New address of the officer
     /// @param _signature Signature of the moderator authorizing the update
     /// @param _signer Address of the moderator who signed the update request
+    /// @param _expiry expiry date
     function updateAddress(
         uint _nonce,
         uint _stateCode,
         address _officer,
         address _newAddress,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
+        _validateExpiry(_expiry);
 
         if (_newAddress == address(0)) revert ZeroAddress();
         if (_signer != msg.sender || _signer == _officer) revert InvalidSigner();
@@ -627,7 +653,8 @@ contract Ledger is EIP712 {
             officerToUpdate.badge,
             officerToUpdate.branchId,
             uint(officerToUpdate.rank), 
-            UpdateOfficer.UpdateType.ADDRESS
+            UpdateOfficer.UpdateType.ADDRESS,
+            _expiry
         ));
 
         _validateSignatures(messageHash, _signature, _signer);
@@ -648,14 +675,17 @@ contract Ledger is EIP712 {
     /// @param _newBadge New badge number of the officer
     /// @param _signature Signature of the moderator authorizing the update
     /// @param _signer Address of the moderator who signed the update request
+    /// @param _expiry expiry date
     function updateBadge(
         uint _nonce,
         uint _stateCode,
         address _officer,
         bytes32 _newBadge,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
+        _validateExpiry(_expiry);
 
         if (_newBadge == keccak256(abi.encode(""))) { revert InvalidBadge(); }
         if (badge[_newBadge]) { revert InvalidBadge(); }
@@ -673,7 +703,8 @@ contract Ledger is EIP712 {
             _newBadge,
             officerToUpdate.branchId,
             uint(officerToUpdate.rank), 
-            UpdateOfficer.UpdateType.BADGE
+            UpdateOfficer.UpdateType.BADGE,
+            _expiry
         ));
 
         _validateSignatures(messageHash, _signature, _signer);
@@ -698,14 +729,17 @@ contract Ledger is EIP712 {
     /// @param _newName New name of the officer
     /// @param _signature Signature of the moderator authorizing the update
     /// @param _signer Address of the moderator who signed the update request
+    /// @param _expiry expiry date
     function updateName(
         uint _nonce,
         uint _stateCode,
         address _officer,
         string memory _newName,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
+        _validateExpiry(_expiry);
 
         if (_newName.equal("")) revert InvalidString();
         if (_signer != msg.sender || _signer == _officer) revert InvalidSigner();
@@ -723,7 +757,8 @@ contract Ledger is EIP712 {
             officerToUpdate.badge,
             officerToUpdate.branchId,
             uint(officerToUpdate.rank), 
-            UpdateOfficer.UpdateType.ADDRESS
+            UpdateOfficer.UpdateType.ADDRESS,
+            _expiry
         ));
 
         _validateSignatures(messageHash, _signature, _signer);
@@ -745,6 +780,7 @@ contract Ledger is EIP712 {
     /// @param _branchId Branch ID from which the officer is being offboarded
     /// @param _employmentStatus The new employment status to be set for the officer
     /// @param _rank The rank of the officer being offboarded
+    /// @param _expiry expiry date
     /// @param _signature Signature of the moderator authorizing the offboarding
     /// @param _signer Address of the moderator performing the offboarding
     function offboard(
@@ -754,12 +790,13 @@ contract Ledger is EIP712 {
         bytes32 _branchId, 
         EmploymentStatus _employmentStatus, 
         Rank _rank,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
         //captain cannot offboard another aptain or moderator
         if (_rank >= Rank.CAPTAIN || _rank == Rank.NULL) { revert InvalidRank(); }
-        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _signature, _signer);
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signature, _signer);
     }
 
     /// @notice Offboards a captain from their current position
@@ -772,6 +809,7 @@ contract Ledger is EIP712 {
     /// @param _rank The rank of the officer, should be CAPTAIN
     /// @param _signature Signature of the moderator authorizing the offboarding
     /// @param _signer Address of the moderator performing the offboarding
+    /// @param _expiry expiry date
     function offboardCaptain(
         uint256 _nonce,
         address _officer,
@@ -779,11 +817,12 @@ contract Ledger is EIP712 {
         bytes32 _branchId, 
         EmploymentStatus _employmentStatus, 
         Rank _rank,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
         if (_rank != Rank.CAPTAIN) { revert InvalidRank(); }
-        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _signature, _signer);
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signature, _signer);
     }
 
     /// @notice Offboards a moderator from their current position
@@ -795,6 +834,7 @@ contract Ledger is EIP712 {
     /// @param _branchId Branch ID from which the moderator is being offboarded
     /// @param _employmentStatus The new employment status to be set for the moderator
     /// @param _rank The rank of the officer, should be MODERATOR
+    /// @param _expiry expiry date
     /// @param _signature Signature of the moderator authorizing the offboarding
     /// @param _signer Address of the moderator performing the offboarding
     function offboardModerator(
@@ -804,12 +844,13 @@ contract Ledger is EIP712 {
         bytes32 _branchId, 
         EmploymentStatus _employmentStatus, 
         Rank _rank,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_stateCode) {
         if (_rank != Rank.MODERATOR) { revert InvalidRank(); }
         if (moderatorCount[_stateCode] == 1) { revert StateNeedsAtleastOneModerator(); }
-        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _signature, _signer);
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signature, _signer);
     }
 
     /// @dev Internal function to handle the logic of offboarding an officer, captain, or moderator
@@ -821,6 +862,7 @@ contract Ledger is EIP712 {
     /// @param _rank The rank of the person being offboarded
     /// @param _signature Signature of the person authorizing the offboarding
     /// @param _signer Address of the person performing the offboarding
+    /// @param _expiry expiry date
     function _offboard(
         uint256 _nonce,
         address _officer, 
@@ -828,9 +870,12 @@ contract Ledger is EIP712 {
         bytes32 _branchId, 
         EmploymentStatus _employmentStatus, 
         Rank _rank,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) internal {
+        _validateExpiry(_expiry);
+
         if (_officer == address(0)) { revert InvalidAddress(); }
         if (!isValidRank(_officer, _rank)) { revert InvalidOfficer(); }
         if (_employmentStatus == EmploymentStatus.ACTIVE) { revert InvalidStatus(); }
@@ -847,7 +892,8 @@ contract Ledger is EIP712 {
             newOfficer.badge,
             _branchId,
             uint(_employmentStatus),
-            uint(_rank)
+            uint(_rank),
+            _expiry
         ));
 
         _validateSignatures(messageHash, _signature, _signer);
@@ -882,6 +928,7 @@ contract Ledger is EIP712 {
     /// @param _rank Rank of the new officer
     /// @param _signature Signature of the moderator authorizing the onboarding
     /// @param _signer Address of the moderator who signed the onboarding request
+    /// @param _expiry expiry date
     function _onboard(
         uint _nonce,
         uint _stateCode,
@@ -891,9 +938,11 @@ contract Ledger is EIP712 {
         bytes32 _badge, 
         bytes32 _branchId, 
         Rank _rank,
+        uint _expiry,
         bytes memory _signature,
         address _signer
     ) internal {
+        _validateExpiry(_expiry);
         
         // sanity checks
         if (_officer == address(0)) { revert InvalidAddress(); }
@@ -916,7 +965,8 @@ contract Ledger is EIP712 {
             _badge,
             _branchId,
             uint(EmploymentStatus.ACTIVE),
-            uint(_rank)
+            uint(_rank),
+            _expiry
         ));
 
         _validateSignatures(messageHash, _signature, _signer);
@@ -1050,11 +1100,17 @@ contract Ledger is EIP712 {
         )) revert InvalidSignature();
     }
 
+    /// @notice validates expiry date
+    /// @dev throws if expired
+    /// @param _expiry expiry timestamp
+    function _validateExpiry(uint _expiry) private view {
+        if (_expiry < block.timestamp) revert Expired();
+    }
+
     /// @notice Retrieves the domain separator used in EIP712 domain separation.
     /// @dev This is used to prevent certain types of replay attacks in EIP712 signing.
     /// @return domainSeparator The domain separator as per EIP712 specification.
     function DOMAIN_SEPARATOR() external view returns (bytes32 domainSeparator) {
         domainSeparator = _domainSeparatorV4();
     }
-
 }

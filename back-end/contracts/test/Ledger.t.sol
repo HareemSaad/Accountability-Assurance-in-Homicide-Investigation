@@ -6,6 +6,7 @@ import "./Base.t.sol";
 contract OfficersTest is BaseTest {
 
     bytes32 nullBytes32;
+    uint expiry = block.timestamp + 5 days;
 
     function setUp() public {
         ledger = new Ledger(
@@ -72,7 +73,8 @@ contract OfficersTest is BaseTest {
             moderator3.badge,
             moderator3.branch.branchId,
             uint(moderator3.employmentStatus),
-            uint(moderator3.rank)
+            uint(moderator3.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -88,6 +90,7 @@ contract OfficersTest is BaseTest {
             moderator3.legalNumber,
             moderator3.badge,
             moderator3.branch.branchId,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -100,7 +103,8 @@ contract OfficersTest is BaseTest {
             branch3.precinctAddress,
             branch3.jurisdictionArea,
             branch3.stateCode,
-            branch3.branchId
+            branch3.branchId,
+            expiry
         ));
 
         bytes[] memory signatures = new bytes[](1);
@@ -122,6 +126,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -149,7 +154,8 @@ contract OfficersTest is BaseTest {
             branch3.precinctAddress,
             branch3.jurisdictionArea,
             branch3.stateCode,
-            branch3.branchId
+            branch3.branchId,
+            expiry
         ));
 
         bytes[] memory signatures = new bytes[](1);
@@ -173,6 +179,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -188,7 +195,8 @@ contract OfficersTest is BaseTest {
             branch3.precinctAddress,
             branch3.jurisdictionArea,
             branch3.stateCode,
-            branch3.branchId
+            branch3.branchId,
+            expiry
         ));
 
         bytes[] memory signatures = new bytes[](1);
@@ -212,6 +220,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             2,
+            expiry,
             signatures,
             signers
         );
@@ -226,7 +235,8 @@ contract OfficersTest is BaseTest {
             branch3.precinctAddress,
             branch3.jurisdictionArea,
             branch3.stateCode,
-            branch3.branchId
+            branch3.branchId,
+            expiry
         ));
 
         bytes[] memory signatures = new bytes[](1);
@@ -253,6 +263,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -264,6 +275,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -275,6 +287,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             0,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -286,6 +299,7 @@ contract OfficersTest is BaseTest {
             0,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -297,6 +311,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signaturesHalf,
             signers
         );
@@ -307,6 +322,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signaturesHalf,
             signersHalf
         );
@@ -320,6 +336,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -332,6 +349,20 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             0,
+            expiry,
+            signatures,
+            signers
+        );
+
+        vm.warp(expiry + 1 days);
+        vm.expectRevert(Expired.selector);
+        ledger.createBranch(
+            "",
+            branch3.precinctAddress,
+            branch3.jurisdictionArea,
+            branch3.stateCode,
+            1,
+            expiry,
             signatures,
             signers
         );
@@ -347,7 +378,8 @@ contract OfficersTest is BaseTest {
             "6th Avenue",
             branch3.jurisdictionArea,
             branch3.stateCode,
-            branch3.branchId
+            branch3.branchId,
+            expiry
         ));
 
         bytes[] memory signatures = new bytes[](1);
@@ -369,6 +401,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -397,7 +430,8 @@ contract OfficersTest is BaseTest {
             "6th Avenue",
             branch3.jurisdictionArea,
             branch3.stateCode,
-            branch3.branchId
+            branch3.branchId,
+            expiry
         ));
 
         bytes[] memory signatures = new bytes[](1);
@@ -424,6 +458,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -435,6 +470,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -446,6 +482,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             0,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -457,6 +494,7 @@ contract OfficersTest is BaseTest {
             0,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -468,6 +506,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signaturesHalf,
             signers
         );
@@ -479,6 +518,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signaturesHalf,
             signersHalf
         );
@@ -492,6 +532,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -503,6 +544,7 @@ contract OfficersTest is BaseTest {
             123456,
             88886,
             0,
+            expiry,
             signatures,
             signers
         );
@@ -519,7 +561,8 @@ contract OfficersTest is BaseTest {
             captain1.badge,
             captain1.branch.branchId,
             uint(captain1.employmentStatus),
-            uint(captain1.rank)
+            uint(captain1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -535,6 +578,7 @@ contract OfficersTest is BaseTest {
             captain1.legalNumber,
             captain1.badge,
             captain1.branch.branchId,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -570,7 +614,8 @@ contract OfficersTest is BaseTest {
             moderator2.badge,
             moderator2.branch.branchId,
             uint(moderator2.employmentStatus),
-            uint(moderator2.rank)
+            uint(moderator2.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -587,6 +632,7 @@ contract OfficersTest is BaseTest {
             moderator2.legalNumber,
             moderator2.badge,
             moderator2.branch.branchId,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -623,7 +669,8 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             uint(detective1.employmentStatus),
-            uint(detective1.rank)
+            uint(detective1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -640,6 +687,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -676,7 +724,8 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             uint(detective1.employmentStatus),
-            uint(detective1.rank)
+            uint(detective1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -694,6 +743,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             Ledger.Rank.CAPTAIN,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -708,6 +758,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             Ledger.Rank.NULL,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -722,6 +773,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -736,6 +788,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -750,6 +803,7 @@ contract OfficersTest is BaseTest {
             keccak256(abi.encode("")),
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -764,6 +818,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             PRECINCT2,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -778,6 +833,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -792,6 +848,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -806,6 +863,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             PRECINCT3,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -820,6 +878,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator2.publicKey
         );
@@ -834,6 +893,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -861,7 +921,8 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             uint(detective1.rank), 
-            UpdateOfficer.UpdateType.ADDRESS
+            UpdateOfficer.UpdateType.ADDRESS,
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -874,6 +935,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective1.publicKey,
             address(99),
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -917,7 +979,8 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             uint(detective1.rank), 
-            UpdateOfficer.UpdateType.ADDRESS
+            UpdateOfficer.UpdateType.ADDRESS,
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -931,6 +994,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective1.publicKey,
             address(0),
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -941,6 +1005,7 @@ contract OfficersTest is BaseTest {
             88888,
             detective1.publicKey,
             address(99),
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -951,6 +1016,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective1.publicKey,
             address(99),
+            expiry,
             moderator1Signature,
             moderator2.publicKey
         );
@@ -961,6 +1027,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective2.publicKey,
             address(99),
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -974,6 +1041,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective1.publicKey,
             address(99),
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -999,7 +1067,8 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             uint(detective1.rank), 
-            UpdateOfficer.UpdateType.ADDRESS
+            UpdateOfficer.UpdateType.ADDRESS,
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1012,6 +1081,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective1.publicKey,
             "poppy",
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1055,7 +1125,8 @@ contract OfficersTest is BaseTest {
             "DET-23",
             detective1.branch.branchId,
             uint(detective1.rank), 
-            UpdateOfficer.UpdateType.BADGE
+            UpdateOfficer.UpdateType.BADGE,
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1068,6 +1139,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective1.publicKey,
             "DET-23",
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1115,7 +1187,8 @@ contract OfficersTest is BaseTest {
             "DET-23",
             detective1.branch.branchId,
             uint(detective1.rank), 
-            UpdateOfficer.UpdateType.BADGE
+            UpdateOfficer.UpdateType.BADGE,
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1128,6 +1201,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective1.publicKey,
             "DET-23",
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1214,7 +1288,8 @@ contract OfficersTest is BaseTest {
             branch3.branchId,
             uint(detective1.employmentStatus),
             uint(detective1.rank),
-            false
+            false,
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(captain1.privateKey, _hashTypedDataV4(messageHash));
@@ -1230,7 +1305,8 @@ contract OfficersTest is BaseTest {
             branch3.branchId,
             uint(detective1.employmentStatus),
             uint(detective1.rank),
-            true
+            true,
+            expiry
         ));
 
         (v, r, s) = vm.sign(captain3.privateKey, _hashTypedDataV4(messageHash));
@@ -1242,6 +1318,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode,
             detective1.publicKey,
             PRECINCT3,
+            expiry,
             [captain1Signature, captain3Signature],
             [captain1.publicKey, captain3.publicKey]
         );
@@ -1293,6 +1370,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode, 
             detective1.publicKey, 
             PRECINCT3, 
+            expiry,
             signatures, 
             signers
         );
@@ -1314,6 +1392,7 @@ contract OfficersTest is BaseTest {
             branch3.stateCode, // Incorrect state code 
             detective1.publicKey, 
             PRECINCT3, 
+            expiry,
             signatures, 
             signers
         );
@@ -1336,6 +1415,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode, 
             detective1.publicKey, 
             PRECINCT3, 
+            expiry,
             signatures, 
             signers
         );
@@ -1361,6 +1441,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode, 
             detective1.publicKey, 
             PRECINCT3, 
+            expiry,
             signatures, 
             signers
         );
@@ -1372,6 +1453,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode, 
             detective1.publicKey, 
             PRECINCT3, 
+            expiry,
             signatures, 
             signers
         );
@@ -1383,6 +1465,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.stateCode, 
             detective1.publicKey, 
             PRECINCT3, 
+            expiry,
             signatures, 
             signers
         );
@@ -1400,7 +1483,8 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             uint(Ledger.EmploymentStatus.INACTIVE),
-            uint(detective1.rank)
+            uint(detective1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1414,6 +1498,7 @@ contract OfficersTest is BaseTest {
             detective1.branch.branchId,
             Ledger.EmploymentStatus.INACTIVE,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1450,7 +1535,8 @@ contract OfficersTest is BaseTest {
             captain1.badge,
             captain1.branch.branchId,
             uint(Ledger.EmploymentStatus.FIRED),
-            uint(captain1.rank)
+            uint(captain1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1464,6 +1550,7 @@ contract OfficersTest is BaseTest {
             captain1.branch.branchId,
             Ledger.EmploymentStatus.FIRED,
             captain1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1501,7 +1588,8 @@ contract OfficersTest is BaseTest {
             moderator4.badge,
             moderator4.branch.branchId,
             uint(Ledger.EmploymentStatus.RETIRED),
-            uint(moderator4.rank)
+            uint(moderator4.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1515,6 +1603,7 @@ contract OfficersTest is BaseTest {
             moderator4.branch.branchId,
             Ledger.EmploymentStatus.RETIRED,
             moderator4.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1553,7 +1642,8 @@ contract OfficersTest is BaseTest {
             moderator1.badge,
             moderator1.branch.branchId,
             uint(Ledger.EmploymentStatus.INACTIVE),
-            uint(moderator1.rank)
+            uint(moderator1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1568,6 +1658,7 @@ contract OfficersTest is BaseTest {
             moderator1.branch.branchId,
             Ledger.EmploymentStatus.INACTIVE,
             moderator1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1603,7 +1694,8 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             uint(detective1.employmentStatus),
-            uint(detective1.rank)
+            uint(detective1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1620,6 +1712,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1652,7 +1745,8 @@ contract OfficersTest is BaseTest {
             branch3.precinctAddress,
             branch3.jurisdictionArea,
             branch3.stateCode,
-            branch3.branchId
+            branch3.branchId,
+            expiry
         ));
 
         bytes[] memory signatures = new bytes[](1);
@@ -1674,6 +1768,7 @@ contract OfficersTest is BaseTest {
             branch3.jurisdictionArea,
             branch3.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -1687,7 +1782,8 @@ contract OfficersTest is BaseTest {
             branch2.precinctAddress,
             branch2.jurisdictionArea,
             branch2.stateCode,
-            branch2.branchId
+            branch2.branchId,
+            expiry
         ));
 
         bytes[] memory signatures = new bytes[](1);
@@ -1709,6 +1805,7 @@ contract OfficersTest is BaseTest {
             branch2.jurisdictionArea,
             branch2.stateCode,
             1,
+            expiry,
             signatures,
             signers
         );
@@ -1725,7 +1822,8 @@ contract OfficersTest is BaseTest {
             moderator2.badge,
             moderator2.branch.branchId,
             uint(moderator2.employmentStatus),
-            uint(moderator2.rank)
+            uint(moderator2.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1741,6 +1839,7 @@ contract OfficersTest is BaseTest {
             moderator2.legalNumber,
             moderator2.badge,
             moderator2.branch.branchId,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1755,7 +1854,8 @@ contract OfficersTest is BaseTest {
             moderator4.badge,
             moderator4.branch.branchId,
             uint(moderator4.employmentStatus),
-            uint(moderator4.rank)
+            uint(moderator4.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1771,6 +1871,7 @@ contract OfficersTest is BaseTest {
             moderator4.legalNumber,
             moderator4.badge,
             moderator4.branch.branchId,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1785,7 +1886,8 @@ contract OfficersTest is BaseTest {
             captain1.badge,
             captain1.branch.branchId,
             uint(captain1.employmentStatus),
-            uint(captain1.rank)
+            uint(captain1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1801,6 +1903,7 @@ contract OfficersTest is BaseTest {
             captain1.legalNumber,
             captain1.badge,
             captain1.branch.branchId,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1815,7 +1918,8 @@ contract OfficersTest is BaseTest {
             captain2.badge,
             captain2.branch.branchId,
             uint(captain2.employmentStatus),
-            uint(captain2.rank)
+            uint(captain2.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator2.privateKey, _hashTypedDataV4(messageHash));
@@ -1831,6 +1935,7 @@ contract OfficersTest is BaseTest {
             captain2.legalNumber,
             captain2.badge,
             captain2.branch.branchId,
+            expiry,
             moderator2Signature,
             moderator2.publicKey
         );
@@ -1845,7 +1950,8 @@ contract OfficersTest is BaseTest {
             captain3.badge,
             captain3.branch.branchId,
             uint(captain3.employmentStatus),
-            uint(captain3.rank)
+            uint(captain3.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
@@ -1861,6 +1967,7 @@ contract OfficersTest is BaseTest {
             captain3.legalNumber,
             captain3.badge,
             captain3.branch.branchId,
+            expiry,
             moderator1Signature,
             moderator3.publicKey
         );
@@ -1875,7 +1982,8 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             uint(detective1.employmentStatus),
-            uint(detective1.rank)
+            uint(detective1.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1892,6 +2000,7 @@ contract OfficersTest is BaseTest {
             detective1.badge,
             detective1.branch.branchId,
             detective1.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1907,7 +2016,8 @@ contract OfficersTest is BaseTest {
             detective2.badge,
             detective2.branch.branchId,
             uint(detective2.employmentStatus),
-            uint(detective2.rank)
+            uint(detective2.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1924,6 +2034,7 @@ contract OfficersTest is BaseTest {
             detective2.badge,
             detective2.branch.branchId,
             detective2.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );
@@ -1939,7 +2050,8 @@ contract OfficersTest is BaseTest {
             detective3.badge,
             detective3.branch.branchId,
             uint(detective3.employmentStatus),
-            uint(detective3.rank)
+            uint(detective3.rank),
+            expiry
         ));
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
@@ -1956,6 +2068,7 @@ contract OfficersTest is BaseTest {
             detective3.badge,
             detective3.branch.branchId,
             detective3.rank,
+            expiry,
             moderator1Signature,
             moderator1.publicKey
         );

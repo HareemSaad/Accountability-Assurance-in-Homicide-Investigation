@@ -25,6 +25,7 @@ library OfficerOffboard {
         bytes32 branchId;
         uint employmentStatus;
         uint rank;
+        uint expiry;
     }
 
     /// @notice EIP712 type hash for the offboarding request.
@@ -40,6 +41,7 @@ library OfficerOffboard {
         "bytes32 branchId,"
         "uint employmentStatus,"
         "uint rank,"
+        "uint expiry,"
         ")"
     );
 
@@ -59,7 +61,8 @@ library OfficerOffboard {
                     request.badge,
                     request.branchId,
                     request.employmentStatus,
-                    request.rank
+                    request.rank,
+                    request.expiry
                 )
             )
         );

@@ -36,6 +36,7 @@ library UpdateOfficer {
         bytes32 branchId;
         uint rank; 
         UpdateType updateType;
+        uint expiry;
     }
 
     /// @notice EIP712 type hash for the update officer request.
@@ -51,6 +52,7 @@ library UpdateOfficer {
         "bytes32 branchId,"
         "uint rank,"
         "UpdateType updateType,"
+        "uint expiry,"
         ")"
     );
 
@@ -70,7 +72,8 @@ library UpdateOfficer {
                     request.badge,
                     request.branchId,
                     request.rank,
-                    request.updateType
+                    request.updateType,
+                    request.expiry
                 )
             )
         );

@@ -19,6 +19,7 @@ library UpdateBranch {
         uint jurisdictionArea;
         uint stateCode;
         bytes32 branchId;
+        uint expiry;
     }
 
     /// @notice EIP712 type hash for the update branch request.
@@ -31,6 +32,7 @@ library UpdateBranch {
         "uint jurisdictionArea,"
         "uint stateCode,"
         "bytes32 branchId,"
+        "uint expiry,"
         ")"
     );
 
@@ -47,7 +49,8 @@ library UpdateBranch {
                     request.precinctAddress,
                     request.jurisdictionArea,
                     request.stateCode,
-                    request.branchId
+                    request.branchId,
+                    request.expiry
                 )
             )
         );

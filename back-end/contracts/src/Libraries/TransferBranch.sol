@@ -29,6 +29,7 @@ library TransferBranch {
         uint employmentStatus;
         uint rank;
         bool reciever;
+        uint expiry;
     }
 
     /// @notice EIP712 type hash for the transfer branch request.
@@ -46,6 +47,7 @@ library TransferBranch {
         "uint employmentStatus,"
         "uint rank,"
         "bool reciever,"
+        "uint expiry,"
         ")"
     );
 
@@ -67,7 +69,8 @@ library TransferBranch {
                     request.toBranchId,
                     request.employmentStatus,
                     request.rank,
-                    request.reciever
+                    request.reciever,
+                    request.expiry
                 )
             )
         );

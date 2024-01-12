@@ -17,6 +17,7 @@ library TrusteeRequestLib {
         address trustee;
         address captain;
         bytes32 branchId;
+        uint expiry;
     }
 
     /// @notice EIP712 type hash for the trustee request.
@@ -28,6 +29,7 @@ library TrusteeRequestLib {
         "address trustee,"
         "address captain,"
         "bytes32 branchId,"
+        "uint expiry,"
         ")"
     );
 
@@ -43,7 +45,8 @@ library TrusteeRequestLib {
                     request.caseId,
                     request.trustee,
                     request.captain,
-                    request.branchId
+                    request.branchId,
+                    request.expiry
                 )
             )
         );
