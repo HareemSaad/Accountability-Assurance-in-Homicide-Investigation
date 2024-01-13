@@ -32,7 +32,7 @@ const CreateBranchSchema = new mongoose.Schema ({
         type: Array
     },
     expiry: {
-        type: Date,
+        type: Number,
         required: true
     },
     isOpen: {
