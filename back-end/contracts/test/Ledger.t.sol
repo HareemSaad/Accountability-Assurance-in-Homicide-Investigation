@@ -1851,6 +1851,36 @@ contract OfficersTest is BaseTest {
         assertTrue(cases.officerInCase(213, detective1.publicKey));
     }
 
+    function testRemoveOfficerInCase() public {
+        testAddOfficerInCase();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(captain1.publicKey);
+        cases.removeOfficerInCase(
+            213,
+            detective2.publicKey
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        cases.removeOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.removeOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        (Cases.CaseStatus status, bytes32 branch) = cases._case(213);
+
+        assertEq(uint(status), uint(Cases.CaseStatus.OPEN));
+        assertEq(branch, captain1.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain1.publicKey));
+        assertFalse(cases.officerInCase(213, detective1.publicKey));
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
