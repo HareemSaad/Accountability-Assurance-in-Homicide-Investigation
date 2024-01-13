@@ -1772,6 +1772,35 @@ contract OfficersTest is BaseTest {
 
     }
 
+    function testUpdateCaseStatus() public {
+        testAddCase();
+
+        vm.expectRevert(InvalidCase.selector);
+        vm.prank(captain1.publicKey);
+        cases.updateCaseStatus(
+            2013,
+            Cases.CaseStatus.NULL
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        cases.updateCaseStatus(
+            213,
+            Cases.CaseStatus.CLOSED
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.updateCaseStatus(
+            213,
+            Cases.CaseStatus.CLOSED
+        );
+
+        (Cases.CaseStatus status, bytes32 branch) = cases._case(213);
+
+        assertEq(uint(status), uint(Cases.CaseStatus.CLOSED));
+        assertEq(branch, captain1.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain1.publicKey));
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
