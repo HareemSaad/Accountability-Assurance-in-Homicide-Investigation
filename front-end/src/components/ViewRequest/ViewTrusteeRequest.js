@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import "./view.css";
 import axios from "axios";
 import { useUserAddressContext } from "../Context/userAddressContext.tsx";
+import moment from "moment";
 
 export const ViewTrusteeRequest = () => {
   const { reqId } = useParams();
@@ -47,6 +48,11 @@ export const ViewTrusteeRequest = () => {
         // console.log("error:: ", err);
         notify("error", `An Error Occured when Signing`);
       });
+  };
+
+  const getDate = (expiryDate) => {
+    var date = new Date(expiryDate * 1000);
+    return moment(date).format("MMMM Do YYYY");
   };
 
   return (
@@ -166,6 +172,27 @@ export const ViewTrusteeRequest = () => {
                 />
               ))
             )}
+          </div>
+        </div>
+
+        {/* Expiry */}
+        <div className="row g-3 align-items-center m-3 mb-5">
+          <div className="col-2">
+            <label htmlFor="expiry" className="col-form-label">
+              <b>
+                <em>Expiry Date:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="text"
+              name="expiry"
+              id="expiry"
+              className="form-control"
+              value={getDate(requestDetail.expiry)}
+              disabled
+            ></input>
           </div>
         </div>
 
