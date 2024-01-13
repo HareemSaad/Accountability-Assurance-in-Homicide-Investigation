@@ -243,6 +243,7 @@ contract Cases is EIP712 {
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); }
         if(_rank == Ledger.Rank.NULL || _rank == Ledger.Rank.MODERATOR) { revert InvalidOfficer(); }
         if(!(fromBranchId == newCase.branch)) revert BranchMismatch();
+        
         newCase.officers[_officer] = true; 
 
         emit UpdateOfficerInCase(_caseId, msg.sender, _officer);

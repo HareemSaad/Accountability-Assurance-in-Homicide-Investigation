@@ -1801,6 +1801,56 @@ contract OfficersTest is BaseTest {
         assertTrue(cases.officerInCase(213, captain1.publicKey));
     }
 
+    function testAddOfficerInCase() public {
+        testAddCase();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(captain1.publicKey);
+        cases.addOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        addDetective1();
+        addModerator2();
+        addBranch2();
+        addCaptain2();
+        addDetective2();
+
+        vm.expectRevert(BranchMismatch.selector);
+        vm.prank(captain1.publicKey);
+        cases.addOfficerInCase(
+            213,
+            detective2.publicKey
+        );
+
+        vm.expectRevert(InvalidCase.selector);
+        vm.prank(captain1.publicKey);
+        cases.addOfficerInCase(
+            2013,
+            detective1.publicKey
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        cases.addOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.addOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        (Cases.CaseStatus status, bytes32 branch) = cases._case(213);
+
+        assertEq(uint(status), uint(Cases.CaseStatus.OPEN));
+        assertEq(branch, captain1.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain1.publicKey));
+        assertTrue(cases.officerInCase(213, detective1.publicKey));
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
@@ -2082,7 +2132,7 @@ contract OfficersTest is BaseTest {
             expiry
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator2.privateKey, _hashTypedDataV4(messageHash));
         bytes memory moderator1Signature = abi.encodePacked(r, s, v);
 
         vm.prank(captain2.publicKey);
@@ -2098,7 +2148,7 @@ contract OfficersTest is BaseTest {
             detective2.rank,
             expiry,
             moderator1Signature,
-            moderator1.publicKey
+            moderator2.publicKey
         );
         
     }
