@@ -430,7 +430,7 @@ contract Cases is EIP712 {
 
     /// @notice Approves a participant in a case.
     /// @param _caseId The identifier of the case to which the participant is added.
-    /// @param _participant The participant's data.
+    /// @param _participantId The participant data's id.
     /// @dev The caller must have the 'CAPTAIN' role for the specified case.
     /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer.
     /// @dev Throws `InvalidCase` if the case is NULL or not existing.
@@ -438,7 +438,7 @@ contract Cases is EIP712 {
     /// @dev Throws `InvalidSender` if the employment status of the caller is not ACTIVE.
     function approveParticipant(
         uint _caseId, 
-        Participants.Participant memory _participant
+        uint48 _participantId
     ) external onlyRank(Ledger.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
@@ -450,12 +450,12 @@ contract Cases is EIP712 {
 
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(newCase.participants[_participant.participantId].approved) { revert AlreadyApproved(); }
+        if(newCase.participants[_participantId].approved) { revert AlreadyApproved(); }
         if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
 
-        newCase.participants[_participant.participantId].approved = true;
+        newCase.participants[_participantId].approved = true;
 
-        emit ParticipantApproved(_participant.participantId);
+        emit ParticipantApproved(_participantId);
     }
 
     /// @notice Adds evidence to a case with approval requirement.

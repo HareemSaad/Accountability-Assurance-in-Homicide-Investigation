@@ -1939,6 +1939,37 @@ contract OfficersTest is BaseTest {
         assertFalse(participant.approved);
     }
 
+    function testApproveParticipant() public {
+        testAddParticipant();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(captain1.publicKey);
+        cases.approveParticipant(
+            2135,
+            321
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.approveParticipant(
+            213,
+            321
+        );
+
+        Participants.Participant memory participant = cases.participantInCase(213, 321);
+
+        assertEq(participant.participantId, 321);
+        assertEq(uint(participant.category), uint(Participants.ParticipantCategory.SUSPECT));
+        assertEq(participant.data, bytes("Something something"));
+        assertTrue(participant.approved);
+
+        vm.expectRevert(AlreadyApproved.selector);
+        vm.prank(captain1.publicKey);
+        cases.approveParticipant(
+            213,
+            321
+        );
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
