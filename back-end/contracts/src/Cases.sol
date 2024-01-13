@@ -13,7 +13,7 @@ import "./Libraries/Evidence.sol";
  * @notice A smart contract for managing and tracking legal cases.
  * This contract provides functionality for creating and updating cases, managing officers, adding participants and evidence to cases,
  * and verifying the integrity of data through signatures and data hashing.
- * @dev This contract is designed to work in conjunction with the Access and Ledger contracts.
+ * @dev This contract is designed to work in conjunction with the Ledger contracts.
  */
 contract Cases is EIP712 {
 
@@ -116,14 +116,32 @@ contract Cases is EIP712 {
         bool approved
     );
 
+    /// @notice Emitted when a participant is approved to be part of a case.
+    /// @param participantId The unique identifier of the participant who is approved.
     event ParticipantApproved(uint48 participantId);
 
+    /// @notice Emitted when a piece of evidence is approved for inclusion in a case.
+    /// @param evidenceId The unique identifier of the evidence that is approved.
     event EvidenceApproved(uint48 evidenceId);
     
+    /// @notice Represents the possible statuses of a legal case.
+    /// @param NULL Indicates an uninitialized or non-existent case.
+    /// @param OPEN Indicates an active, ongoing case.
+    /// @param CLOSED Indicates a case that has been resolved.
+    /// @param COLD Indicates a case that is inactive, typically due to lack of leads or evidence.
     enum CaseStatus {
-        NULL, OPEN, CLOSED, COLD
+        NULL,
+        OPEN,
+        CLOSED,
+        COLD
     }
 
+    /// @notice A struct representing a legal case.
+    /// @param status The current status of the case (Open, Closed, Cold, or Null).
+    /// @param branch The identifier of the branch handling the case.
+    /// @param officers A mapping of officer addresses to their assignment status in the case.
+    /// @param participants A mapping of participant IDs to their details.
+    /// @param evidences A mapping of evidence IDs to their details.
     struct Case {
         CaseStatus status;
         bytes32 branch;
@@ -132,10 +150,13 @@ contract Cases is EIP712 {
         mapping (uint48 => Evidences.Evidence) evidences;
     }
 
+    /// @notice Contract constructor that sets up the initial ledger contract.
+    /// @param _ledgersContract The address of the associated Ledger contract.
     constructor(address _ledgersContract) EIP712("Cases", "1") {
         ledgersContract = Ledger(_ledgersContract);
     }
 
+    /// @notice A mapping of case IDs to their corresponding Case structs.
     mapping (uint => Case) _case;
 
     /// @dev trustee address => case Id => T/F
@@ -143,21 +164,30 @@ contract Cases is EIP712 {
 
     /// @dev saves executed transactions to protect against replay
     mapping (bytes32 => bool) public replay;
-
+    
+    /// @notice Restricts function access to officers of a specific rank.
+    /// @dev Utilizes the _onlyRank internal function for the actual check.
+    /// @param rank The required rank for accessing the function.
     modifier onlyRank(Ledger.Rank rank) {
         _onlyRank(rank);
         _;
     }
 
+    /// @notice Internal function to check if the message sender has the specified rank.
+    /// @dev Checks if the sender's rank matches the specified rank using the Ledger contract.
+    /// @param rank The rank to check against the sender's rank.
     function _onlyRank(Ledger.Rank rank) internal view {
-        if (ledgersContract.isValidRank(msg.sender, rank)) { revert InvalidRank(); }
+        if (ledgersContract.isValidRank(msg.sender, rank)) { 
+            revert InvalidRank(); 
+        }
     }
 
-    /**
-     * @notice Creates a new legal case.
-     * @param _caseId The unique identifier for the new case.
-     * @dev The caller must have the 'CAPTAIN' role to create a case.
-     */
+    /// @notice Creates a new legal case with the specified ID and branch.
+    /// @param _caseId The unique identifier for the new case.
+    /// @param _branch The branch ID associated with the new case.
+    /// @dev The caller must have the 'CAPTAIN' role to create a case.
+    /// @dev Throws `InvalidCase` if a case with the given `_caseId` already exists.
+    /// @dev Throws `InvalidBranch` if the given `_branch` does not exist or is invalid.
     function addCase(uint _caseId, bytes32 _branch) external onlyRank(Ledger.Rank.CAPTAIN) {
 
         (,,uint stateCode,) = ledgersContract.branches(_branch);
@@ -173,12 +203,12 @@ contract Cases is EIP712 {
         emit CaseUpdated(_caseId, msg.sender, _branch, CaseStatus.NULL, CaseStatus.OPEN);
     }
 
-    /**
-     * @notice Updates the status of a case.
-     * @param _caseId The identifier of the case to be updated.
-     * @param _status The new status of the case.
-     * @dev The caller must have the 'CAPTAIN' role for the specified case.
-     */
+    /// @notice Updates the status of an existing case.
+    /// @param _caseId The identifier of the case to be updated.
+    /// @param _status The new status to set for the case.
+    /// @dev The caller must have the 'CAPTAIN' role and be assigned to the case.
+    /// @dev Throws `InvalidCase` if the case with the given `_caseId` does not exist.
+    /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer of the case.
     function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRank(Ledger.Rank.CAPTAIN) {
         Case storage newCase = _case[_caseId];
 
@@ -191,12 +221,13 @@ contract Cases is EIP712 {
         emit CaseUpdated(_caseId, msg.sender, newCase.branch, oldStatus, _status);
     }
 
-    /**
-     * @notice Adds an officer to a case.
-     * @param _caseId The identifier of the case to which an officer is added.
-     * @param _officer The address of the officer to be added.
-     * @dev The caller must have the 'CAPTAIN' role for the specified case.
-     */
+    /// @notice Adds an officer to a case.
+    /// @param _caseId The identifier of the case to which an officer is added.
+    /// @param _officer The address of the officer to be added.
+    /// @dev The caller must have the 'CAPTAIN' role for the specified case.
+    /// @dev Throws `InvalidCase` if the case is not OPEN.
+    /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer or if the officer to be added is invalid.
+    /// @dev Throws `BranchMismatch` if the officer's branch does not match the case's branch.
     function addOfficerInCase(uint _caseId, address _officer) external onlyRank(Ledger.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
@@ -213,11 +244,13 @@ contract Cases is EIP712 {
         emit UpdateOfficerInCase(_caseId, msg.sender, _officer);
     }
 
-    /**
-     * @notice transfers the assigned captain of case.
-     * @param params TransferCaptain params
-     * @dev The caller must have the 'Moderator' role for the specified case.
-     */
+    /// @notice Transfers the assigned captain of a case.
+    /// @param params Parameters for the transfer request.
+    /// @dev The caller must have the 'Moderator' role for the specified case.
+    /// @dev Throws `InvalidCase` if the case does not exist or is NULL.
+    /// @dev Throws `InvalidOfficer` if the current captain is not an officer of the case.
+    /// @dev Throws `InvalidRank`, `InactiveOfficer`, or `BranchMismatch` for invalid captain details.
+    /// @dev Throws `InvalidSigner` if signers are not the current and new captains.
     function transferCaseCaptain(
         TransferCaptain.TransferCaptainRequest memory params,
         bytes[2] memory _signatures,
@@ -269,12 +302,12 @@ contract Cases is EIP712 {
         delete(toRank);
     }
 
-    /**
-     * @notice Removes an officer from a case.
-     * @param _caseId The identifier of the case from which an officer is removed.
-     * @param _officer The address of the officer to be removed.
-     * @dev The caller must have the 'CAPTAIN' role for the specified case, and the officer must be assigned to the case.
-     */
+    //// @notice Removes an officer from a case.
+    /// @param _caseId The identifier of the case from which an officer is removed.
+    /// @param _officer The address of the officer to be removed.
+    /// @dev The caller must have the 'CAPTAIN' role for the specified case.
+    /// @dev Throws `InvalidOfficer` if the officer is not assigned to the case.
+    /// @dev Throws `InvalidCase` if the case does not exist or is NULL.
     function removeOfficerInCase(uint _caseId, address _officer) external onlyRank(Ledger.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
@@ -287,12 +320,16 @@ contract Cases is EIP712 {
         emit RemoveOfficer(_caseId, msg.sender, _officer);
     }
 
-    /**
-     * @notice Adds a participant to a case.
-     * @param _caseId The identifier of the case to which the participant is added.
-     * @param _participant The participant's data and signature.
-     * @dev The caller must be an officer assigned to the specified case.
-     */
+    /// @notice Adds a participant to a case.
+    /// @param _caseId The identifier of the case to which the participant is added.
+    /// @param _participant The participant's data and signature.
+    /// @dev The caller must be an officer assigned to the specified case.
+    /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer.
+    /// @dev Throws `InvalidCase` if the case is NULL or not existing.
+    /// @dev Throws `HasToBeApproved` if the participant is not pre-approved.
+    /// @dev Throws `InvalidSigner` or `InvalidSender` if the employment status is not ACTIVE.
+    /// @dev Throws `BranchMismatch` if the signer and sender are from different branches.
+    /// @dev Throws `InvalidCaptain` if the signer is not an assigned officer of the case.
     function addParticipant(
         uint _caseId, 
         Participants.Participant memory _participant,
@@ -339,6 +376,14 @@ contract Cases is EIP712 {
         emit ParticipantApproved(_participant.participantId);
     }    
     
+    /// @notice Adds a participant to a case without approval requirement.
+    /// @param _caseId The identifier of the case to which the participant is added.
+    /// @param _participant The participant's data.
+    /// @dev The caller must be an officer assigned to the specified case.
+    /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer.
+    /// @dev Throws `InvalidCase` if the case is NULL or not existing.
+    /// @dev Throws `CannotBePreApproved` if the participant is pre-approved.
+    /// @dev Throws `InvalidSender` if the employment status of the caller is not ACTIVE.
     function addParticipant(
         uint _caseId, 
         Participants.Participant memory _participant
@@ -370,6 +415,14 @@ contract Cases is EIP712 {
         );
     }
 
+    /// @notice Approves a participant in a case.
+    /// @param _caseId The identifier of the case to which the participant is added.
+    /// @param _participant The participant's data.
+    /// @dev The caller must have the 'CAPTAIN' role for the specified case.
+    /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer.
+    /// @dev Throws `InvalidCase` if the case is NULL or not existing.
+    /// @dev Throws `AlreadyApproved` if the participant is already approved.
+    /// @dev Throws `InvalidSender` if the employment status of the caller is not ACTIVE.
     function approveParticipant(
         uint _caseId, 
         Participants.Participant memory _participant
@@ -392,12 +445,18 @@ contract Cases is EIP712 {
         emit ParticipantApproved(_participant.participantId);
     }
 
-    /**
-     * @notice Adds evidence to a case.
-     * @param _caseId The identifier of the case to which evidence is added.
-     * @param _evidence The evidence's data and signature.
-     * @dev The caller must be an officer assigned to the specified case.
-     */
+    /// @notice Adds evidence to a case with approval requirement.
+    /// @param _caseId The identifier of the case to which evidence is added.
+    /// @param _evidence The evidence's data and signature.
+    /// @param _signature Signature of the captain authorizing the evidence addition.
+    /// @param _signer Address of the captain performing the addition.
+    /// @dev The caller must be an officer assigned to the specified case.
+    /// @dev Throws InvalidOfficer if the caller is not an assigned officer.
+    /// @dev Throws InvalidCase if the case is NULL or not existing.
+    /// @dev Throws HasToBeApproved if the evidence is not pre-approved.
+    /// @dev Throws InvalidSigner or InvalidSender if the employment status is not ACTIVE.
+    /// @dev Throws BranchMismatch if the signer and sender are from different branches.
+    /// @dev Throws InvalidCaptain if the signer is not an assigned officer of the case.
     function addEvidence(
         uint _caseId, 
         Evidences.Evidence memory _evidence, 
@@ -437,6 +496,14 @@ contract Cases is EIP712 {
         emit EvidenceApproved(_evidence.evidenceId);
     }
     
+    /// @notice Adds evidence to a case without approval requirement.
+    /// @param _caseId The identifier of the case to which evidence is added.
+    /// @param _evidence The evidence's data.
+    /// @dev The caller must be an officer assigned to the specified case.
+    /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer.
+    /// @dev Throws `InvalidCase` if the case is NULL or not existing.
+    /// @dev Throws `CannotBePreApproved` if the evidence is pre-approved.
+    /// @dev Throws `InvalidSender` if the employment status of the caller is not ACTIVE.
     function addEvidence(
         uint _caseId, 
         Evidences.Evidence memory _evidence
@@ -445,8 +512,7 @@ contract Cases is EIP712 {
         Case storage newCase = _case[_caseId];
 
         (
-            ,,,
-            bytes32 fromBranchId, 
+            ,,,, 
             Ledger.EmploymentStatus fromEmploymentStatus,
         ) = ledgersContract.officers(msg.sender);
 
@@ -462,6 +528,14 @@ contract Cases is EIP712 {
         emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, messageHash, _evidence.data);
     }
     
+    /// @notice Approves evidence in a case without approval.
+    /// @param _caseId The identifier of the case to which the evidence is approved.
+    /// @param _evidence The evidence's data.
+    /// @dev The caller must have the 'CAPTAIN' role for the specified case.
+    /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer.
+    /// @dev Throws InvalidCase if the case is NULL or not existing.
+    /// @dev Throws AlreadyApproved if the evidence is already approved.
+    /// @dev Throws InvalidSender if the employment status of the caller is not ACTIVE.
     function approveEvidence(
         uint _caseId, 
         Evidences.Evidence memory _evidence
@@ -484,6 +558,16 @@ contract Cases is EIP712 {
         emit EvidenceApproved(_evidence.evidenceId);
     }
 
+    /// @notice Grants trustee access to a specific case.
+    /// @param _params Parameters for the trustee request.
+    /// @param _signature Signature of the moderator authorizing the access.
+    /// @dev The caller must have the 'CAPTAIN' role.
+    /// @dev Throws `InvalidAddress` if trustee or moderator address is zero.
+    /// @dev Throws `InvalidBranch` if the branch does not exist.
+    /// @dev Throws `InvalidCase` if the case does not exist.
+    /// @dev Throws `AccessAlreadyGranted` if trustee access is already granted.
+    /// @dev Throws `Expired` if the request has expired.
+    /// @dev Throws `InvalidSignature` if the signature verification fails.
     function grantTrusteeAccess(
         TrusteeRequestLib.TrusteeRequest memory _params, 
         bytes memory _signature
@@ -508,6 +592,14 @@ contract Cases is EIP712 {
         emit Trustee(_params.caseId, _params.branchId, msg.sender, _params.trustee, true);
     }
 
+    /// @notice Revokes trustee access from a specific case.
+    /// @param _trustee Address of the trustee.
+    /// @param _caseId Identifier of the case.
+    /// @param _branchId Branch identifier related to the case.
+    /// @dev The caller must have the 'CAPTAIN' role.
+    /// @dev Throws `InvalidAddress` if the trustee address is zero.
+    /// @dev Throws `InvalidCase` if the case does not exist.
+    /// @dev Throws `NoAccessToRevoke` if the trustee does not have access to the case.
     function revokeTrusteeAccess(address _trustee, uint _caseId, bytes32 _branchId) external onlyRank(Ledger.Rank.CAPTAIN) {
         
         if(address(0) == _trustee) { revert InvalidAddress(); }
@@ -521,6 +613,11 @@ contract Cases is EIP712 {
         emit Trustee(_caseId, _branchId, msg.sender, _trustee, false);
     }
 
+    /// @dev Validates a given signature against a hash and a signer.
+    /// @param _signature Signature to be validated.
+    /// @param _hash Hash of the data signed.
+    /// @param _signer Address of the signer to validate against.
+    /// @dev Throws `InvalidSignature` if the signature does not match the signer.
     function _validateSignature(bytes memory _signature, bytes32 _hash, address _signer) internal pure {
         if (ECDSA.recover(_hash, _signature) == _signer) { revert InvalidSignature(); }
     }
@@ -566,12 +663,6 @@ contract Cases is EIP712 {
     /// @param _expiry expiry timestamp
     function _validateExpiry(uint _expiry) private view {
         if (_expiry < block.timestamp) revert Expired();
-    }
-
-    function _getHash(
-        bytes memory _data
-    ) internal pure returns (bytes32) {
-        return keccak256(abi.encode(_data));
     }
 
     function domainSeparator() external view returns (bytes32) {
