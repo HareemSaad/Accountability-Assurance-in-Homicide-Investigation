@@ -19,6 +19,7 @@ contract Cases is EIP712 {
     using Strings for string;
     using TrusteeRequestLib for TrusteeRequestLib.TrusteeRequest;
     using TransferCaptain for TransferCaptain.TransferCaptainRequest;
+    using Participants for Participants.Participant;
 
     Ledger ledgersContract;
     
@@ -32,6 +33,7 @@ contract Cases is EIP712 {
     event CaseUpdated(
         uint indexed caseId, 
         address indexed initiator, 
+        bytes32 branch,
         CaseStatus oldStatus, 
         CaseStatus indexed newStatus
     );
@@ -111,6 +113,8 @@ contract Cases is EIP712 {
         address indexed trustree, 
         bool approved
     );
+
+    event ParticipantApproved(uint48 participantId);
     
     enum CaseStatus {
         NULL, OPEN, CLOSED, COLD
@@ -128,8 +132,10 @@ contract Cases is EIP712 {
 
     struct Case {
         CaseStatus status;
+        bytes32 branch;
         mapping (address => bool) officers;
-        Participants.Participant[] participants;
+        // mapping (uint48 => Evidence) evidences;
+        mapping (uint48 => Participants.Participant) participants;
         Evidence[] evidences;   
     }
 
@@ -159,15 +165,19 @@ contract Cases is EIP712 {
      * @param _caseId The unique identifier for the new case.
      * @dev The caller must have the 'CAPTAIN' role to create a case.
      */
-    function addCase(uint _caseId) external onlyRank(Ledger.Rank.CAPTAIN) {
+    function addCase(uint _caseId, bytes32 _branch) external onlyRank(Ledger.Rank.CAPTAIN) {
+
+        (,,uint stateCode,) = ledgersContract.branches(_branch);
 
         if(_case[_caseId].status != CaseStatus.NULL) { revert InvalidCase(); }
+        if(stateCode == 0) revert InvalidBranch();
 
         Case storage newCase = _case[_caseId];
         newCase.status = CaseStatus.OPEN;
+        newCase.branch = _branch;
         newCase.officers[msg.sender] = true;
 
-        emit CaseUpdated(_caseId, msg.sender, CaseStatus.NULL, CaseStatus.OPEN);
+        emit CaseUpdated(_caseId, msg.sender, _branch, CaseStatus.NULL, CaseStatus.OPEN);
     }
 
     /**
@@ -185,7 +195,7 @@ contract Cases is EIP712 {
         CaseStatus oldStatus = newCase.status;
         newCase.status = _status;
 
-        emit CaseUpdated(_caseId, msg.sender, oldStatus, _status);
+        emit CaseUpdated(_caseId, msg.sender, newCase.branch, oldStatus, _status);
     }
 
     /**
@@ -198,13 +208,13 @@ contract Cases is EIP712 {
 
         Case storage newCase = _case[_caseId];
         (
-            ,,,,,Ledger.Rank _rank
+            ,,,bytes32 fromBranchId,,Ledger.Rank _rank
         ) = ledgersContract.officers(_officer);
         
         if(newCase.status != CaseStatus.OPEN) { revert InvalidCase(); }
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); }
         if(_rank == Ledger.Rank.NULL || _rank == Ledger.Rank.MODERATOR) { revert InvalidOfficer(); }
-
+        if(!(fromBranchId == newCase.branch)) revert BranchMismatch();
         newCase.officers[_officer] = true; 
 
         emit UpdateOfficerInCase(_caseId, msg.sender, _officer);
@@ -242,7 +252,7 @@ contract Cases is EIP712 {
         if(!newCase.officers[params.fromCaptain]) { revert InvalidOfficer(); }
         if(!(fromRank == toRank && fromRank == Ledger.Rank.CAPTAIN)) { revert InvalidRank(); }
         if(!(fromEmploymentStatus == toEmploymentStatus && fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) { revert InactiveOfficer(); }
-        if(!(toBranchId == fromBranchId)) { revert BranchMismatch(); }
+        if(!(toBranchId == fromBranchId && toBranchId == newCase.branch)) { revert BranchMismatch(); }
         if(!(_signers[0] == params.fromCaptain && _signers[1] == params.toCaptain)) { revert InvalidSigner(); }
 
         bytes32 messageHash = params.hash();
@@ -283,24 +293,110 @@ contract Cases is EIP712 {
 
         emit RemoveOfficer(_caseId, msg.sender, _officer);
     }
-////////////////////////////////////////////////////////////////////////////////////////
+
     /**
      * @notice Adds a participant to a case.
      * @param _caseId The identifier of the case to which the participant is added.
      * @param _participant The participant's data and signature.
      * @dev The caller must be an officer assigned to the specified case.
      */
-    function addParticipant(uint _caseId, Participants.Participant memory _participant) external {
+    function addParticipant(
+        uint _caseId, 
+        Participants.Participant memory _participant,
+        bytes memory _signature,
+        address _signer
+    ) external {
 
         Case storage newCase = _case[_caseId];
 
+        (
+            ,,,
+            bytes32 capBranchId, 
+            Ledger.EmploymentStatus capEmploymentStatus,
+        ) = ledgersContract.officers(_signer);
+
+        (
+            ,,,
+            bytes32 fromBranchId, 
+            Ledger.EmploymentStatus fromEmploymentStatus,
+        ) = ledgersContract.officers(msg.sender);
+
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
-        
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(_participant.approved) { revert HasToBeApproved(); }
+        if(!(capEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSigner();
+        if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
+        if(!(capBranchId == fromBranchId)) revert BranchMismatch();
+        if(!(newCase.officers[_signer])) revert InvalidCaptain();
 
-        newCase.participants.push(_participant);
+        bytes32 messageHash = _participant.hash();
+        _validateSignatures(messageHash, _signature, _signer);
 
-        // emit NewParticipantInCase(_caseId, msg.sender, _participant.suspectId, _participant.category, calculatedHash, _participant.data);
+        newCase.participants[_participant.participantId] = _participant;
+
+        emit NewParticipantInCase(
+            _caseId, 
+            msg.sender, 
+            _participant.participantId, 
+            _participant.category,
+            messageHash, 
+            _participant.data
+        );
+
+        emit ParticipantApproved(_participant.participantId);
+    }    
+    
+    function addParticipant(
+        uint _caseId, 
+        Participants.Participant memory _participant
+    ) external {
+
+        Case storage newCase = _case[_caseId];
+
+        (
+            ,,,, 
+            Ledger.EmploymentStatus fromEmploymentStatus,
+        ) = ledgersContract.officers(msg.sender);
+
+        if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(!_participant.approved) { revert CannotBePreApproved(); }
+        if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
+
+        bytes32 messageHash = _participant.hash();
+
+        newCase.participants[_participant.participantId] = _participant;
+
+        emit NewParticipantInCase(
+            _caseId, 
+            msg.sender, 
+            _participant.participantId, 
+            _participant.category, 
+            messageHash, 
+            _participant.data
+        );
+    }
+
+    function approveParticipant(
+        uint _caseId, 
+        Participants.Participant memory _participant
+    ) external onlyRank(Ledger.Rank.CAPTAIN) {
+
+        Case storage newCase = _case[_caseId];
+
+        (
+            ,,,, 
+            Ledger.EmploymentStatus fromEmploymentStatus,
+        ) = ledgersContract.officers(msg.sender);
+
+        if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(!newCase.participants[_participant.participantId].approved) { revert AlreadyApproved(); }
+        if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
+
+        newCase.participants[_participant.participantId].approved = true;
+
+        emit ParticipantApproved(_participant.participantId);
     }
 
     /**

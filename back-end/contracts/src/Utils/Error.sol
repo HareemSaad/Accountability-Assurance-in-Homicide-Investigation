@@ -34,3 +34,8 @@ error SignerNotCaptain();
 error StateNeedsAtleastOneModerator();
 error Expired();
 error BranchMismatch();
+error CannotBePreApproved();
+error InvalidSender();
+error InvalidCaptain();
+error HasToBeApproved();
+error AlreadyApproved();
