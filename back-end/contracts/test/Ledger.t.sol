@@ -20,6 +20,8 @@ contract OfficersTest is BaseTest {
             moderator1.badge
         );
 
+        cases = new Cases(address(ledger));
+
         assertEq(ledger.moderators(moderator1.publicKey,branch1.stateCode), true);
         (
             string memory precinctAddress,
@@ -1737,6 +1739,37 @@ contract OfficersTest is BaseTest {
         assertTrue(ledger.badge(detective1.badge));
 
         vm.stopPrank();
+    }
+
+    function testAddCase() public {
+        addCaptain1();
+
+        vm.expectRevert(InvalidBranch.selector);
+        vm.prank(captain1.publicKey);
+        cases.addCase(
+            213,
+            captain3.branch.branchId
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.addCase(
+            213,
+            captain1.branch.branchId
+        );
+
+        (Cases.CaseStatus status, bytes32 branch) = cases._case(213);
+
+        assertEq(uint(status), uint(Cases.CaseStatus.OPEN));
+        assertEq(branch, captain1.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain1.publicKey));
+
+        vm.expectRevert(InvalidCase.selector);
+        vm.prank(captain1.publicKey);
+        cases.addCase(
+            213,
+            captain1.branch.branchId
+        );
+
     }
 
     function addBranch3() public {

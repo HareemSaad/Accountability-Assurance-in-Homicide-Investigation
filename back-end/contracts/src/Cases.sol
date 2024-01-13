@@ -157,7 +157,7 @@ contract Cases is EIP712 {
     }
 
     /// @notice A mapping of case IDs to their corresponding Case structs.
-    mapping (uint => Case) _case;
+    mapping (uint => Case) public _case;
 
     /// @dev trustee address => case Id => T/F
     mapping (address => mapping (uint => bool)) trusteeLedger;
@@ -177,9 +177,13 @@ contract Cases is EIP712 {
     /// @dev Checks if the sender's rank matches the specified rank using the Ledger contract.
     /// @param rank The rank to check against the sender's rank.
     function _onlyRank(Ledger.Rank rank) internal view {
-        if (ledgersContract.isValidRank(msg.sender, rank)) { 
+        if (!ledgersContract.isValidRank(msg.sender, rank)) { 
             revert InvalidRank(); 
         }
+    }
+
+    function officerInCase(uint _caseId, address _officer) external view returns(bool) {
+        return _case[_caseId].officers[_officer];
     }
 
     /// @notice Creates a new legal case with the specified ID and branch.

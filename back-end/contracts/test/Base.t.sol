@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "./../src/Ledger.sol";
+import "./../src/Cases.sol";
 import "./../src/Libraries/CreateBranch.sol";
 import "./../src/Libraries/UpdateBranch.sol";
 import "./../src/Libraries/Onboard.sol";
@@ -38,6 +39,7 @@ contract BaseTest is Test {
     }
 
     Ledger ledger;
+    Cases cases;
     address ZER0_ADDRESS = address(0);
     bytes32 PRECINCT1 = keccak256(abi.encode("PRECINCT 1"));
     bytes32 PRECINCT2 = keccak256(abi.encode("PRECINCT 2"));
