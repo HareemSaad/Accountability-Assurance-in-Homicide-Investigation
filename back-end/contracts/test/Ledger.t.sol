@@ -2173,6 +2173,19 @@ contract OfficersTest is BaseTest {
         );
     }
 
+    function testRevokeTrusteeAccess() public {
+        testGrantTrusteeAccess();
+
+        vm.prank(captain1.publicKey);
+        cases.revokeTrusteeAccess(
+            address(9879),
+            213,
+            PRECINCT1
+        );
+
+        assertFalse(cases.trusteeLedger(address(9879), 213));
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
