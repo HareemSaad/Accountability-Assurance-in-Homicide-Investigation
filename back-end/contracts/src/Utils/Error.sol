@@ -33,3 +33,4 @@ error InactiveOfficer();
 error SignerNotCaptain();
 error StateNeedsAtleastOneModerator();
 error Expired();
+error BranchMismatch();

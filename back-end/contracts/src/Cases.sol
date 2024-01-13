@@ -2,22 +2,25 @@
 pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
-import "./Officers.sol";
+import "./Ledger.sol";
 import "./Libraries/TrusteeRequest.sol";
+import "./Libraries/Participant.sol";
+import "./Libraries/TransferCaptain.sol";
 
 /**
  * @title Cases
  * @notice A smart contract for managing and tracking legal cases.
  * This contract provides functionality for creating and updating cases, managing officers, adding participants and evidence to cases,
  * and verifying the integrity of data through signatures and data hashing.
- * @dev This contract is designed to work in conjunction with the Access and Officers contracts.
+ * @dev This contract is designed to work in conjunction with the Access and Ledger contracts.
  */
 contract Cases is EIP712 {
 
     using Strings for string;
     using TrusteeRequestLib for TrusteeRequestLib.TrusteeRequest;
+    using TransferCaptain for TransferCaptain.TransferCaptainRequest;
 
-    Officers officersContract;
+    Ledger ledgersContract;
     
     /**
      * @dev Emitted when a case is created or updated.
@@ -27,10 +30,10 @@ contract Cases is EIP712 {
      * @dev `newStatus` The new status of the case.
      */
     event CaseUpdated(
-        uint caseId, 
+        uint indexed caseId, 
         address indexed initiator, 
         CaseStatus oldStatus, 
-        CaseStatus newStatus
+        CaseStatus indexed newStatus
     );
     
     /**
@@ -71,7 +74,7 @@ contract Cases is EIP712 {
         uint caseId, 
         address indexed initiator, 
         uint48 suspectId, 
-        ParticipantCategory category, 
+        Participants.ParticipantCategory category, 
         bytes32 dataHash, 
         bytes data
     );
@@ -112,52 +115,43 @@ contract Cases is EIP712 {
     enum CaseStatus {
         NULL, OPEN, CLOSED, COLD
     }
-
-    enum ParticipantCategory {
-        SUSPECT, WITNESS, PERPETRATOR, VICTIM
-    }
     
     enum EvidenceCategory {
         WEAPON, PHYSICAL, DRUG, DOCUMENTARY, DEMONSTRATIVE, HEARSAY, MURDER_WEAPON
-    }
-
-    struct Participant {
-        uint48 suspectId;
-        ParticipantCategory category;
-        bytes data;
-        bytes signature;
     }
 
     struct Evidence {
         uint48 evidenceId;
         EvidenceCategory category;
         bytes data;
-        bytes signature;
     }
 
     struct Case {
         CaseStatus status;
         mapping (address => bool) officers;
-        Participant[] participants;
+        Participants.Participant[] participants;
         Evidence[] evidences;   
     }
 
-    constructor(address _officersContract) EIP712("Cases", "1") {
-        officersContract = Officers(_officersContract);
+    constructor(address _ledgersContract) EIP712("Cases", "1") {
+        ledgersContract = Ledger(_ledgersContract);
     }
 
     mapping (uint => Case) _case;
 
-    // trustee address => case Id => T/F
+    /// @dev trustee address => case Id => T/F
     mapping (address => mapping (uint => bool)) trusteeLedger;
 
-    modifier onlyRank(Officers.Rank rank) {
+    /// @dev saves executed transactions to protect against replay
+    mapping (bytes32 => bool) public replay;
+
+    modifier onlyRank(Ledger.Rank rank) {
         _onlyRank(rank);
         _;
     }
 
-    function _onlyRank(Officers.Rank rank) internal view {
-        if (officersContract.isValidRank(msg.sender, rank)) { revert InvalidRank(); }
+    function _onlyRank(Ledger.Rank rank) internal view {
+        if (ledgersContract.isValidRank(msg.sender, rank)) { revert InvalidRank(); }
     }
 
     /**
@@ -165,7 +159,7 @@ contract Cases is EIP712 {
      * @param _caseId The unique identifier for the new case.
      * @dev The caller must have the 'CAPTAIN' role to create a case.
      */
-    function addCase(uint _caseId) external onlyRank(Officers.Rank.CAPTAIN) {
+    function addCase(uint _caseId) external onlyRank(Ledger.Rank.CAPTAIN) {
 
         if(_case[_caseId].status != CaseStatus.NULL) { revert InvalidCase(); }
 
@@ -182,7 +176,7 @@ contract Cases is EIP712 {
      * @param _status The new status of the case.
      * @dev The caller must have the 'CAPTAIN' role for the specified case.
      */
-    function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRank(Officers.Rank.CAPTAIN) {
+    function updateCaseStatus(uint _caseId, CaseStatus _status) external onlyRank(Ledger.Rank.CAPTAIN) {
         Case storage newCase = _case[_caseId];
 
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
@@ -200,12 +194,16 @@ contract Cases is EIP712 {
      * @param _officer The address of the officer to be added.
      * @dev The caller must have the 'CAPTAIN' role for the specified case.
      */
-    function addOfficerInCase(uint _caseId, address _officer) external onlyRank(Officers.Rank.CAPTAIN) {
+    function addOfficerInCase(uint _caseId, address _officer) external onlyRank(Ledger.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
+        (
+            ,,,,,Ledger.Rank _rank
+        ) = ledgersContract.officers(_officer);
         
-        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(newCase.status != CaseStatus.OPEN) { revert InvalidCase(); }
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); }
+        if(_rank == Ledger.Rank.NULL || _rank == Ledger.Rank.MODERATOR) { revert InvalidOfficer(); }
 
         newCase.officers[_officer] = true; 
 
@@ -214,21 +212,58 @@ contract Cases is EIP712 {
 
     /**
      * @notice transfers the assigned captain of case.
-     * @param _caseId The identifier of the case to which an officer is added.
-     * @param _officer The address of the officer to be added.
-     * @dev The caller must have the 'CAPTAIN' role for the specified case.
+     * @param params TransferCaptain params
+     * @dev The caller must have the 'Moderator' role for the specified case.
      */
-    function transferCaseCaptain(uint _caseId, address _officer, address _prevOfficer) external onlyRank(Officers.Rank.MODERATOR) {
+    function transferCaseCaptain(
+        TransferCaptain.TransferCaptainRequest memory params,
+        bytes[2] memory _signatures,
+        address[2] memory _signers
+    ) external onlyRank(Ledger.Rank.MODERATOR) {
 
-        Case storage newCase = _case[_caseId];
+        Case storage newCase = _case[params.caseId];
+        
+        (
+            ,,,
+            bytes32 fromBranchId, 
+            Ledger.EmploymentStatus fromEmploymentStatus, 
+            Ledger.Rank fromRank
+        ) = ledgersContract.officers(params.fromCaptain);
+
+        (
+            ,,,
+            bytes32 toBranchId, 
+            Ledger.EmploymentStatus toEmploymentStatus, 
+            Ledger.Rank toRank
+        ) = ledgersContract.officers(params.toCaptain);
+
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(!newCase.officers[_prevOfficer]) { revert InvalidOfficer(); }
+        if(!newCase.officers[params.fromCaptain]) { revert InvalidOfficer(); }
+        if(!(fromRank == toRank && fromRank == Ledger.Rank.CAPTAIN)) { revert InvalidRank(); }
+        if(!(fromEmploymentStatus == toEmploymentStatus && fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) { revert InactiveOfficer(); }
+        if(!(toBranchId == fromBranchId)) { revert BranchMismatch(); }
+        if(!(_signers[0] == params.fromCaptain && _signers[1] == params.toCaptain)) { revert InvalidSigner(); }
 
-        delete(newCase.officers[_prevOfficer]);
-        newCase.officers[_officer] = true;
+        bytes32 messageHash = params.hash();
+        _validateSignatures(messageHash, _signatures[0], _signers[0]);
 
-        // emit UpdateOfficerInCase(_caseId, msg.sender, _officer, 0);
+        params.reciever = true;
+        
+        messageHash = params.hash();
+        _validateSignatures(messageHash, _signatures[1], _signers[1]);
+
+        delete(newCase.officers[params.fromCaptain]);
+        newCase.officers[params.toCaptain] = true;
+
+        emit UpdateOfficerInCase(params.caseId, params.fromCaptain, params.toCaptain);
+
+        delete(fromBranchId);
+        delete(toBranchId);
+        delete(fromEmploymentStatus);
+        delete(toEmploymentStatus);
+        delete(fromRank);
+        delete(toRank);
     }
 
     /**
@@ -237,7 +272,7 @@ contract Cases is EIP712 {
      * @param _officer The address of the officer to be removed.
      * @dev The caller must have the 'CAPTAIN' role for the specified case, and the officer must be assigned to the case.
      */
-    function removeOfficerInCase(uint _caseId, address _officer) external onlyRank(Officers.Rank.CAPTAIN) {
+    function removeOfficerInCase(uint _caseId, address _officer) external onlyRank(Ledger.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
         
@@ -248,15 +283,14 @@ contract Cases is EIP712 {
 
         emit RemoveOfficer(_caseId, msg.sender, _officer);
     }
-
+////////////////////////////////////////////////////////////////////////////////////////
     /**
      * @notice Adds a participant to a case.
      * @param _caseId The identifier of the case to which the participant is added.
      * @param _participant The participant's data and signature.
-     * @param _dataHash The hash of the participant's data for data integrity verification.
      * @dev The caller must be an officer assigned to the specified case.
      */
-    function addParticipant(uint _caseId, Participant memory _participant, bytes32 _dataHash) external {
+    function addParticipant(uint _caseId, Participants.Participant memory _participant) external {
 
         Case storage newCase = _case[_caseId];
 
@@ -264,15 +298,9 @@ contract Cases is EIP712 {
         
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
 
-        bytes32 calculatedHash = _hashTypedDataV4(_getHash(_participant.data));
-
-        if (_dataHash != calculatedHash) { revert InvalidHash(); }
-
-        _validateSignature(_participant.signature, calculatedHash, msg.sender);
-
         newCase.participants.push(_participant);
 
-        emit NewParticipantInCase(_caseId, msg.sender, _participant.suspectId, _participant.category, calculatedHash, _participant.data);
+        // emit NewParticipantInCase(_caseId, msg.sender, _participant.suspectId, _participant.category, calculatedHash, _participant.data);
     }
 
     /**
@@ -294,14 +322,14 @@ contract Cases is EIP712 {
 
         if (_dataHash != calculatedHash) { revert InvalidHash(); }
 
-        _validateSignature(_evidence.signature, calculatedHash, msg.sender);
+        // _validateSignature(_evidence.signature, calculatedHash, msg.sender);
 
        newCase.evidences.push(_evidence);
 
         emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash, _evidence.data);
     }
 
-    function grantTrusteeAccess(address _trustee, uint _caseId, string memory _branchId, bytes32 _hash, bytes memory _signature) external onlyRank(Officers.Rank.CAPTAIN) {
+    function grantTrusteeAccess(address _trustee, uint _caseId, string memory _branchId, bytes32 _hash, bytes memory _signature) external onlyRank(Ledger.Rank.CAPTAIN) {
         
         if(address(0) == _trustee) { revert InvalidAddress(); }
 
@@ -309,12 +337,12 @@ contract Cases is EIP712 {
         if(currCase.status == CaseStatus.NULL) { revert InvalidCase(); }
         if(trusteeLedger[_trustee][_caseId]) { revert AccessAlreadyGranted(); }
 
-        if(_hash != TrusteeRequestLib.TrusteeRequest(
-            _caseId,
-            _trustee,
-            msg.sender,
-            keccak256(abi.encode(_branchId))
-        ).hash()) { revert InvalidHash(); }
+        // if(_hash != TrusteeRequestLib.TrusteeRequest(
+        //     _caseId,
+        //     _trustee,
+        //     msg.sender,
+        //     keccak256(abi.encode(_branchId))
+        // ).hash()) { revert InvalidHash(); }
 
         _validateSignature(_signature, _hash, _trustee);
 
@@ -323,7 +351,7 @@ contract Cases is EIP712 {
         emit Trustee(_caseId, keccak256(abi.encode(_branchId)), msg.sender, _trustee, true);
     }
 
-    function revokeTrusteeAccess(address _trustee, uint _caseId, string memory _branchId) external onlyRank(Officers.Rank.CAPTAIN) {
+    function revokeTrusteeAccess(address _trustee, uint _caseId, string memory _branchId) external onlyRank(Ledger.Rank.CAPTAIN) {
         
         if(address(0) == _trustee) { revert InvalidAddress(); }
 
@@ -338,6 +366,42 @@ contract Cases is EIP712 {
 
     function _validateSignature(bytes memory _signature, bytes32 _hash, address _signer) internal pure {
         if (ECDSA.recover(_hash, _signature) == _signer) { revert InvalidSignature(); }
+    }
+
+    /// @dev Validates a set of signatures.
+    /// @param _hash The hash of the data being signed.
+    /// @param _signatures Array of signatures to validate.
+    /// @param _signers Array of addresses corresponding to the signers of the signatures.
+    function _validateSignatures(
+        bytes32 _hash,
+        bytes[] memory _signatures,
+        address[] memory _signers
+    ) private {
+        bytes32 _messageHash = _hashTypedDataV4(_hash);
+        if (replay[_messageHash]) revert SignatureReplay();
+        replay[_messageHash] = true;
+        for (uint i = 0; i < _signatures.length; ++i) {
+            if(!(
+                SignatureChecker.isValidSignatureNow(_signers[i], _messageHash, _signatures[i])
+            )) revert InvalidSignature();
+        }   
+    }
+
+    /// @dev Validates a single signature.
+    /// @param _hash The hash of the data being signed.
+    /// @param _signature The signature to validate.
+    /// @param _signer The address of the signer of the signature.
+    function _validateSignatures(
+        bytes32 _hash,
+        bytes memory _signature,
+        address _signer
+    ) private {
+        bytes32 _messageHash = _hashTypedDataV4(_hash);
+        if (replay[_messageHash]) revert SignatureReplay();
+        replay[_messageHash] = true;
+        if(!(
+            SignatureChecker.isValidSignatureNow(_signer, _messageHash, _signature)
+        )) revert InvalidSignature();
     }
 
     function _getHash(
