@@ -160,7 +160,7 @@ contract Cases is EIP712 {
     mapping (uint => Case) public _case;
 
     /// @dev trustee address => case Id => T/F
-    mapping (address => mapping (uint => bool)) trusteeLedger;
+    mapping (address => mapping (uint => bool)) public trusteeLedger;
 
     /// @dev saves executed transactions to protect against replay
     mapping (bytes32 => bool) public replay;

@@ -2028,7 +2028,7 @@ contract OfficersTest is BaseTest {
         assertFalse(evidence.approved);
     }
 
-    function testApproveParticipant1() public {
+    function testApproveEvidence() public {
         testAddEvidence();
 
         vm.expectRevert(InvalidOfficer.selector);
@@ -2056,6 +2056,120 @@ contract OfficersTest is BaseTest {
         cases.approveEvidence(
             213,
             322
+        );
+    }
+
+    function testGrantTrusteeAccess() public {
+        testAddOfficerInCase();
+
+        TrusteeRequestLib.TrusteeRequest memory request = TrusteeRequestLib.TrusteeRequest(
+            213,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT1,
+            expiry
+        );
+
+        bytes32 messageHash = TrusteeRequestLib.hash(TrusteeRequestLib.TrusteeRequest(
+            213,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT1,
+            expiry
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+
+        assertTrue(cases.trusteeLedger(address(9879), 213));
+        
+        vm.expectRevert(AccessAlreadyGranted.selector);
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+
+        vm.warp(block.timestamp + expiry + 1);
+        vm.expectRevert(Expired.selector);
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+    }
+
+    function testCannotGrantTrusteeAccess() public {
+        testAddOfficerInCase();
+
+        TrusteeRequestLib.TrusteeRequest memory request = TrusteeRequestLib.TrusteeRequest(
+            213,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT3,
+            expiry
+        );
+
+        bytes32 messageHash = TrusteeRequestLib.hash(TrusteeRequestLib.TrusteeRequest(
+            213,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT3,
+            expiry
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        vm.expectRevert(InvalidBranch.selector);
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+
+         request = TrusteeRequestLib.TrusteeRequest(
+            2153,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT1,
+            expiry
+        );
+
+        messageHash = TrusteeRequestLib.hash(TrusteeRequestLib.TrusteeRequest(
+            2153,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT1,
+            expiry
+        ));
+
+        (v, r, s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        moderator1Signature = abi.encodePacked(r, s, v);
+        
+        vm.expectRevert(InvalidCase.selector);
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
         );
     }
 

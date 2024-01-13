@@ -12,6 +12,7 @@ import "./../src/Libraries/UpdateOfficer.sol";
 import "./../src/Libraries/TransferBranch.sol";
 import "./../src/Libraries/Participant.sol";
 import "./../src/Libraries/Evidence.sol";
+import "./../src/Libraries/TrusteeRequest.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract BaseTest is Test {
@@ -21,6 +22,7 @@ contract BaseTest is Test {
     using OfficerOnboard for OfficerOnboard.OnboardVote;
     using UpdateOfficer for UpdateOfficer.UpdateRequest;
     using TransferBranch for TransferBranch.TransferBranchRequest;
+    using TrusteeRequestLib for TrusteeRequestLib.TrusteeRequest;
 
     struct Officer {
         uint256 privateKey;
