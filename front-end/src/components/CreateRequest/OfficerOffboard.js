@@ -5,11 +5,17 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap } from '../data/data.js';
+import { employmentStatusMap, rankMap } from "../data/data.js";
+import "./createRequests.css";
+import moment from "moment";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FaCalendarAlt } from "react-icons/fa";
 
 export const OfficerOffboard = () => {
   let navigate = useNavigate();
 
+  const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [selectedRankValue, setSelectedRankValue] = useState(null);
   // Function to handle dropdown item selection
@@ -22,6 +28,8 @@ export const OfficerOffboard = () => {
     branchId: "",
     rank: "",
     employmentStatus: "",
+    expiry: "",
+    isOpen: true,
   });
 
   // const rankArray = ["Null", "Officer", "Detective", "Captain"];
@@ -29,6 +37,7 @@ export const OfficerOffboard = () => {
   const statusArray = Array.from(employmentStatusMap).slice(-2);
   // const statusArray = ["Select a Status", "Fired", "Retired"];
 
+  // handling inputs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: value });
@@ -54,10 +63,12 @@ export const OfficerOffboard = () => {
     ) {
       notify("error", `Select Officer Rank`);
     } else if (
-        OfficerOffboardInfo.employmentStatus === "" ||
-        OfficerOffboardInfo.employmentStatus === 0
-        ) {
-        notify("error", `Select Employment Status`);
+      OfficerOffboardInfo.employmentStatus === "" ||
+      OfficerOffboardInfo.employmentStatus === 0
+    ) {
+      notify("error", `Select Employment Status`);
+    } else if (OfficerOffboardInfo.expiry === "") {
+      notify("error", `Select an Expiry Date`);
     } else {
       setButtonDisabled(true);
       setTimeout(() => {
@@ -80,7 +91,7 @@ export const OfficerOffboard = () => {
         });
     }
   };
-  
+
   // Function to handle dropdown item selection
   const handleRankDropdownSelect = (categoryValue) => {
     setSelectedRankValue(categoryValue);
@@ -96,6 +107,33 @@ export const OfficerOffboard = () => {
     setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
     console.log("params :: ", name);
     console.log("value :: ", categoryValue);
+  };
+
+  // handle date field only
+  const handleDateChange = (fullDateTime) => {
+    let unixTimestamp = moment(fullDateTime).unix();
+    console.log("unixTimestamp:: ", unixTimestamp);
+    setOfficerOffboardInfo({ ...OfficerOffboardInfo, ["expiry"]: unixTimestamp });
+  };
+
+  const CustomInput = ({ value, onClick }) => {
+    return (
+      <div className="input-group">
+        <input
+          type="text"
+          className="form-control expiryDateInput"
+          value={value}
+          onClick={onClick}
+          placeholder="Select Expiry Date"
+          readOnly
+        />
+        <div className="input-group-append">
+          <span className="input-group-text">
+            <FaCalendarAlt />
+          </span>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -256,7 +294,7 @@ export const OfficerOffboard = () => {
             </label>
           </div>
           <div className="col-9 input">
-          <Dropdown>
+            <Dropdown>
               <Dropdown.Toggle
                 variant="secondary"
                 id="employmentStatus"
@@ -281,6 +319,33 @@ export const OfficerOffboard = () => {
                 ))}
               </Dropdown.Menu>
             </Dropdown>
+          </div>
+        </div>
+
+        {/* Expiry */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="expiry" className="col-form-label">
+              <b>
+                <em>Expiry Date:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <label>
+              <DatePicker
+                selected={expiryDate}
+                name="expiry"
+                onChange={(date) => {
+                  setExpiryDate(date);
+                  handleDateChange(date);
+                }}
+                dateFormat="dd/MM/yyyy"
+                minDate={moment().add(1, "day").toDate()}
+                placeholderText="Select Expiry Date"
+                customInput={<CustomInput />}
+              />
+            </label>
           </div>
         </div>
 

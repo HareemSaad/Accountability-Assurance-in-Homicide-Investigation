@@ -1,19 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import "./createRequests.css";
+import moment from "moment";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FaCalendarAlt } from "react-icons/fa";
 
 export const UpdateBranch = () => {
   let navigate = useNavigate();
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
+  const [expiryDate, setExpiryDate] = useState("");
   const [updateBranchInfo, setUpdateBranchInfo] = useState({
     precinctAddress: "",
     jurisdictionArea: "",
     stateCode: "",
     branchId: "",
+    expiry: "",
+    isOpen: true,
   });
 
   const handleChange = (e) => {
@@ -33,12 +41,14 @@ export const UpdateBranch = () => {
       notify("error", `State Code is empty`);
     } else if (updateBranchInfo.branchId === "") {
       notify("error", `Branch Id is empty`);
+    } else if (updateBranchInfo.expiry === "") {
+      notify("error", `Select an Expiry Date`);
     } else {
       setButtonDisabled(true);
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
-      
+
       axios
         .post(
           "http://localhost:3000/create-request/update-branch",
@@ -55,6 +65,33 @@ export const UpdateBranch = () => {
           );
         });
     }
+  };
+
+  // handle date field only
+  const handleDateChange = (fullDateTime) => {
+    let unixTimestamp = moment(fullDateTime).unix();
+    console.log("unixTimestamp:: ", unixTimestamp);
+    setUpdateBranchInfo({ ...updateBranchInfo, ["expiry"]: unixTimestamp });
+  };
+
+  const CustomInput = ({ value, onClick }) => {
+    return (
+      <div className="input-group">
+        <input
+          type="text"
+          className="form-control expiryDateInput"
+          value={value}
+          onClick={onClick}
+          placeholder="Select Expiry Date"
+          readOnly
+        />
+        <div className="input-group-append">
+          <span className="input-group-text">
+            <FaCalendarAlt />
+          </span>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -142,6 +179,33 @@ export const UpdateBranch = () => {
               className="form-control"
               onChange={handleChange}
             ></input>
+          </div>
+        </div>
+
+        {/* Expiry */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="expiry" className="col-form-label">
+              <b>
+                <em>Expiry Date:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <label>
+              <DatePicker
+                selected={expiryDate}
+                name="expiry"
+                onChange={(date) => {
+                  setExpiryDate(date);
+                  handleDateChange(date);
+                }}
+                dateFormat="dd/MM/yyyy"
+                minDate={moment().add(1, "day").toDate()}
+                placeholderText="Select Expiry Date"
+                customInput={<CustomInput />}
+              />
+            </label>
           </div>
         </div>
 

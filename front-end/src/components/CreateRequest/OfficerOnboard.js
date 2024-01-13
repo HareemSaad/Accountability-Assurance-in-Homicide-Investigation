@@ -1,15 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap } from '../data/data.js';
+import { employmentStatusMap, rankMap } from "../data/data.js";
+import "./createRequests.css";
+import moment from "moment";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { FaCalendarAlt } from "react-icons/fa";
 
 export const OfficerOnboard = () => {
   let navigate = useNavigate();
 
+  const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [selectedRankValue, setSelectedRankValue] = useState(null);
   const [officerOnboardInfo, setOfficerOnboardInfo] = useState({
@@ -20,6 +26,8 @@ export const OfficerOnboard = () => {
     branchId: "",
     rank: "",
     employmentStatus: "1",
+    expiry: "",
+    isOpen: true,
   });
 
   // const rankArray = ["Null", "Officer", "Detective", "Captain"];
@@ -48,6 +56,8 @@ export const OfficerOnboard = () => {
       officerOnboardInfo.rank === 0
     ) {
       notify("error", `Select Officer Rank`);
+    } else if (officerOnboardInfo.expiry === "") {
+      notify("error", `Select an Expiry Date`);
     } else {
       setButtonDisabled(true);
       setTimeout(() => {
@@ -76,6 +86,33 @@ export const OfficerOnboard = () => {
     setSelectedRankValue(categoryValue);
     const name = "rank";
     setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: categoryValue });
+  };
+
+  // handle date field only
+  const handleDateChange = (fullDateTime) => {
+    let unixTimestamp = moment(fullDateTime).unix();
+    console.log("unixTimestamp:: ", unixTimestamp);
+    setOfficerOnboardInfo({ ...officerOnboardInfo, ["expiry"]: unixTimestamp });
+  };
+
+  const CustomInput = ({ value, onClick }) => {
+    return (
+      <div className="input-group">
+        <input
+          type="text"
+          className="form-control expiryDateInput"
+          value={value}
+          onClick={onClick}
+          placeholder="Select Expiry Date"
+          readOnly
+        />
+        <div className="input-group-append">
+          <span className="input-group-text">
+            <FaCalendarAlt />
+          </span>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -244,6 +281,33 @@ export const OfficerOnboard = () => {
               value="Active"
               disabled
             />
+          </div>
+        </div>
+
+        {/* Expiry */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="expiry" className="col-form-label">
+              <b>
+                <em>Expiry Date:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <label>
+              <DatePicker
+                selected={expiryDate}
+                name="expiry"
+                onChange={(date) => {
+                  setExpiryDate(date);
+                  handleDateChange(date);
+                }}
+                dateFormat="dd/MM/yyyy"
+                minDate={moment().add(1, "day").toDate()}
+                placeholderText="Select Expiry Date"
+                customInput={<CustomInput />}
+              />
+            </label>
           </div>
         </div>
 

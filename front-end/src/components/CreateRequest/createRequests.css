@@ -1,0 +1,10 @@
+.input-group-text {
+    height: 40px;
+    cursor: pointer;
+}
+
+.expiryDateInput {
+    outline: 0 !important;
+    box-shadow: 0 0 0 rgb(255, 255, 255) !important;
+    border-bottom: 0.2rem solid #6600cc !important;
+}
