@@ -13,6 +13,7 @@ import "./../src/Libraries/TransferBranch.sol";
 import "./../src/Libraries/Participant.sol";
 import "./../src/Libraries/Evidence.sol";
 import "./../src/Libraries/TrusteeRequest.sol";
+import "./../src/Libraries/TransferCase.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract BaseTest is Test {
@@ -23,6 +24,7 @@ contract BaseTest is Test {
     using UpdateOfficer for UpdateOfficer.UpdateRequest;
     using TransferBranch for TransferBranch.TransferBranchRequest;
     using TrusteeRequestLib for TrusteeRequestLib.TrusteeRequest;
+    using TransferCase for TransferCase.TransferCaseRequest;
 
     struct Officer {
         uint256 privateKey;

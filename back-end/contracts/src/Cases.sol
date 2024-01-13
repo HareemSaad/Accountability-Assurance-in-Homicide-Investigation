@@ -6,6 +6,7 @@ import "./Ledger.sol";
 import "./Libraries/TrusteeRequest.sol";
 import "./Libraries/Participant.sol";
 import "./Libraries/TransferCaptain.sol";
+import "./Libraries/TransferCase.sol";
 import "./Libraries/Evidence.sol";
 
 /**
@@ -20,6 +21,7 @@ contract Cases is EIP712 {
     using Strings for string;
     using TrusteeRequestLib for TrusteeRequestLib.TrusteeRequest;
     using TransferCaptain for TransferCaptain.TransferCaptainRequest;
+    using TransferCase for TransferCase.TransferCaseRequest;
     using Participants for Participants.Participant;
     using Evidences for Evidences.Evidence;
 
@@ -38,6 +40,17 @@ contract Cases is EIP712 {
         bytes32 branch,
         CaseStatus oldStatus, 
         CaseStatus indexed newStatus
+    );
+
+    /// @notice Emitted when a case is transferred from one captain to another
+    /// @dev This event signifies a change in the leadership of a case.
+    /// @param caseId The identifier of the case that is being transferred.
+    /// @param captain The address of the new captain to whom the case has been transferred.
+    /// @param branch The identifier of the branch where the case is now assigned.
+    event CaseShifted(
+        uint indexed caseId, 
+        address indexed captain, 
+        bytes32 branch
     );
     
     /**
@@ -182,14 +195,29 @@ contract Cases is EIP712 {
         }
     }
 
+    /// @notice Checks if an officer is assigned to a specific case
+    /// @dev Returns true if the officer is assigned to the case, false otherwise
+    /// @param _caseId The identifier of the case
+    /// @param _officer The address of the officer
+    /// @return bool Indicates whether the officer is assigned to the case
     function officerInCase(uint _caseId, address _officer) external view returns(bool) {
         return _case[_caseId].officers[_officer];
     }
 
+    /// @notice Retrieves participant details from a specific case
+    /// @dev Returns participant data if present in the case
+    /// @param _caseId The identifier of the case
+    /// @param _id The unique identifier of the participant in the case
+    /// @return Participant The participant data including ID, category, and other details
     function participantInCase(uint _caseId, uint48 _id) external view returns(Participants.Participant memory) {
         return _case[_caseId].participants[_id];
     }
 
+    /// @notice Retrieves evidence details from a specific case
+    /// @dev Returns evidence data if present in the case
+    /// @param _caseId The identifier of the case
+    /// @param _id The unique identifier of the evidence in the case
+    /// @return Evidence The evidence data including ID, category, and other details
     function evidenceInCase(uint _caseId, uint48 _id) external view returns(Evidences.Evidence memory) {
         return _case[_caseId].evidences[_id];
     }
@@ -313,6 +341,79 @@ contract Cases is EIP712 {
         delete(toEmploymentStatus);
         delete(fromRank);
         delete(toRank);
+    }
+
+    /// @notice Transfers a legal case from one captain to another irrespective of branch.
+    /// @dev Requires 'MODERATOR' role to initiate the case transfer and handles the verification of captains and branches involved in the transfer.
+    /// @param _params A `TransferCaseRequest` struct containing all the necessary data for the case transfer.
+    /// @param _signatures An array containing two signatures, one from the current captain and another from the receiving captain.
+    /// @param _signers An array containing two addresses, corresponding to the captains who signed the transfer request.
+    /// @dev This function performs several checks to ensure the legitimacy and validity of the transfer.
+    /// - Verifies that the case exists and is not in a NULL status.
+    /// - Checks that the transferring captain is currently assigned to the case.
+    /// - Ensures both captains involved hold the 'CAPTAIN' rank and are active officers.
+    /// - Confirms the identities of the signers match the captains involved in the transfer.
+    /// - Validates the moderator's rank and branch alignment with
+    function transferCase(
+        TransferCase.TransferCaseRequest memory _params,
+        bytes[2] memory _signatures,
+        address[2] memory _signers
+    ) external onlyRank(Ledger.Rank.MODERATOR) {
+
+        _validateExpiry(_params.expiry);
+
+        Case storage newCase = _case[_params.caseId];
+        
+        (
+            ,,,
+            bytes32 fromBranchId, 
+            Ledger.EmploymentStatus fromEmploymentStatus, 
+            Ledger.Rank fromRank
+        ) = ledgersContract.officers(_params.fromCaptain);
+
+        (
+            ,,,
+            bytes32 toBranchId, 
+            Ledger.EmploymentStatus toEmploymentStatus, 
+            Ledger.Rank toRank
+        ) = ledgersContract.officers(_params.toCaptain);
+
+        (
+            ,,,
+            bytes32 senderBranchId, 
+            Ledger.EmploymentStatus senderEmploymentStatus,
+        ) = ledgersContract.officers(msg.sender);
+
+        
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(!newCase.officers[_params.fromCaptain]) { revert InvalidOfficer(); }
+        if(!(fromRank == toRank && fromRank == Ledger.Rank.CAPTAIN)) { revert InvalidRank(); }
+        if(!(fromEmploymentStatus == toEmploymentStatus && fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) { revert InactiveOfficer(); }
+        if(!(_signers[0] == _params.fromCaptain && _signers[1] == _params.toCaptain)) { revert InvalidSigner(); }
+        if(!(senderBranchId == fromBranchId && senderEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidModerator();
+
+        bytes32 messageHash = _params.hash();
+        _validateSignatures(messageHash, _signatures[0], _signers[0]);
+
+        _params.reciever = true;
+        
+        messageHash = _params.hash();
+        _validateSignatures(messageHash, _signatures[1], _signers[1]);
+
+        delete(newCase.officers[_params.fromCaptain]);
+        newCase.officers[_params.toCaptain] = true;
+        newCase.branch = _params.toBranchId;
+
+        emit CaseShifted(_params.caseId, _params.toCaptain, newCase.branch);
+
+        delete(fromBranchId);
+        delete(toBranchId);
+        delete(fromEmploymentStatus);
+        delete(toEmploymentStatus);
+        delete(fromRank);
+        delete(toRank);
+        delete(senderBranchId);
+        delete(senderEmploymentStatus);
     }
 
     //// @notice Removes an officer from a case.
@@ -598,7 +699,7 @@ contract Cases is EIP712 {
         if(trusteeLedger[_params.trustee][_params.caseId]) { revert AccessAlreadyGranted(); }
 
         bytes32 messageHash = _params.hash();
-        _validateSignature(_signature, messageHash, _params.moderator);
+        _validateSignatures(messageHash, _signature, _params.moderator);
 
         trusteeLedger[_params.trustee][_params.caseId] = true;
         

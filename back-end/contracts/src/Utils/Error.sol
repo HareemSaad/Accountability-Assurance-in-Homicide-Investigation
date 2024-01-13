@@ -39,3 +39,4 @@ error InvalidSender();
 error InvalidCaptain();
 error HasToBeApproved();
 error AlreadyApproved();
+error InvalidModerator();

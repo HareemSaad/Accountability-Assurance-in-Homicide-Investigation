@@ -2080,7 +2080,7 @@ contract OfficersTest is BaseTest {
             expiry
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV41(messageHash));
         bytes memory moderator1Signature = abi.encodePacked(r, s, v);
 
         vm.prank(captain1.publicKey);
@@ -2184,6 +2184,61 @@ contract OfficersTest is BaseTest {
         );
 
         assertFalse(cases.trusteeLedger(address(9879), 213));
+    }
+
+    function testTransferCase() public {
+
+        testAddOfficerInCase();
+
+        bytes32 messageHash = TransferCase.hash(TransferCase.TransferCaseRequest(
+            captain1.publicKey,
+            captain2.publicKey,
+            9,
+            213,
+            captain1.branch.branchId,
+            captain2.branch.branchId,
+            false,
+            expiry
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(captain1.privateKey, _hashTypedDataV41(messageHash));
+        bytes memory captain1Signature = abi.encodePacked(r, s, v);
+
+        messageHash = TransferCase.hash(TransferCase.TransferCaseRequest(
+            captain1.publicKey,
+            captain2.publicKey,
+            9,
+            213,
+            captain1.branch.branchId,
+            captain2.branch.branchId,
+            true,
+            expiry
+        ));
+
+        (v, r, s) = vm.sign(captain2.privateKey, _hashTypedDataV41(messageHash));
+        bytes memory captain2Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+        cases.transferCase(
+            TransferCase.TransferCaseRequest(
+                captain1.publicKey,
+                captain2.publicKey,
+                9,
+                213,
+                captain1.branch.branchId,
+                captain2.branch.branchId,
+                false,
+                expiry
+            ),
+            [captain1Signature, captain2Signature],
+            [captain1.publicKey, captain2.publicKey]
+        );
+
+        (, bytes32 branch) = cases._case(213);
+
+        assertEq(branch, captain2.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain2.publicKey));
+        assertFalse(cases.officerInCase(213, captain1.publicKey));
     }
 
     function addBranch3() public {
@@ -2524,5 +2579,9 @@ contract OfficersTest is BaseTest {
 
     function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
         return ECDSA.toTypedDataHash(ledger.DOMAIN_SEPARATOR(), structHash);
+    }
+
+    function _hashTypedDataV41(bytes32 structHash) internal view virtual returns (bytes32) {
+        return ECDSA.toTypedDataHash(cases.domainSeparator(), structHash);
     }
 }
