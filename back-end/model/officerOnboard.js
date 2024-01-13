@@ -43,7 +43,14 @@ const OfficerOnboardSchema = new mongoose.Schema ({
     signers: {
         type: Array
     },
-
+    expiry: {
+        type: Date,
+        required: true
+    },
+    isOpen: {
+        type: Boolean,
+        default: true
+    }
 })
 
 const OfficerOnboard = new mongoose.model('OfficerOnboard', OfficerOnboardSchema)

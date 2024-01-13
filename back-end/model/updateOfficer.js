@@ -43,7 +43,14 @@ const UpdateOfficerSchema = new mongoose.Schema ({
     signers: {
         type: Array
     },
-
+    expiry: {
+        type: Date,
+        required: true
+    },
+    isOpen: {
+        type: Boolean,
+        default: true
+    }
 })
 
 
