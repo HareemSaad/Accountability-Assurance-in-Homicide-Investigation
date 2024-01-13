@@ -6,6 +6,7 @@ import "./Ledger.sol";
 import "./Libraries/TrusteeRequest.sol";
 import "./Libraries/Participant.sol";
 import "./Libraries/TransferCaptain.sol";
+import "./Libraries/Evidence.sol";
 
 /**
  * @title Cases
@@ -20,6 +21,7 @@ contract Cases is EIP712 {
     using TrusteeRequestLib for TrusteeRequestLib.TrusteeRequest;
     using TransferCaptain for TransferCaptain.TransferCaptainRequest;
     using Participants for Participants.Participant;
+    using Evidences for Evidences.Evidence;
 
     Ledger ledgersContract;
     
@@ -94,7 +96,7 @@ contract Cases is EIP712 {
         uint caseId, 
         address indexed initiator, 
         uint48 evidenceId, 
-        EvidenceCategory category, 
+        Evidences.EvidenceCategory category, 
         bytes32 dataHash, 
         bytes data
     );
@@ -115,28 +117,19 @@ contract Cases is EIP712 {
     );
 
     event ParticipantApproved(uint48 participantId);
+
+    event EvidenceApproved(uint48 evidenceId);
     
     enum CaseStatus {
         NULL, OPEN, CLOSED, COLD
-    }
-    
-    enum EvidenceCategory {
-        WEAPON, PHYSICAL, DRUG, DOCUMENTARY, DEMONSTRATIVE, HEARSAY, MURDER_WEAPON
-    }
-
-    struct Evidence {
-        uint48 evidenceId;
-        EvidenceCategory category;
-        bytes data;
     }
 
     struct Case {
         CaseStatus status;
         bytes32 branch;
         mapping (address => bool) officers;
-        // mapping (uint48 => Evidence) evidences;
         mapping (uint48 => Participants.Participant) participants;
-        Evidence[] evidences;   
+        mapping (uint48 => Evidences.Evidence) evidences;
     }
 
     constructor(address _ledgersContract) EIP712("Cases", "1") {
@@ -323,7 +316,7 @@ contract Cases is EIP712 {
 
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(_participant.approved) { revert HasToBeApproved(); }
+        if(!_participant.approved) { revert HasToBeApproved(); }
         if(!(capEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSigner();
         if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
         if(!(capBranchId == fromBranchId)) revert BranchMismatch();
@@ -360,7 +353,7 @@ contract Cases is EIP712 {
 
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(!_participant.approved) { revert CannotBePreApproved(); }
+        if(_participant.approved) { revert CannotBePreApproved(); }
         if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
 
         bytes32 messageHash = _participant.hash();
@@ -391,7 +384,7 @@ contract Cases is EIP712 {
 
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(!newCase.participants[_participant.participantId].approved) { revert AlreadyApproved(); }
+        if(newCase.participants[_participant.participantId].approved) { revert AlreadyApproved(); }
         if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
 
         newCase.participants[_participant.participantId].approved = true;
@@ -403,26 +396,92 @@ contract Cases is EIP712 {
      * @notice Adds evidence to a case.
      * @param _caseId The identifier of the case to which evidence is added.
      * @param _evidence The evidence's data and signature.
-     * @param _dataHash The hash of the evidence's data for data integrity verification.
      * @dev The caller must be an officer assigned to the specified case.
      */
-    function addEvidence(uint _caseId, Evidence memory _evidence, bytes32 _dataHash) external {
+    function addEvidence(
+        uint _caseId, 
+        Evidences.Evidence memory _evidence, 
+        bytes memory _signature,
+        address _signer
+    ) external {
 
         Case storage newCase = _case[_caseId];
 
+        (
+            ,,,
+            bytes32 capBranchId, 
+            Ledger.EmploymentStatus capEmploymentStatus,
+        ) = ledgersContract.officers(_signer);
+
+        (
+            ,,,
+            bytes32 fromBranchId, 
+            Ledger.EmploymentStatus fromEmploymentStatus,
+        ) = ledgersContract.officers(msg.sender);
+
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
-        
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(!_evidence.approved) { revert HasToBeApproved(); }
+        if(!(capEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSigner();
+        if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
+        if(!(capBranchId == fromBranchId)) revert BranchMismatch();
+        if(!(newCase.officers[_signer])) revert InvalidCaptain();
 
-        bytes32 calculatedHash = _hashTypedDataV4(_getHash(_evidence.data));
+        bytes32 messageHash = _evidence.hash();
+        _validateSignatures(messageHash, _signature, _signer);
 
-        if (_dataHash != calculatedHash) { revert InvalidHash(); }
+        newCase.evidences[_evidence.evidenceId] = _evidence;
 
-        // _validateSignature(_evidence.signature, calculatedHash, msg.sender);
+        emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, messageHash, _evidence.data);
+        
+        emit EvidenceApproved(_evidence.evidenceId);
+    }
+    
+    function addEvidence(
+        uint _caseId, 
+        Evidences.Evidence memory _evidence
+    ) external {
 
-       newCase.evidences.push(_evidence);
+        Case storage newCase = _case[_caseId];
 
-        emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, calculatedHash, _evidence.data);
+        (
+            ,,,
+            bytes32 fromBranchId, 
+            Ledger.EmploymentStatus fromEmploymentStatus,
+        ) = ledgersContract.officers(msg.sender);
+
+        if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(_evidence.approved) { revert CannotBePreApproved(); }
+        if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
+
+        bytes32 messageHash = _evidence.hash();
+
+        newCase.evidences[_evidence.evidenceId] = _evidence;
+
+        emit NewEvidenceInCase(_caseId, msg.sender, _evidence.evidenceId, _evidence.category, messageHash, _evidence.data);
+    }
+    
+    function approveEvidence(
+        uint _caseId, 
+        Evidences.Evidence memory _evidence
+    ) external onlyRank(Ledger.Rank.CAPTAIN) {
+
+        Case storage newCase = _case[_caseId];
+
+        (
+            ,,,, 
+            Ledger.EmploymentStatus fromEmploymentStatus,
+        ) = ledgersContract.officers(msg.sender);
+
+        if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
+        if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
+        if(newCase.evidences[_evidence.evidenceId].approved) { revert AlreadyApproved(); }
+        if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
+
+        newCase.evidences[_evidence.evidenceId].approved = true;
+
+        emit EvidenceApproved(_evidence.evidenceId);
     }
 
     function grantTrusteeAccess(address _trustee, uint _caseId, string memory _branchId, bytes32 _hash, bytes memory _signature) external onlyRank(Ledger.Rank.CAPTAIN) {
