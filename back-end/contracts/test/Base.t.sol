@@ -10,6 +10,7 @@ import "./../src/Libraries/Onboard.sol";
 import "./../src/Libraries/Offboard.sol";
 import "./../src/Libraries/UpdateOfficer.sol";
 import "./../src/Libraries/TransferBranch.sol";
+import "./../src/Libraries/Participant.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract BaseTest is Test {

@@ -186,6 +186,14 @@ contract Cases is EIP712 {
         return _case[_caseId].officers[_officer];
     }
 
+    function participantInCase(uint _caseId, uint48 _id) external view returns(Participants.Participant memory) {
+        return _case[_caseId].participants[_id];
+    }
+
+    function evidenceInCase(uint _caseId, uint48 _id) external view returns(Evidences.Evidence memory) {
+        return _case[_caseId].evidences[_id];
+    }
+
     /// @notice Creates a new legal case with the specified ID and branch.
     /// @param _caseId The unique identifier for the new case.
     /// @param _branch The branch ID associated with the new case.
@@ -243,7 +251,7 @@ contract Cases is EIP712 {
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); }
         if(_rank == Ledger.Rank.NULL || _rank == Ledger.Rank.MODERATOR) { revert InvalidOfficer(); }
         if(!(fromBranchId == newCase.branch)) revert BranchMismatch();
-        
+
         newCase.officers[_officer] = true; 
 
         emit UpdateOfficerInCase(_caseId, msg.sender, _officer);

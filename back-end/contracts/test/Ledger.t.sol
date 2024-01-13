@@ -1881,6 +1881,64 @@ contract OfficersTest is BaseTest {
         assertFalse(cases.officerInCase(213, detective1.publicKey));
     }
 
+    function testAddParticipant() public {
+        testAddOfficerInCase();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(detective2.publicKey);
+        cases.addParticipant(
+            213,
+            Participants.Participant(
+                322,
+                Participants.ParticipantCategory.SUSPECT,
+                "Data",
+                false
+            )
+        );
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(detective1.publicKey);
+        cases.addParticipant(
+            2113,
+            Participants.Participant(
+                321,
+                Participants.ParticipantCategory.SUSPECT,
+                "Something something",
+                false
+            )
+        );
+
+        vm.expectRevert(CannotBePreApproved.selector);
+        vm.prank(detective1.publicKey);
+        cases.addParticipant(
+            213,
+            Participants.Participant(
+                321,
+                Participants.ParticipantCategory.SUSPECT,
+                "Something something",
+                true
+            )
+        );
+
+        vm.prank(detective1.publicKey);
+        cases.addParticipant(
+            213,
+            Participants.Participant(
+                321,
+                Participants.ParticipantCategory.SUSPECT,
+                "Something something",
+                false
+            )
+        );
+
+        Participants.Participant memory participant = cases.participantInCase(213, 321);
+
+        assertEq(participant.participantId, 321);
+        assertEq(uint(participant.category), uint(Participants.ParticipantCategory.SUSPECT));
+        assertEq(participant.data, bytes("Something something"));
+        assertFalse(participant.approved);
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
