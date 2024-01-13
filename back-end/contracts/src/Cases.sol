@@ -484,29 +484,31 @@ contract Cases is EIP712 {
         emit EvidenceApproved(_evidence.evidenceId);
     }
 
-    function grantTrusteeAccess(address _trustee, uint _caseId, string memory _branchId, bytes32 _hash, bytes memory _signature) external onlyRank(Ledger.Rank.CAPTAIN) {
-        
-        if(address(0) == _trustee) { revert InvalidAddress(); }
+    function grantTrusteeAccess(
+        TrusteeRequestLib.TrusteeRequest memory _params, 
+        bytes memory _signature
+    ) external onlyRank(Ledger.Rank.CAPTAIN) {
 
-        Case storage currCase = _case[_caseId];
+        _validateExpiry(_params.expiry);
+        
+        if(address(0) == _params.trustee || _params.moderator == address(0)) { revert InvalidAddress(); }
+
+        Case storage currCase = _case[_params.caseId];
+        (,,uint stateCode,) = ledgersContract.branches(_params.branchId);
+
+        if(stateCode == 0) revert InvalidBranch();
         if(currCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(trusteeLedger[_trustee][_caseId]) { revert AccessAlreadyGranted(); }
+        if(trusteeLedger[_params.trustee][_params.caseId]) { revert AccessAlreadyGranted(); }
 
-        // if(_hash != TrusteeRequestLib.TrusteeRequest(
-        //     _caseId,
-        //     _trustee,
-        //     msg.sender,
-        //     keccak256(abi.encode(_branchId))
-        // ).hash()) { revert InvalidHash(); }
+        bytes32 messageHash = _params.hash();
+        _validateSignature(_signature, messageHash, _params.moderator);
 
-        _validateSignature(_signature, _hash, _trustee);
-
-        trusteeLedger[_trustee][_caseId] = true;
+        trusteeLedger[_params.trustee][_params.caseId] = true;
         
-        emit Trustee(_caseId, keccak256(abi.encode(_branchId)), msg.sender, _trustee, true);
+        emit Trustee(_params.caseId, _params.branchId, msg.sender, _params.trustee, true);
     }
 
-    function revokeTrusteeAccess(address _trustee, uint _caseId, string memory _branchId) external onlyRank(Ledger.Rank.CAPTAIN) {
+    function revokeTrusteeAccess(address _trustee, uint _caseId, bytes32 _branchId) external onlyRank(Ledger.Rank.CAPTAIN) {
         
         if(address(0) == _trustee) { revert InvalidAddress(); }
 
@@ -516,7 +518,7 @@ contract Cases is EIP712 {
 
         trusteeLedger[_trustee][_caseId] = false;
         
-        emit Trustee(_caseId, keccak256(abi.encode(_branchId)), msg.sender, _trustee, false);
+        emit Trustee(_caseId, _branchId, msg.sender, _trustee, false);
     }
 
     function _validateSignature(bytes memory _signature, bytes32 _hash, address _signer) internal pure {
@@ -557,6 +559,13 @@ contract Cases is EIP712 {
         if(!(
             SignatureChecker.isValidSignatureNow(_signer, _messageHash, _signature)
         )) revert InvalidSignature();
+    }
+
+    /// @notice validates expiry date
+    /// @dev throws if expired
+    /// @param _expiry expiry timestamp
+    function _validateExpiry(uint _expiry) private view {
+        if (_expiry < block.timestamp) revert Expired();
     }
 
     function _getHash(
