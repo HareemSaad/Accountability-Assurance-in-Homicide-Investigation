@@ -20,6 +20,8 @@ contract OfficersTest is BaseTest {
             moderator1.badge
         );
 
+        cases = new Cases(address(ledger));
+
         assertEq(ledger.moderators(moderator1.publicKey,branch1.stateCode), true);
         (
             string memory precinctAddress,
@@ -1739,6 +1741,506 @@ contract OfficersTest is BaseTest {
         vm.stopPrank();
     }
 
+    function testAddCase() public {
+        addCaptain1();
+
+        vm.expectRevert(InvalidBranch.selector);
+        vm.prank(captain1.publicKey);
+        cases.addCase(
+            213,
+            captain3.branch.branchId
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.addCase(
+            213,
+            captain1.branch.branchId
+        );
+
+        (Cases.CaseStatus status, bytes32 branch) = cases._case(213);
+
+        assertEq(uint(status), uint(Cases.CaseStatus.OPEN));
+        assertEq(branch, captain1.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain1.publicKey));
+
+        vm.expectRevert(InvalidCase.selector);
+        vm.prank(captain1.publicKey);
+        cases.addCase(
+            213,
+            captain1.branch.branchId
+        );
+
+    }
+
+    function testUpdateCaseStatus() public {
+        testAddCase();
+
+        vm.expectRevert(InvalidCase.selector);
+        vm.prank(captain1.publicKey);
+        cases.updateCaseStatus(
+            2013,
+            Cases.CaseStatus.NULL
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        cases.updateCaseStatus(
+            213,
+            Cases.CaseStatus.CLOSED
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.updateCaseStatus(
+            213,
+            Cases.CaseStatus.CLOSED
+        );
+
+        (Cases.CaseStatus status, bytes32 branch) = cases._case(213);
+
+        assertEq(uint(status), uint(Cases.CaseStatus.CLOSED));
+        assertEq(branch, captain1.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain1.publicKey));
+    }
+
+    function testAddOfficerInCase() public {
+        testAddCase();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(captain1.publicKey);
+        cases.addOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        addDetective1();
+        addModerator2();
+        addBranch2();
+        addCaptain2();
+        addDetective2();
+
+        vm.expectRevert(BranchMismatch.selector);
+        vm.prank(captain1.publicKey);
+        cases.addOfficerInCase(
+            213,
+            detective2.publicKey
+        );
+
+        vm.expectRevert(InvalidCase.selector);
+        vm.prank(captain1.publicKey);
+        cases.addOfficerInCase(
+            2013,
+            detective1.publicKey
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        cases.addOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.addOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        (Cases.CaseStatus status, bytes32 branch) = cases._case(213);
+
+        assertEq(uint(status), uint(Cases.CaseStatus.OPEN));
+        assertEq(branch, captain1.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain1.publicKey));
+        assertTrue(cases.officerInCase(213, detective1.publicKey));
+    }
+
+    function testRemoveOfficerInCase() public {
+        testAddOfficerInCase();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(captain1.publicKey);
+        cases.removeOfficerInCase(
+            213,
+            detective2.publicKey
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        cases.removeOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.removeOfficerInCase(
+            213,
+            detective1.publicKey
+        );
+
+        (Cases.CaseStatus status, bytes32 branch) = cases._case(213);
+
+        assertEq(uint(status), uint(Cases.CaseStatus.OPEN));
+        assertEq(branch, captain1.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain1.publicKey));
+        assertFalse(cases.officerInCase(213, detective1.publicKey));
+    }
+
+    function testAddParticipant() public {
+        testAddOfficerInCase();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(detective2.publicKey);
+        cases.addParticipant(
+            213,
+            Participants.Participant(
+                322,
+                Participants.ParticipantCategory.SUSPECT,
+                "Data",
+                false
+            )
+        );
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(detective1.publicKey);
+        cases.addParticipant(
+            2113,
+            Participants.Participant(
+                321,
+                Participants.ParticipantCategory.SUSPECT,
+                "Something something",
+                false
+            )
+        );
+
+        vm.expectRevert(CannotBePreApproved.selector);
+        vm.prank(detective1.publicKey);
+        cases.addParticipant(
+            213,
+            Participants.Participant(
+                321,
+                Participants.ParticipantCategory.SUSPECT,
+                "Something something",
+                true
+            )
+        );
+
+        vm.prank(detective1.publicKey);
+        cases.addParticipant(
+            213,
+            Participants.Participant(
+                321,
+                Participants.ParticipantCategory.SUSPECT,
+                "Something something",
+                false
+            )
+        );
+
+        Participants.Participant memory participant = cases.participantInCase(213, 321);
+
+        assertEq(participant.participantId, 321);
+        assertEq(uint(participant.category), uint(Participants.ParticipantCategory.SUSPECT));
+        assertEq(participant.data, bytes("Something something"));
+        assertFalse(participant.approved);
+    }
+
+    function testApproveParticipant() public {
+        testAddParticipant();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(captain1.publicKey);
+        cases.approveParticipant(
+            2135,
+            321
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.approveParticipant(
+            213,
+            321
+        );
+
+        Participants.Participant memory participant = cases.participantInCase(213, 321);
+
+        assertEq(participant.participantId, 321);
+        assertEq(uint(participant.category), uint(Participants.ParticipantCategory.SUSPECT));
+        assertEq(participant.data, bytes("Something something"));
+        assertTrue(participant.approved);
+
+        vm.expectRevert(AlreadyApproved.selector);
+        vm.prank(captain1.publicKey);
+        cases.approveParticipant(
+            213,
+            321
+        );
+    }
+
+    function testAddEvidence() public {
+        testAddOfficerInCase();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(detective2.publicKey);
+        cases.addEvidence(
+            213,
+            Evidences.Evidence(
+                322,
+                Evidences.EvidenceCategory.PHYSICAL,
+                "Scarf",
+                false
+            )
+        );
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(detective1.publicKey);
+        cases.addEvidence(
+            2113,
+            Evidences.Evidence(
+                322,
+                Evidences.EvidenceCategory.PHYSICAL,
+                "Scarf",
+                false
+            )
+        );
+
+        vm.expectRevert(CannotBePreApproved.selector);
+        vm.prank(detective1.publicKey);
+        cases.addEvidence(
+            213,
+            Evidences.Evidence(
+                322,
+                Evidences.EvidenceCategory.PHYSICAL,
+                "Scarf",
+                true
+            )
+        );
+
+        vm.prank(detective1.publicKey);
+        cases.addEvidence(
+            213,
+            Evidences.Evidence(
+                322,
+                Evidences.EvidenceCategory.PHYSICAL,
+                "Scarf",
+                false
+            )
+        );
+
+        Evidences.Evidence memory evidence = cases.evidenceInCase(213, 322);
+
+        assertEq(evidence.evidenceId, 322);
+        assertEq(uint(evidence.category), uint(Evidences.EvidenceCategory.PHYSICAL));
+        assertEq(evidence.data, bytes("Scarf"));
+        assertFalse(evidence.approved);
+    }
+
+    function testApproveEvidence() public {
+        testAddEvidence();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(captain1.publicKey);
+        cases.approveEvidence(
+            2135,
+            322
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.approveEvidence(
+            213,
+            322
+        );
+
+        Evidences.Evidence memory evidence = cases.evidenceInCase(213, 322);
+
+        assertEq(evidence.evidenceId, 322);
+        assertEq(uint(evidence.category), uint(Evidences.EvidenceCategory.PHYSICAL));
+        assertEq(evidence.data, bytes("Scarf"));
+        assertTrue(evidence.approved);
+
+        vm.expectRevert(AlreadyApproved.selector);
+        vm.prank(captain1.publicKey);
+        cases.approveEvidence(
+            213,
+            322
+        );
+    }
+
+    function testGrantTrusteeAccess() public {
+        testAddOfficerInCase();
+
+        TrusteeRequestLib.TrusteeRequest memory request = TrusteeRequestLib.TrusteeRequest(
+            213,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT1,
+            expiry
+        );
+
+        bytes32 messageHash = TrusteeRequestLib.hash(TrusteeRequestLib.TrusteeRequest(
+            213,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT1,
+            expiry
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV41(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+
+        assertTrue(cases.trusteeLedger(address(9879), 213));
+        
+        vm.expectRevert(AccessAlreadyGranted.selector);
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+
+        vm.warp(block.timestamp + expiry + 1);
+        vm.expectRevert(Expired.selector);
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+    }
+
+    function testCannotGrantTrusteeAccess() public {
+        testAddOfficerInCase();
+
+        TrusteeRequestLib.TrusteeRequest memory request = TrusteeRequestLib.TrusteeRequest(
+            213,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT3,
+            expiry
+        );
+
+        bytes32 messageHash = TrusteeRequestLib.hash(TrusteeRequestLib.TrusteeRequest(
+            213,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT3,
+            expiry
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        vm.expectRevert(InvalidBranch.selector);
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+
+         request = TrusteeRequestLib.TrusteeRequest(
+            2153,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT1,
+            expiry
+        );
+
+        messageHash = TrusteeRequestLib.hash(TrusteeRequestLib.TrusteeRequest(
+            2153,
+            address(9879),
+            moderator1.publicKey,
+            captain1.publicKey,
+            PRECINCT1,
+            expiry
+        ));
+
+        (v, r, s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        moderator1Signature = abi.encodePacked(r, s, v);
+        
+        vm.expectRevert(InvalidCase.selector);
+        vm.prank(captain1.publicKey);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+
+        vm.expectRevert(InvalidRank.selector);
+        cases.grantTrusteeAccess(
+            request,
+            moderator1Signature
+        );
+    }
+
+    function testRevokeTrusteeAccess() public {
+        testGrantTrusteeAccess();
+
+        vm.prank(captain1.publicKey);
+        cases.revokeTrusteeAccess(
+            address(9879),
+            213,
+            PRECINCT1
+        );
+
+        assertFalse(cases.trusteeLedger(address(9879), 213));
+    }
+
+    function testTransferCase() public {
+
+        testAddOfficerInCase();
+
+        bytes32 messageHash = TransferCase.hash(TransferCase.TransferCaseRequest(
+            captain1.publicKey,
+            captain2.publicKey,
+            9,
+            213,
+            captain1.branch.branchId,
+            captain2.branch.branchId,
+            false,
+            expiry
+        ));
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(captain1.privateKey, _hashTypedDataV41(messageHash));
+        bytes memory captain1Signature = abi.encodePacked(r, s, v);
+
+        messageHash = TransferCase.hash(TransferCase.TransferCaseRequest(
+            captain1.publicKey,
+            captain2.publicKey,
+            9,
+            213,
+            captain1.branch.branchId,
+            captain2.branch.branchId,
+            true,
+            expiry
+        ));
+
+        (v, r, s) = vm.sign(captain2.privateKey, _hashTypedDataV41(messageHash));
+        bytes memory captain2Signature = abi.encodePacked(r, s, v);
+
+        vm.prank(moderator1.publicKey);
+        cases.transferCase(
+            TransferCase.TransferCaseRequest(
+                captain1.publicKey,
+                captain2.publicKey,
+                9,
+                213,
+                captain1.branch.branchId,
+                captain2.branch.branchId,
+                false,
+                expiry
+            ),
+            [captain1Signature, captain2Signature],
+            [captain1.publicKey, captain2.publicKey]
+        );
+
+        (, bytes32 branch) = cases._case(213);
+
+        assertEq(branch, captain2.branch.branchId);
+        assertTrue(cases.officerInCase(213, captain2.publicKey));
+        assertFalse(cases.officerInCase(213, captain1.publicKey));
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
@@ -2020,7 +2522,7 @@ contract OfficersTest is BaseTest {
             expiry
         ));
 
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator2.privateKey, _hashTypedDataV4(messageHash));
         bytes memory moderator1Signature = abi.encodePacked(r, s, v);
 
         vm.prank(captain2.publicKey);
@@ -2036,7 +2538,7 @@ contract OfficersTest is BaseTest {
             detective2.rank,
             expiry,
             moderator1Signature,
-            moderator1.publicKey
+            moderator2.publicKey
         );
         
     }
@@ -2077,5 +2579,9 @@ contract OfficersTest is BaseTest {
 
     function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
         return ECDSA.toTypedDataHash(ledger.DOMAIN_SEPARATOR(), structHash);
+    }
+
+    function _hashTypedDataV41(bytes32 structHash) internal view virtual returns (bytes32) {
+        return ECDSA.toTypedDataHash(cases.domainSeparator(), structHash);
     }
 }

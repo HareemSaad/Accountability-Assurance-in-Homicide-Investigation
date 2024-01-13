@@ -10,11 +10,13 @@ library TrusteeRequestLib {
     /// @dev Contains all necessary details for processing a trustee request.
     /// @param caseId The unique identifier for the case associated with the request.
     /// @param trustee The address of the trustee involved in the request.
+    /// @param moderator The address of the moderator that approves the request.
     /// @param captain The address of the captain authorizing or involved in the request.
     /// @param branchId The branch ID associated with the request.
     struct TrusteeRequest {
         uint caseId;
         address trustee;
+        address moderator;
         address captain;
         bytes32 branchId;
         uint expiry;
@@ -27,6 +29,7 @@ library TrusteeRequestLib {
         "TrusteeRequest("
         "uint caseId,"
         "address trustee,"
+        "address moderator,"
         "address captain,"
         "bytes32 branchId,"
         "uint expiry,"
@@ -44,6 +47,7 @@ library TrusteeRequestLib {
                     REQUEST_TYPE_HASH,
                     request.caseId,
                     request.trustee,
+                    request.moderator,
                     request.captain,
                     request.branchId,
                     request.expiry

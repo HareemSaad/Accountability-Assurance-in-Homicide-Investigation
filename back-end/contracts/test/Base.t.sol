@@ -3,12 +3,17 @@ pragma solidity ^0.8.13;
 
 import "forge-std/Test.sol";
 import "./../src/Ledger.sol";
+import "./../src/Cases.sol";
 import "./../src/Libraries/CreateBranch.sol";
 import "./../src/Libraries/UpdateBranch.sol";
 import "./../src/Libraries/Onboard.sol";
 import "./../src/Libraries/Offboard.sol";
 import "./../src/Libraries/UpdateOfficer.sol";
 import "./../src/Libraries/TransferBranch.sol";
+import "./../src/Libraries/Participant.sol";
+import "./../src/Libraries/Evidence.sol";
+import "./../src/Libraries/TrusteeRequest.sol";
+import "./../src/Libraries/TransferCase.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract BaseTest is Test {
@@ -18,6 +23,8 @@ contract BaseTest is Test {
     using OfficerOnboard for OfficerOnboard.OnboardVote;
     using UpdateOfficer for UpdateOfficer.UpdateRequest;
     using TransferBranch for TransferBranch.TransferBranchRequest;
+    using TrusteeRequestLib for TrusteeRequestLib.TrusteeRequest;
+    using TransferCase for TransferCase.TransferCaseRequest;
 
     struct Officer {
         uint256 privateKey;
@@ -38,6 +45,7 @@ contract BaseTest is Test {
     }
 
     Ledger ledger;
+    Cases cases;
     address ZER0_ADDRESS = address(0);
     bytes32 PRECINCT1 = keccak256(abi.encode("PRECINCT 1"));
     bytes32 PRECINCT2 = keccak256(abi.encode("PRECINCT 2"));
