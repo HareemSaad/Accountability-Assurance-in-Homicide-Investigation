@@ -1970,6 +1970,95 @@ contract OfficersTest is BaseTest {
         );
     }
 
+    function testAddEvidence() public {
+        testAddOfficerInCase();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(detective2.publicKey);
+        cases.addEvidence(
+            213,
+            Evidences.Evidence(
+                322,
+                Evidences.EvidenceCategory.PHYSICAL,
+                "Scarf",
+                false
+            )
+        );
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(detective1.publicKey);
+        cases.addEvidence(
+            2113,
+            Evidences.Evidence(
+                322,
+                Evidences.EvidenceCategory.PHYSICAL,
+                "Scarf",
+                false
+            )
+        );
+
+        vm.expectRevert(CannotBePreApproved.selector);
+        vm.prank(detective1.publicKey);
+        cases.addEvidence(
+            213,
+            Evidences.Evidence(
+                322,
+                Evidences.EvidenceCategory.PHYSICAL,
+                "Scarf",
+                true
+            )
+        );
+
+        vm.prank(detective1.publicKey);
+        cases.addEvidence(
+            213,
+            Evidences.Evidence(
+                322,
+                Evidences.EvidenceCategory.PHYSICAL,
+                "Scarf",
+                false
+            )
+        );
+
+        Evidences.Evidence memory evidence = cases.evidenceInCase(213, 322);
+
+        assertEq(evidence.evidenceId, 322);
+        assertEq(uint(evidence.category), uint(Evidences.EvidenceCategory.PHYSICAL));
+        assertEq(evidence.data, bytes("Scarf"));
+        assertFalse(evidence.approved);
+    }
+
+    function testApproveParticipant1() public {
+        testAddEvidence();
+
+        vm.expectRevert(InvalidOfficer.selector);
+        vm.prank(captain1.publicKey);
+        cases.approveEvidence(
+            2135,
+            322
+        );
+
+        vm.prank(captain1.publicKey);
+        cases.approveEvidence(
+            213,
+            322
+        );
+
+        Evidences.Evidence memory evidence = cases.evidenceInCase(213, 322);
+
+        assertEq(evidence.evidenceId, 322);
+        assertEq(uint(evidence.category), uint(Evidences.EvidenceCategory.PHYSICAL));
+        assertEq(evidence.data, bytes("Scarf"));
+        assertTrue(evidence.approved);
+
+        vm.expectRevert(AlreadyApproved.selector);
+        vm.prank(captain1.publicKey);
+        cases.approveEvidence(
+            213,
+            322
+        );
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,

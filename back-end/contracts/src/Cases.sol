@@ -543,7 +543,7 @@ contract Cases is EIP712 {
     
     /// @notice Approves evidence in a case without approval.
     /// @param _caseId The identifier of the case to which the evidence is approved.
-    /// @param _evidence The evidence's data.
+    /// @param _evidenceId The evidence's id.
     /// @dev The caller must have the 'CAPTAIN' role for the specified case.
     /// @dev Throws `InvalidOfficer` if the caller is not an assigned officer.
     /// @dev Throws InvalidCase if the case is NULL or not existing.
@@ -551,7 +551,7 @@ contract Cases is EIP712 {
     /// @dev Throws InvalidSender if the employment status of the caller is not ACTIVE.
     function approveEvidence(
         uint _caseId, 
-        Evidences.Evidence memory _evidence
+        uint48 _evidenceId
     ) external onlyRank(Ledger.Rank.CAPTAIN) {
 
         Case storage newCase = _case[_caseId];
@@ -563,12 +563,12 @@ contract Cases is EIP712 {
 
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); } //check if officer is assigned this case
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
-        if(newCase.evidences[_evidence.evidenceId].approved) { revert AlreadyApproved(); }
+        if(newCase.evidences[_evidenceId].approved) { revert AlreadyApproved(); }
         if(!(fromEmploymentStatus == Ledger.EmploymentStatus.ACTIVE)) revert InvalidSender();
 
-        newCase.evidences[_evidence.evidenceId].approved = true;
+        newCase.evidences[_evidenceId].approved = true;
 
-        emit EvidenceApproved(_evidence.evidenceId);
+        emit EvidenceApproved(_evidenceId);
     }
 
     /// @notice Grants trustee access to a specific case.
