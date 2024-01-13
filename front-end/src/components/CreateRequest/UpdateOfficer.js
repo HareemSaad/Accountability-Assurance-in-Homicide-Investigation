@@ -5,6 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
+import { employmentStatusMap, rankMap } from '../data/data.js';
 
 export const UpdateOfficer = () => {
   let navigate = useNavigate();
@@ -25,15 +26,6 @@ export const UpdateOfficer = () => {
     rank: "",
     employmentStatus: "",
   });
-
-  const rankArray = ["Null", "Officer", "Detective", "Captain"];
-  const statusArray = [
-    "Select a Status",
-    "Active",
-    "Inactive",
-    "Fired",
-    "Retired",
-  ];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -87,6 +79,7 @@ export const UpdateOfficer = () => {
   // Function to handle rank dropdown item selection
   const handleRankDropdownSelect = (categoryValue) => {
     setSelectedRankValue(categoryValue);
+    console.log("categoryValueRank:: ", categoryValue);
     const name = "rank";
     setUpdateOfficerInfo({ ...updateOfficerInfo, [name]: categoryValue });
   };
@@ -94,10 +87,11 @@ export const UpdateOfficer = () => {
   // Function to handle employment status dropdown selection
   const handleStatusDropdownSelect = (categoryValue) => {
     setSelectedStatusValue(categoryValue);
+    console.log("categoryValueES:: ", categoryValue);
     const name = "employmentStatus";
     setUpdateOfficerInfo({ ...updateOfficerInfo, [name]: categoryValue });
-    console.log("params :: ", name);
-    console.log("value :: ", categoryValue);
+    // console.log("params :: ", name);
+    // console.log("value :: ", categoryValue);
   };
 
   return (
@@ -228,19 +222,19 @@ export const UpdateOfficer = () => {
               >
                 {" "}
                 {selectedRankValue
-                  ? rankArray[selectedRankValue]
+                  ? rankMap.get(selectedRankValue)
                   : "Select a Rank"}{" "}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {rankArray.map((category, index) => (
+                {Array.from(rankMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="rank"
-                    key={index}
-                    onClick={() => handleRankDropdownSelect(index)}
+                    key={key}
+                    onClick={() => handleRankDropdownSelect(key)}
                   >
                     {" "}
-                    {category}{" "}
+                    {value}{" "}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>
@@ -266,19 +260,19 @@ export const UpdateOfficer = () => {
               >
                 {" "}
                 {selectedStatusValue
-                  ? statusArray[selectedStatusValue]
+                  ? employmentStatusMap.get(selectedStatusValue)
                   : "Select Status"}{" "}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {statusArray.map((status, index) => (
+                {Array.from(employmentStatusMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="category"
-                    key={index}
-                    onClick={() => handleStatusDropdownSelect(index)}
+                    key={key}
+                    onClick={() => handleStatusDropdownSelect(key)}
                   >
                     {" "}
-                    {status}{" "}
+                    {value}{" "}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>

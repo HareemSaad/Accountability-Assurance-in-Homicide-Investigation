@@ -5,6 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
+import { employmentStatusMap, rankMap } from '../data/data.js';
 
 export const OfficerOnboard = () => {
   let navigate = useNavigate();
@@ -18,10 +19,10 @@ export const OfficerOnboard = () => {
     badge: "",
     branchId: "",
     rank: "",
-    employmentStatus: "Active",
+    employmentStatus: "1",
   });
 
-  const rankArray = ["Null", "Officer", "Detective", "Captain"];
+  // const rankArray = ["Null", "Officer", "Detective", "Captain"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,7 +72,7 @@ export const OfficerOnboard = () => {
   };
 
   // Function to handle dropdown item selection
-  const handleDropdownSelect = (categoryValue) => {
+  const handleRankDropdownSelect = (categoryValue) => {
     setSelectedRankValue(categoryValue);
     const name = "rank";
     setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: categoryValue });
@@ -205,19 +206,19 @@ export const OfficerOnboard = () => {
               >
                 {" "}
                 {selectedRankValue
-                  ? rankArray[selectedRankValue]
+                  ? rankMap.get(selectedRankValue)
                   : "Select a Rank"}{" "}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {rankArray.map((category, index) => (
+                {Array.from(rankMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="rank"
-                    key={index}
-                    onClick={() => handleDropdownSelect(index)}
+                    key={key}
+                    onClick={() => handleRankDropdownSelect(key)}
                   >
                     {" "}
-                    {category}{" "}
+                    {value}{" "}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>

@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
+import { employmentStatusMap, rankMap } from '../data/data.js';
 
 export const OfficerOffboard = () => {
   let navigate = useNavigate();
@@ -23,8 +24,10 @@ export const OfficerOffboard = () => {
     employmentStatus: "",
   });
 
-  const rankArray = ["Null", "Officer", "Detective", "Captain"];
-  const statusArray = ["Select a Status", "Fired", "Retired"];
+  // const rankArray = ["Null", "Officer", "Detective", "Captain"];
+
+  const statusArray = Array.from(employmentStatusMap).slice(-2);
+  // const statusArray = ["Select a Status", "Fired", "Retired"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,10 +80,11 @@ export const OfficerOffboard = () => {
         });
     }
   };
-
+  
   // Function to handle dropdown item selection
-  const handleDropdownSelect = (categoryValue) => {
+  const handleRankDropdownSelect = (categoryValue) => {
     setSelectedRankValue(categoryValue);
+    console.log("rank :: ", categoryValue);
     const name = "rank";
     setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
   };
@@ -222,19 +226,19 @@ export const OfficerOffboard = () => {
               >
                 {" "}
                 {selectedRankValue
-                  ? rankArray[selectedRankValue]
+                  ? rankMap.get(selectedRankValue)
                   : "Select a Rank"}{" "}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {rankArray.map((category, index) => (
+                {Array.from(rankMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="rank"
-                    key={index}
-                    onClick={() => handleDropdownSelect(index)}
+                    key={key}
+                    onClick={() => handleRankDropdownSelect(key)}
                   >
                     {" "}
-                    {category}{" "}
+                    {value}{" "}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>
@@ -260,19 +264,19 @@ export const OfficerOffboard = () => {
               >
                 {" "}
                 {selectedStatusValue
-                  ? statusArray[selectedStatusValue]
+                  ? employmentStatusMap.get(selectedStatusValue)
                   : "Select Status"}{" "}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {statusArray.map((status, index) => (
+                {statusArray.map(([key, value]) => (
                   <Dropdown.Item
                     name="category"
-                    key={index}
-                    onClick={() => handleStatusDropdownSelect(index)}
+                    key={key}
+                    onClick={() => handleStatusDropdownSelect(key)}
                   >
                     {" "}
-                    {status}{" "}
+                    {value}{" "}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>

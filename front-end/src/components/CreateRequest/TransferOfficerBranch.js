@@ -5,6 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
+import { employmentStatusMap, rankMap } from '../data/data.js';
 
 export const TransferOfficerBranch = () => {
   let navigate = useNavigate();
@@ -27,14 +28,16 @@ export const TransferOfficerBranch = () => {
     employmentStatus: "",
   });
 
-  const rankArray = ["Null", "Officer", "Detective", "Captain"];
-  const statusArray = [
-    "Select a Status",
-    "Active",
-    "Inactive",
-    "Fired",
-    "Retired",
-  ];
+  // const rankArray = ["Null", "Officer", "Detective", "Captain"];
+  // const statusArray = [
+  //   "Select a Status",
+  //   "Active",
+  //   "Inactive",
+  //   "Fired",
+  //   "Retired",
+  // ];
+  const statusArray = Array.from(employmentStatusMap).slice(0, 2);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -257,19 +260,19 @@ export const TransferOfficerBranch = () => {
               >
                 {" "}
                 {selectedRankValue
-                  ? rankArray[selectedRankValue]
+                  ? rankMap.get(selectedRankValue)
                   : "Select a Rank"}{" "}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {rankArray.map((category, index) => (
+                {Array.from(rankMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="rank"
-                    key={index}
-                    onClick={() => handleRankDropdownSelect(index)}
+                    key={key}
+                    onClick={() => handleRankDropdownSelect(key)}
                   >
                     {" "}
-                    {category}{" "}
+                    {value}{" "}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>
@@ -295,19 +298,19 @@ export const TransferOfficerBranch = () => {
               >
                 {" "}
                 {selectedStatusValue
-                  ? statusArray[selectedStatusValue]
+                  ? employmentStatusMap.get(selectedStatusValue)
                   : "Select Status"}{" "}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {statusArray.map((status, index) => (
+                {statusArray.map(([key, value]) => (
                   <Dropdown.Item
                     name="category"
-                    key={index}
-                    onClick={() => handleStatusDropdownSelect(index)}
+                    key={key}
+                    onClick={() => handleStatusDropdownSelect(key)}
                   >
                     {" "}
-                    {status}{" "}
+                    {value}{" "}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>
