@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
 import { useUserAddressContext } from "../Context/userAddressContext.tsx";
+import { employmentStatusMap, rankMap } from '../data/data.js';
 
 export const ViewUpdateOfficer = () => {
   const { reqId } = useParams();
@@ -22,39 +23,6 @@ export const ViewUpdateOfficer = () => {
       .then((result) => setRequestDetail(result.data[0]))
       .catch((err) => console.log("error:: ", err));
   }, []);
-
-  // converting rank (number) from backend to string for readability
-  const rankName = (officerRank) => {
-    console.log("officerRank:: ", officerRank);
-    if (officerRank == 1) {
-      setRequestDetail({ ...requestDetail, ["rank"]: "Officer" });
-    //   console.log("requestDetail0:: ", requestDetail);
-    } else if (officerRank == 2) {
-      setRequestDetail({ ...requestDetail, ["rank"]: "Detective" });
-    //   console.log("requestDetail-1:: ", requestDetail);
-    } else if (officerRank == 3) {
-      setRequestDetail({ ...requestDetail, ["rank"]: "Captain" });
-    //   console.log("requestDetail2:: ", requestDetail);
-    }
-
-    return requestDetail.rank;
-  };
-
-  // converting employmentStatus(number) from backend to string for readability
-  const employmentStatusName = (employmentStatus) => {
-    console.log("employeeStatus:: ", employmentStatus);
-    if (employmentStatus == 1) {
-      setRequestDetail({ ...requestDetail, ["employmentStatus"]: "Active" });
-    } else if (employmentStatus == 2) {
-      setRequestDetail({ ...requestDetail, ["employmentStatus"]: "Inactive" });
-    } else if (employmentStatus == 3) {
-      setRequestDetail({ ...requestDetail, ["employmentStatus"]: "Fired" });
-    } else if (employmentStatus == 4) {
-      setRequestDetail({ ...requestDetail, ["employmentStatus"]: "Retired" });
-    }
-
-    return requestDetail.employmentStatus;
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -204,7 +172,7 @@ export const ViewUpdateOfficer = () => {
               name="officerRank"
               id="officerRank"
               className="form-control"
-              value={rankName(requestDetail.rank)}
+              value={rankMap.get(requestDetail.rank)}
               disabled
             ></input>
           </div>
@@ -225,7 +193,7 @@ export const ViewUpdateOfficer = () => {
               name="employmentStatus"
               id="employmentStatus"
               className="form-control"
-              value={employmentStatusName(requestDetail.employmentStatus)}
+              value={employmentStatusMap.get(requestDetail.employmentStatus)}
               disabled
             ></input>
           </div>

@@ -5,6 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from 'axios';
 import { useUserAddressContext } from '../Context/userAddressContext.tsx';
+import { employmentStatusMap, rankMap } from '../data/data.js';
 
 export const ViewOfficerOnboard = () => {
     const { reqId } = useParams();
@@ -33,23 +34,6 @@ export const ViewOfficerOnboard = () => {
                 // console.log("error:: ", err);
                 notify("error", `An Error Occured when Signing`);
             })
-    }
-
-    // converting rank (number) from backend to string for readability
-    const rankName = (officerRank) => {
-        console.log("officerRank:: ", officerRank)
-        if (officerRank == 1){
-            setRequestDetail({ ...requestDetail, ['rank']: "Officer" });
-            console.log("requestDetail0:: ", requestDetail)
-        } else if (officerRank == 2) {
-            setRequestDetail({ ...requestDetail, ['rank']: "Detective" });
-            console.log("requestDetail-1:: ", requestDetail)
-        } else if (officerRank == 3) {
-            setRequestDetail({ ...requestDetail, ['rank']: "Captain" });
-            console.log("requestDetail2:: ", requestDetail)
-        }
-
-        return requestDetail.rank;
     }
 
     return (
@@ -112,7 +96,7 @@ export const ViewOfficerOnboard = () => {
                         <label htmlFor="officerRank" className="col-form-label"><b><em>Officer Rank:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='rank' id="rank" className="form-control" value={rankName(requestDetail.rank)} disabled></input>
+                        <input type="text" name='rank' id="rank" className="form-control" value={rankMap.get(requestDetail.rank)} disabled></input>
                     </div>
                 </div>
 
@@ -122,7 +106,7 @@ export const ViewOfficerOnboard = () => {
                         <label htmlFor="employmentStatus" className="col-form-label"><b><em>Employment Status:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='employmentStatus' id="employmentStatus" className="form-control" value={requestDetail.employmentStatus} disabled />
+                        <input type="text" name='employmentStatus' id="employmentStatus" className="form-control" value={employmentStatusMap.get(requestDetail.employmentStatus)} disabled />
                     </div>
                 </div>
 

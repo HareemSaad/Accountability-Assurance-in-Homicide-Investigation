@@ -5,6 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from 'axios';
 import { useUserAddressContext } from '../Context/userAddressContext.tsx';
+import { employmentStatusMap, rankMap } from '../data/data.js';
 
 export const ViewTransferOfficerBranch = () => {
     const { reqId } = useParams();
@@ -37,37 +38,37 @@ export const ViewTransferOfficerBranch = () => {
     }
 
     // Function to handle rank dropdown item selection
-  const rankName = (officerRank) => {
-    const name = "rank";
-    if (officerRank == 0) {
-        setRequestDetail({ ...requestDetail, [name]: "" });
-    } else if (officerRank == 1) {
-        setRequestDetail({ ...requestDetail, [name]: "Officer" });
-    } else if (officerRank == 2) {
-        setRequestDetail({ ...requestDetail, [name]: "Detective" });
-    } else if (officerRank == 3) {
-        setRequestDetail({ ...requestDetail, [name]: "Captain" });
-    }
-    return requestDetail.rank;
-  };
+//   const rankName = (officerRank) => {
+//     const name = "rank";
+//     if (officerRank == 0) {
+//         setRequestDetail({ ...requestDetail, [name]: "" });
+//     } else if (officerRank == 1) {
+//         setRequestDetail({ ...requestDetail, [name]: "Officer" });
+//     } else if (officerRank == 2) {
+//         setRequestDetail({ ...requestDetail, [name]: "Detective" });
+//     } else if (officerRank == 3) {
+//         setRequestDetail({ ...requestDetail, [name]: "Captain" });
+//     }
+//     return requestDetail.rank;
+//   };
 
-  // Function to handle employment status dropdown selection
-  const employmentStatusName = (employmentStatus) => {
-    const name = "employmentStatus";
-    if (employmentStatus == 0) {
-      setRequestDetail({ ...requestDetail, [name]: "" });
-    } else if (employmentStatus == 1) {
-      setRequestDetail({ ...requestDetail, [name]: "Active" });
-    } else if (employmentStatus == 2) {
-      setRequestDetail({ ...requestDetail, [name]: "Inactive" });
-    } else if (employmentStatus == 3) {
-      setRequestDetail({ ...requestDetail, [name]: "Fired" });
-    } else if (employmentStatus == 4) {
-      setRequestDetail({ ...requestDetail, [name]: "Retired" });
-    }
+//   // Function to handle employment status dropdown selection
+//   const employmentStatusName = (employmentStatus) => {
+//     const name = "employmentStatus";
+//     if (employmentStatus == 0) {
+//       setRequestDetail({ ...requestDetail, [name]: "" });
+//     } else if (employmentStatus == 1) {
+//       setRequestDetail({ ...requestDetail, [name]: "Active" });
+//     } else if (employmentStatus == 2) {
+//       setRequestDetail({ ...requestDetail, [name]: "Inactive" });
+//     } else if (employmentStatus == 3) {
+//       setRequestDetail({ ...requestDetail, [name]: "Fired" });
+//     } else if (employmentStatus == 4) {
+//       setRequestDetail({ ...requestDetail, [name]: "Retired" });
+//     }
 
-    return requestDetail.employmentStatus;
-  };
+//     return requestDetail.employmentStatus;
+//   };
 
     return (
         <div className='container'>
@@ -139,7 +140,7 @@ export const ViewTransferOfficerBranch = () => {
                     </div>
 
                     <div className="col-9 input">
-                        <input type="text" name='rank' id="rank" className="form-control" value={rankName(requestDetail.rank)} disabled></input>
+                        <input type="text" name='rank' id="rank" className="form-control" value={rankMap.get(requestDetail.rank)} disabled></input>
                     </div>
                 </div>
 
@@ -149,7 +150,7 @@ export const ViewTransferOfficerBranch = () => {
                         <label htmlFor="employmentStatus" className="col-form-label"><b><em>Employment Status:</em></b></label>
                     </div>
                     <div className="col-9 input">
-                        <input type="text" name='employmentStatus' id="employmentStatus" className="form-control" value={employmentStatusName(requestDetail.employmentStatus)} disabled></input>
+                        <input type="text" name='employmentStatus' id="employmentStatus" className="form-control" value={employmentStatusMap.get(requestDetail.employmentStatus)} disabled></input>
                     </div>
                 </div>
 
