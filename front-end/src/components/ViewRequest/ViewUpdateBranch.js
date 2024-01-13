@@ -54,7 +54,15 @@ export const ViewUpdateBranch = () => {
 
   return (
     <div className="container">
-      <h2 className="m-3 mt-5 mb-4">Update Branch Request #{reqId}</h2>
+      
+      <div className="m-3 mt-5 mb-4 d-flex flex-row">
+        {/* <h2 className="m-3 mt-5 mb-4">Update Branch Request #{reqId}</h2> */}
+        <h2>Update Branch Request #{reqId}</h2>
+        <h6 className={`statusTag${requestDetail.isOpen === true ? "Open" : "Close"} ms-3`} >
+          #{requestDetail.isOpen === true ? "OPEN" : "CLOSED"}
+        </h6>
+      </div>
+      
       <form>
         {/* Precinct Address */}
         <div className="row g-3 align-items-center m-3">
