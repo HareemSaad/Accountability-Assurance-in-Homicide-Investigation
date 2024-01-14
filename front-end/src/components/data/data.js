@@ -14,6 +14,6 @@ export const stateCodeMap = new Map();
 stateCodeMap.set("8888", "8888")
 
 export const branchIdMap = new Map();
-branchIdMap.set("Precinct 1")
+branchIdMap.set("PRECINCT 1", "PRECINCT 1")
 // 0x1f27a4c30ebdfe4d5a0bb20d2a6c8681791b7470b195ab0e6ff1eabf846f607d
 // 0x9ad84d0b712c25d6169be94f42e24baf7b28c0b245fa6b36d34de1bc1c7cfcd0

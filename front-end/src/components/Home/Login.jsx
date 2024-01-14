@@ -9,7 +9,6 @@ import { useConnect, useAccount, useDisconnect } from 'wagmi'
 import { readContract } from '@wagmi/core'
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
-import OfficersABI from "./../OfficersABI.json";
 import LedgerABI from "./../Ledger.json";
 import { stateCodeMap, rankMap, branchIdMap } from "../data/data.js";
 
@@ -38,14 +37,8 @@ export const Login = () => {
     rank: 0,
     branchId: 0,
     stateCode: 0,
-    badge: 0,
+    badge: "",
   });
-  
-  const RoleBytes = {
-    Captain: "0xd1caa20fe64a17576895d331b6b815baf91df37730e70e788978bc77ac7559b4", //3
-    Detective: "0x9bcceb74634ac977676ecaf8900febd8cc8358719b06c206b86e9e10f6758bc2", //2
-    Officer: "0xbbecb2568601cb27e6ced525237c463da94c4fb7a9b98ac79fd30fd56d8e1b53", //1
-  }
 
   // Function to handle dropdown item selection
   const handleDropdownSelect = async (value) => {
@@ -80,46 +73,42 @@ export const Login = () => {
     setUserBadge(officerInfo.badge);
   }
 
-   // Function to handle successful login
+  // Function to handle successful login
   const handleLoginSuccess = async () => {
 
     if (isConnected) {
 
-      // const validityRank = await readContract({
-      //   address: process.env.REACT_APP_OFFICER_CONTRACT,
-      //   abi: OfficersABI.abi,
-      //   functionName: 'isValidRank',
-      //   args: [address, RoleBytes[selectedValue]],
-      //   chainId: 11155111
-      // })
-      // console.log("validity ::", validityRank)
-      console.log("branchid ::", ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['string'], ["PRECINCT 1"])))
-      console.log("stateCode ::", officerInfo.stateCode)
-      console.log("badge ::", ethers.utils.defaultAbiCoder.encode(['string'], ["MOD-1"]))
-      console.log("rank ::", officerInfo.rank)
-      console.log()
+      const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
+          ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.branchId])
+      ));
+      const badge = ethers.utils.formatBytes32String(officerInfo.badge);
+
+      // console.log("branchid ::", branchId)
+      // console.log("stateCode ::", officerInfo.stateCode)
+      // console.log("badge ::", badge)
+      // console.log("rank ::", officerInfo.rank)
       
       const validity = await readContract({
-        // address: process.env.REACT_APP_LEDGER_CONTRACT,
-        address: "0x75B2471d49FdbB456730ae630c7A19b4f9E6c6A9",
+        address: process.env.REACT_APP_LEDGER_CONTRACT,
         abi: LedgerABI,
         functionName: 'isValidEmployment',
         args: [
-          ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['string'], ["PRECINCT 1"])), // bytes32 _branchId,
+          branchId, // bytes32 _branchId,
           officerInfo.stateCode, // uint _stateCode
-          ethers.utils.defaultAbiCoder.encode(['string'], ["MOD-1"]), // bytes32 _badge
-          officerInfo.rank, //Rank _rank
+          badge, // bytes32 _badge
+          officerInfo.rank //Rank _rank
         ],
+        account: address,
         chainId: 11155111
       })
       console.log("validity ::", validity)
 
       if (validity) {
       // if (validityRank) {
-        if (selectedValue == 'Captain') { navigate('/cases-captain'); setGlobalVariables(); }
-        else if (selectedValue == 'Detective') { navigate('/cases-detective'); setGlobalVariables(); }
-        else if (selectedValue == 'Officer') { navigate('/cases-officer'); setGlobalVariables(); }
-        else if (selectedValue == 'Moderator') { navigate('/moderator-home'); setGlobalVariables(); }
+        if (selectedValue === 'Captain') { navigate('/cases-captain'); setGlobalVariables(); }
+        else if (selectedValue === 'Detective') { navigate('/cases-detective'); setGlobalVariables(); }
+        else if (selectedValue === 'Officer') { navigate('/cases-officer'); setGlobalVariables(); }
+        else if (selectedValue === 'Moderator') { navigate('/moderator-home'); setGlobalVariables(); }
         else { handleValidationFail(); }
       } else {
         handleValidationFail();
@@ -127,13 +116,12 @@ export const Login = () => {
     };
   }  
   
-
   const handleLogin = (connector) => {
     if (selectedValue == null) {
       notify("error", "Rank is required");
-    } else if (officerInfo.stateCode == null) {
+    } else if (!officerInfo.stateCode) {
       notify("error", "State Code is required");
-    } else if (officerInfo.branchId === "") {
+    } else if (!officerInfo.branchId) {
       notify("error", "Branch Id is required");
     } else if (officerInfo.badge === "") {
       notify("error", "Badge is required");
@@ -153,6 +141,7 @@ export const Login = () => {
     if (isConnected) {
       handleLoginSuccess();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   return (
@@ -211,21 +200,10 @@ export const Login = () => {
             </Dropdown>
           </div>
 
-          {/* <div className="input mb-4">
-            <input
-              type="number"
-              name="branchId"
-              id="branchId"
-              placeholder="Your Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
-          </div> */}
-
         {/* badge */}
           <div className="input mb-5">
             <input
-              type="number"
+              type="string"
               name="badge"
               id="badge"
               placeholder="Your Badge Here"
