@@ -11,7 +11,7 @@ import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import OfficersABI from "./../OfficersABI.json";
 import LedgerABI from "./../Ledger.json";
-import { stateCodeMap, rankMap } from "../data/data.js";
+import { stateCodeMap, rankMap, branchIdMap } from "../data/data.js";
 
 // CONTEXTS - Global Variables
 import { UserContext, useUserContext } from '../Context/userContext.tsx';
@@ -32,6 +32,7 @@ export const Login = () => {
   let navigate = useNavigate();
   
   const [selectedStateCode, setSelectedStateCode] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedValue, setSelectedValue] = useState(null);
   const [officerInfo, setOfficerInfo] = useState({
     rank: 0,
@@ -59,6 +60,12 @@ export const Login = () => {
     setOfficerInfo({ ...officerInfo, [name]: categoryValue });
   }
 
+  const handleBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedBranchId(categoryValue);
+    const name = "branchId";
+    setOfficerInfo({ ...officerInfo, [name]: categoryValue });
+  }
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setOfficerInfo({ ...officerInfo, [name]: value });
@@ -69,7 +76,7 @@ export const Login = () => {
   const setGlobalVariables = () => {
     setUser(selectedValue);
     setStateCode(stateCodeMap.get(officerInfo.stateCode));
-    setUserBranchId(officerInfo.branchId);
+    setUserBranchId(branchIdMap.get(officerInfo.branchId));
     setUserBadge(officerInfo.badge);
   }
 
@@ -78,31 +85,37 @@ export const Login = () => {
 
     if (isConnected) {
 
-      const validityRank = await readContract({
-        address: process.env.REACT_APP_OFFICER_CONTRACT,
-        abi: OfficersABI.abi,
-        functionName: 'isValidRank',
-        args: [address, RoleBytes[selectedValue]],
-        chainId: 11155111
-      })
-      console.log("validity ::", validityRank)
-      
-      // const validity = await readContract({
-      //   address: process.env.REACT_APP_LEDGER_CONTRACT,
-      //   abi: LedgerABI,
-      //   functionName: 'isValidEmployment',
-      //   args: [
-      //     ethers.utils.hexlify(ethers.utils.formatBytes32String(officerInfo.branchId)), // bytes32 _branchId,
-      //     officerInfo.stateCode, // uint _stateCode
-      //     ethers.utils.hexlify(ethers.utils.formatBytes32String(officerInfo.badge)), // bytes32 _badge
-      //     officerInfo.rank, //Rank _rank
-      //   ],
+      // const validityRank = await readContract({
+      //   address: process.env.REACT_APP_OFFICER_CONTRACT,
+      //   abi: OfficersABI.abi,
+      //   functionName: 'isValidRank',
+      //   args: [address, RoleBytes[selectedValue]],
       //   chainId: 11155111
       // })
-      // console.log("validity ::", validity)
+      // console.log("validity ::", validityRank)
+      console.log("branchid ::", ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['string'], ["PRECINCT 1"])))
+      console.log("stateCode ::", officerInfo.stateCode)
+      console.log("badge ::", ethers.utils.defaultAbiCoder.encode(['string'], ["MOD-1"]))
+      console.log("rank ::", officerInfo.rank)
+      console.log()
+      
+      const validity = await readContract({
+        // address: process.env.REACT_APP_LEDGER_CONTRACT,
+        address: "0x75B2471d49FdbB456730ae630c7A19b4f9E6c6A9",
+        abi: LedgerABI,
+        functionName: 'isValidEmployment',
+        args: [
+          ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['string'], ["PRECINCT 1"])), // bytes32 _branchId,
+          officerInfo.stateCode, // uint _stateCode
+          ethers.utils.defaultAbiCoder.encode(['string'], ["MOD-1"]), // bytes32 _badge
+          officerInfo.rank, //Rank _rank
+        ],
+        chainId: 11155111
+      })
+      console.log("validity ::", validity)
 
-      // if (validity) {
-      if (validityRank) {
+      if (validity) {
+      // if (validityRank) {
         if (selectedValue == 'Captain') { navigate('/cases-captain'); setGlobalVariables(); }
         else if (selectedValue == 'Detective') { navigate('/cases-detective'); setGlobalVariables(); }
         else if (selectedValue == 'Officer') { navigate('/cases-officer'); setGlobalVariables(); }
@@ -182,7 +195,23 @@ export const Login = () => {
           </div>
 
         {/* Branch Id */}
-          <div className="input mb-4">
+          <div className="mb-4">
+            <Dropdown>
+              <Dropdown.Toggle variant="light" id="branchId" className="dropdown">
+                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+
+          {/* <div className="input mb-4">
             <input
               type="number"
               name="branchId"
@@ -191,7 +220,7 @@ export const Login = () => {
               className="form-control"
               onChange={handleChange}
             ></input>
-          </div>
+          </div> */}
 
         {/* badge */}
           <div className="input mb-5">
