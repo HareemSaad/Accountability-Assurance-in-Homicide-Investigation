@@ -54,6 +54,9 @@ import { ToastContainer } from "react-toastify";
 // CONTEXT
 import { UserContext, UserProvider } from './components/Context/userContext.tsx';
 import { UserAddressContextProvider } from './components/Context/userAddressContext.tsx';
+import { UserBadgeProvider } from './components/Context/userBadgeContext.tsx';
+import { UserBranchIdProvider } from './components/Context/userBranchIdContext.tsx';
+import { StateCodeProvider } from './components/Context/stateCodeContext.tsx';
 
 // Configure chains & providers with the Alchemy provider.
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
@@ -88,7 +91,9 @@ function App() {
   return (
     <>
     <UserAddressContextProvider>
-
+      <StateCodeProvider>
+      <UserBadgeProvider>
+      <UserBranchIdProvider>
       <UserProvider>
         <ToastContainer />
         <WagmiConfig config={config}>
@@ -133,7 +138,11 @@ function App() {
             <Route path="/view-update-officer/:reqId" element={<ViewUpdateOfficer />} />
           </Routes>
         </WagmiConfig>
+
       </UserProvider>
+      </UserBranchIdProvider>
+      </UserBadgeProvider>
+      </StateCodeProvider>
     </UserAddressContextProvider>
     </>
   );
