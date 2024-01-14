@@ -3,49 +3,46 @@ schema:
   file: ./schema.graphql
 dataSources:
   - kind: ethereum
-    name: Cases
+    name: Ledger
     network: sepolia
     source:
       address: "0x17938f1c372B35657d309d9624c735a66513090E"
-      abi: Cases
+      abi: Ledger
       startBlock: 5081418
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
       language: wasm/assemblyscript
       entities:
-        - CaseShifted
-        - CaseUpdated
+        - BranchUpdate
         - EIP712DomainChanged
-        - EvidenceApproved
-        - NewEvidenceInCase
-        - NewParticipantInCase
-        - ParticipantApproved
-        - RemoveOfficer
-        - Trustee
-        - UpdateOfficerInCase
+        - Offboard
+        - OfficerAddressUpdated
+        - OfficerBadgeUpdated
+        - OfficerNameUpdated
+        - OfficerTransferred
+        - Onboard
+        - Promotion
       abis:
-        - name: Cases
-          file: ./abis/Cases.json
+        - name: Ledger
+          file: ./abis/Ledger.json
       eventHandlers:
-        - event: CaseShifted(indexed uint256,indexed address,bytes32)
-          handler: handleCaseShifted
-        - event: CaseUpdated(indexed uint256,indexed address,bytes32,uint8,indexed uint8)
-          handler: handleCaseUpdated
+        - event: BranchUpdate(indexed bytes32,string,indexed uint256,indexed uint256)
+          handler: handleBranchUpdate
         - event: EIP712DomainChanged()
           handler: handleEIP712DomainChanged
-        - event: EvidenceApproved(uint48)
-          handler: handleEvidenceApproved
-        - event: NewEvidenceInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
-          handler: handleNewEvidenceInCase
-        - event: NewParticipantInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
-          handler: handleNewParticipantInCase
-        - event: ParticipantApproved(uint48)
-          handler: handleParticipantApproved
-        - event: RemoveOfficer(uint256,indexed address,indexed address)
-          handler: handleRemoveOfficer
-        - event: Trustee(uint256,indexed bytes32,indexed address,indexed address,bool)
-          handler: handleTrustee
-        - event: UpdateOfficerInCase(uint256,indexed address,indexed address)
-          handler: handleUpdateOfficerInCase
-      file: ./src/cases.ts
+        - event: Offboard(indexed address,indexed uint8,uint256,address)
+          handler: handleOffboard
+        - event: OfficerAddressUpdated(indexed address,indexed address,bytes32,uint256,address)
+          handler: handleOfficerAddressUpdated
+        - event: OfficerBadgeUpdated(indexed address,indexed bytes32,bytes32,uint256,address)
+          handler: handleOfficerBadgeUpdated
+        - event: OfficerNameUpdated(indexed address,indexed string,bytes32,uint256,address)
+          handler: handleOfficerNameUpdated
+        - event: OfficerTransferred(indexed address,indexed bytes32,indexed bytes32)
+          handler: handleOfficerTransferred
+        - event: Onboard(indexed address,string,bytes32,bytes32,indexed bytes32,indexed uint8,uint256,address)
+          handler: handleOnboard
+        - event: Promotion(indexed address,indexed uint8,indexed uint8)
+          handler: handlePromotion
+      file: ./src/ledger.ts
