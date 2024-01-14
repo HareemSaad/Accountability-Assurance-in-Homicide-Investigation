@@ -1,0 +1,103 @@
+type CaseShifted @entity(immutable: true) {
+  id: Bytes!
+  caseId: BigInt! # uint256
+  captain: Bytes! # address
+  branch: Bytes! # bytes32
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type CaseUpdated @entity(immutable: true) {
+  id: Bytes!
+  caseId: BigInt! # uint256
+  initiator: Bytes! # address
+  branch: Bytes! # bytes32
+  oldStatus: Int! # uint8
+  newStatus: Int! # uint8
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type EIP712DomainChanged @entity(immutable: true) {
+  id: Bytes!
+
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type EvidenceApproved @entity(immutable: true) {
+  id: Bytes!
+  evidenceId: BigInt! # uint48
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type NewEvidenceInCase @entity(immutable: true) {
+  id: Bytes!
+  caseId: BigInt! # uint256
+  initiator: Bytes! # address
+  evidenceId: BigInt! # uint48
+  category: Int! # uint8
+  dataHash: Bytes! # bytes32
+  data: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type NewParticipantInCase @entity(immutable: true) {
+  id: Bytes!
+  caseId: BigInt! # uint256
+  initiator: Bytes! # address
+  suspectId: BigInt! # uint48
+  category: Int! # uint8
+  dataHash: Bytes! # bytes32
+  data: Bytes! # bytes
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ParticipantApproved @entity(immutable: true) {
+  id: Bytes!
+  participantId: BigInt! # uint48
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type RemoveOfficer @entity(immutable: true) {
+  id: Bytes!
+  caseId: BigInt! # uint256
+  initiator: Bytes! # address
+  officer: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Trustee @entity(immutable: true) {
+  id: Bytes!
+  caseId: BigInt! # uint256
+  branchId: Bytes! # bytes32
+  initiator: Bytes! # address
+  trustree: Bytes! # address
+  approved: Boolean! # bool
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type UpdateOfficerInCase @entity(immutable: true) {
+  id: Bytes!
+  caseId: BigInt! # uint256
+  initiator: Bytes! # address
+  officer: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

@@ -1,0 +1,51 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Cases
+    network: sepolia
+    source:
+      address: "0x17938f1c372B35657d309d9624c735a66513090E"
+      abi: Cases
+      startBlock: 5081418
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - CaseShifted
+        - CaseUpdated
+        - EIP712DomainChanged
+        - EvidenceApproved
+        - NewEvidenceInCase
+        - NewParticipantInCase
+        - ParticipantApproved
+        - RemoveOfficer
+        - Trustee
+        - UpdateOfficerInCase
+      abis:
+        - name: Cases
+          file: ./abis/Cases.json
+      eventHandlers:
+        - event: CaseShifted(indexed uint256,indexed address,bytes32)
+          handler: handleCaseShifted
+        - event: CaseUpdated(indexed uint256,indexed address,bytes32,uint8,indexed uint8)
+          handler: handleCaseUpdated
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: EvidenceApproved(uint48)
+          handler: handleEvidenceApproved
+        - event: NewEvidenceInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewEvidenceInCase
+        - event: NewParticipantInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewParticipantInCase
+        - event: ParticipantApproved(uint48)
+          handler: handleParticipantApproved
+        - event: RemoveOfficer(uint256,indexed address,indexed address)
+          handler: handleRemoveOfficer
+        - event: Trustee(uint256,indexed bytes32,indexed address,indexed address,bool)
+          handler: handleTrustee
+        - event: UpdateOfficerInCase(uint256,indexed address,indexed address)
+          handler: handleUpdateOfficerInCase
+      file: ./src/cases.ts
