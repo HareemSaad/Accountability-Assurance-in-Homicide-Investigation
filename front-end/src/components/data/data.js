@@ -10,6 +10,8 @@ rankMap.set("2", "Detective")
 rankMap.set("3", "Captain")
 rankMap.set("4", "Moderator")
 
+export const stateCodeMap = new Map();
+stateCodeMap.set("1", "8888")
 
 // Array.from(employmentStatusMap).map(([key, value]) => {
 //     console.log([key, value]);
