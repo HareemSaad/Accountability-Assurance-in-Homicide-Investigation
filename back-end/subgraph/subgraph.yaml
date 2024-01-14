@@ -41,8 +41,56 @@ dataSources:
           handler: handleOfficerNameUpdated
         - event: OfficerTransferred(indexed address,indexed bytes32,indexed bytes32)
           handler: handleOfficerTransferred
-        - event: Onboard(indexed address,string,bytes32,bytes32,indexed bytes32,indexed uint8,uint256,address)
+        - event: Onboard(indexed address,string,bytes32,bytes32,indexed bytes32,indexed
+            uint8,uint256,address)
           handler: handleOnboard
         - event: Promotion(indexed address,indexed uint8,indexed uint8)
           handler: handlePromotion
       file: ./src/ledger.ts
+  - kind: ethereum
+    name: Cases
+    network: sepolia
+    source:
+      address: "0x9AbA4B15C8Cd4Af56ef08a4349f574D479b6b966"
+      abi: Cases
+      startBlock: 5081786
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - CaseShifted
+        - CaseUpdated
+        - CasesEIP712DomainChanged
+        - EvidenceApproved
+        - NewEvidenceInCase
+        - NewParticipantInCase
+        - ParticipantApproved
+        - RemoveOfficer
+        - Trustee
+        - UpdateOfficerInCase
+      abis:
+        - name: Cases
+          file: ./abis/Cases.json
+      eventHandlers:
+        - event: CaseShifted(indexed uint256,indexed address,bytes32)
+          handler: handleCaseShifted
+        - event: CaseUpdated(indexed uint256,indexed address,bytes32,uint8,indexed uint8)
+          handler: handleCaseUpdated
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: EvidenceApproved(uint48)
+          handler: handleEvidenceApproved
+        - event: NewEvidenceInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewEvidenceInCase
+        - event: NewParticipantInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewParticipantInCase
+        - event: ParticipantApproved(uint48)
+          handler: handleParticipantApproved
+        - event: RemoveOfficer(uint256,indexed address,indexed address)
+          handler: handleRemoveOfficer
+        - event: Trustee(uint256,indexed bytes32,indexed address,indexed address,bool)
+          handler: handleTrustee
+        - event: UpdateOfficerInCase(uint256,indexed address,indexed address)
+          handler: handleUpdateOfficerInCase
+      file: ./src/cases.ts
