@@ -7,26 +7,36 @@ const TransferCase = require('../model/transferCase')
 // create transfer-case request - page
 router.post('/create-request/transfer-case', async (req, res) => {
     // console.log("req.body:: ", req.body)
-    let lastId;
-    await TransferCase.find().sort({id:-1}).limit(1)  
-    .then(requests => {
-        if (requests.length === 0) {
-            lastId = 0
-        } else {
-            lastId = requests[0].id
-        }
-    })
-    .catch(err => console.log("errorr:: ", err))
+    try { 
+        let lastId;
+        await TransferCase.find().sort({id:-1}).limit(1)  
+        .then(requests => {
+            if (requests.length === 0) {
+                lastId = 0
+            } else {
+                lastId = requests[0].id
+            }
+        })
+        .catch(err => console.log("errorr:: ", err))
+        
+        req.body['id'] = parseInt(lastId) + 1;
+        req.body['nonce'] = Math.floor(Math.random() * 10000);
+        
+        // input req.body into schema
+        const TransferCaseInfo = new TransferCase(req.body)
+        console.log("TransferCaseInfo:: ",TransferCaseInfo)
+        
+        // saving the data in mongodb database
+        TransferCaseInfo.save()
+
+        // Send a 200 status if data is saved successfully
+        res.status(200).json({ message: 'Data saved successfully' });
     
-    req.body['id'] = parseInt(lastId) + 1;
-    req.body['nonce'] = Math.floor(Math.random() * 10000);
-    
-    // input req.body into schema
-    const TransferCaseInfo = new TransferCase(req.body)
-    console.log("TransferCaseInfo:: ",TransferCaseInfo)
-    
-    // saving the data in mongodb database
-    TransferCaseInfo.save()
+    } catch (err) {
+        console.error("Error: ", err);
+        // Send a 400 status if there is an error
+        res.status(400).json({ error: 'Error Occured' });
+    }
 
 })
 

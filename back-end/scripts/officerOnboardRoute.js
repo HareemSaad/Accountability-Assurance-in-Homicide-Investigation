@@ -7,26 +7,36 @@ const OfficerOnboard = require('../model/officerOnboard')
 // create officer-onboard request - page
 router.post('/create-request/officer-onboard', async (req, res) => {
     // console.log("req.body:: ", req.body)
-    let lastId;
-    await OfficerOnboard.find().sort({id:-1}).limit(1)  
-    .then(requests => {
-        if (requests.length === 0) {
-            lastId = 0
-        } else {
-            lastId = requests[0].id
-        }
-    })
-    .catch(err => console.log("errorr:: ", err))
+    try {
+        let lastId;
+        await OfficerOnboard.find().sort({id:-1}).limit(1)  
+        .then(requests => {
+            if (requests.length === 0) {
+                lastId = 0
+            } else {
+                lastId = requests[0].id
+            }
+        })
+        .catch(err => console.log("errorr:: ", err))
+        
+        req.body['id'] = parseInt(lastId) + 1;
+        req.body['nonce'] = Math.floor(Math.random() * 10000);
+        
+        // input req.body into schema
+        const OfficerOnboardInfo = new OfficerOnboard(req.body)
+        console.log("OfficerOnboardInfo:: ",OfficerOnboardInfo)
+        
+        // saving the data in mongodb database
+        OfficerOnboardInfo.save()
+
+        // Send a 200 status if data is saved successfully
+        res.status(200).json({ message: 'Data saved successfully' });
     
-    req.body['id'] = parseInt(lastId) + 1;
-    req.body['nonce'] = Math.floor(Math.random() * 10000);
-    
-    // input req.body into schema
-    const OfficerOnboardInfo = new OfficerOnboard(req.body)
-    console.log("OfficerOnboardInfo:: ",OfficerOnboardInfo)
-    
-    // saving the data in mongodb database
-    OfficerOnboardInfo.save()
+    } catch (err) {
+        console.error("Error: ", err);
+        // Send a 400 status if there is an error
+        res.status(400).json({ error: 'Error Occured' });
+    }
 
 })
 

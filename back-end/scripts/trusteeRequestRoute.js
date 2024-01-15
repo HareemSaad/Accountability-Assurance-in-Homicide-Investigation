@@ -7,27 +7,37 @@ const TrusteeRequest = require('../model/trusteeRequest')
 // create Trustee Request - page
 router.post('/create-request/trustee-request', async (req, res) => {
     // console.log("req.body:: ", req.body)
-    let lastId;
-    await TrusteeRequest.find().sort({id:-1}).limit(1)  
-    .then(requests => {
-        if (requests.length === 0) {
-            lastId = 0
-        } else {
-            lastId = requests[0].id
-        }
-    })
-    .catch(err => console.log("errorr:: ", err))
-    // check if case id exists
+    try {
+        let lastId;
+        await TrusteeRequest.find().sort({id:-1}).limit(1)  
+        .then(requests => {
+            if (requests.length === 0) {
+                lastId = 0
+            } else {
+                lastId = requests[0].id
+            }
+        })
+        .catch(err => console.log("errorr:: ", err))
+        // check if case id exists
+        
+        req.body['id'] = parseInt(lastId) + 1;
+        // req.body['nonce'] = Math.floor(Math.random() * 10000);
+        
+        // input req.body into schema
+        const TrusteeRequestInfo = new TrusteeRequest(req.body)
+        console.log("TrusteeRequestInfo:: ",TrusteeRequestInfo)
+        
+        // saving the data in mongodb database
+        TrusteeRequestInfo.save()
+
+        // Send a 200 status if data is saved successfully
+        res.status(200).json({ message: 'Data saved successfully' });
     
-    req.body['id'] = parseInt(lastId) + 1;
-    // req.body['nonce'] = Math.floor(Math.random() * 10000);
-    
-    // input req.body into schema
-    const TrusteeRequestInfo = new TrusteeRequest(req.body)
-    console.log("TrusteeRequestInfo:: ",TrusteeRequestInfo)
-    
-    // saving the data in mongodb database
-    TrusteeRequestInfo.save()
+    } catch (err) {
+        console.error("Error: ", err);
+        // Send a 400 status if there is an error
+        res.status(400).json({ error: 'Error Occured' });
+    }
 
 })
 

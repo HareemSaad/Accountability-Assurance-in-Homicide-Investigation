@@ -7,26 +7,36 @@ const TransferCaptain = require('../model/transferCaptain')
 // create transfer-captain request - page
 router.post('/create-request/transfer-captain', async (req, res) => {
     // console.log("req.body:: ", req.body)
-    let lastId;
-    await TransferCaptain.find().sort({id:-1}).limit(1)  
-    .then(requests => {
-        if (requests.length === 0) {
-            lastId = 0
-        } else {
-            lastId = requests[0].id
-        }
-    })
-    .catch(err => console.log("errorr:: ", err))
+    try {
+        let lastId;
+        await TransferCaptain.find().sort({id:-1}).limit(1)  
+        .then(requests => {
+            if (requests.length === 0) {
+                lastId = 0
+            } else {
+                lastId = requests[0].id
+            }
+        })
+        .catch(err => console.log("errorr:: ", err))
+        
+        req.body['id'] = parseInt(lastId) + 1;
+        req.body['nonce'] = Math.floor(Math.random() * 10000);
+        
+        // input req.body into schema
+        const TransferCaptainInfo = new TransferCaptain(req.body)
+        console.log("TransferCaptainInfo:: ",TransferCaptainInfo)
+        
+        // saving the data in mongodb database
+        TransferCaptainInfo.save()
+
+        // Send a 200 status if data is saved successfully
+        res.status(200).json({ message: 'Data saved successfully' });
     
-    req.body['id'] = parseInt(lastId) + 1;
-    req.body['nonce'] = Math.floor(Math.random() * 10000);
-    
-    // input req.body into schema
-    const TransferCaptainInfo = new TransferCaptain(req.body)
-    console.log("TransferCaptainInfo:: ",TransferCaptainInfo)
-    
-    // saving the data in mongodb database
-    TransferCaptainInfo.save()
+    } catch (err) {
+        console.error("Error: ", err);
+        // Send a 400 status if there is an error
+        res.status(400).json({ error: 'Error Occured' });
+    }
 
 })
 
