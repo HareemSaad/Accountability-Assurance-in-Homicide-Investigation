@@ -26,6 +26,8 @@ import { TransferOfficerBranch } from './components/CreateRequest/TransferOffice
 import { TrusteeRequest } from './components/CreateRequest/TrusteeRequest.js';
 import { UpdateBranch } from './components/CreateRequest/UpdateBranch.js';
 import { UpdateOfficer } from './components/CreateRequest/UpdateOfficer.js';
+import { TransferCaptain } from './components/CreateRequest/TransferCaptain.js';
+import { TransferCase } from './components/CreateRequest/TransferCase.js';
 // View - Moderator requests
 import { ViewRequests } from './components/ViewRequest/ViewRequests.js';
 import { ViewCreateBranch } from './components/ViewRequest/ViewCreateBranch.js';
@@ -35,6 +37,8 @@ import { ViewTransferOfficerBranch } from './components/ViewRequest/ViewTransfer
 import { ViewTrusteeRequest } from './components/ViewRequest/ViewTrusteeRequest.js';
 import { ViewUpdateBranch } from './components/ViewRequest/ViewUpdateBranch.js';
 import { ViewUpdateOfficer } from './components/ViewRequest/ViewUpdateOfficer.js';
+import { ViewTransferCaptain } from './components/ViewRequest/ViewTransferCaptain.js';
+import { ViewTransferCase } from './components/ViewRequest/ViewTransferCase.js';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -127,6 +131,8 @@ function App() {
             <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
             <Route path="/create-request/update-branch" element={<UpdateBranch />} />
             <Route path="/create-request/update-officer" element={<UpdateOfficer />} />
+            <Route path="/create-request/transfer-captain" element={<TransferCaptain />} />
+            <Route path="/create-request/transfer-case" element={<TransferCase />} />
             {/* Moderator-only view requests */}
             <Route path="/:reqName" element={<ViewRequests />} />
             <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />
@@ -136,6 +142,8 @@ function App() {
             <Route path="/view-trustee-request/:reqId" element={<ViewTrusteeRequest />} />
             <Route path="/view-update-branch/:reqId" element={<ViewUpdateBranch />} />
             <Route path="/view-update-officer/:reqId" element={<ViewUpdateOfficer />} />
+            <Route path="/view-transfer-captain/:reqId" element={<ViewTransferCaptain />} />
+            <Route path="/view-transfer-case/:reqId" element={<ViewTransferCase />} />
           </Routes>
         </WagmiConfig>
 

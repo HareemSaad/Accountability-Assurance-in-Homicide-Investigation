@@ -45,6 +45,11 @@ export const ViewRequests = () => {
         else if (reqName === "view-update-officer") {
             navigate(`/view-update-officer/${cardId}`);
         }
+        else if (reqName === "view-transfer-captain") {
+            navigate(`/view-transfer-captain/${cardId}`);
+        } else if (reqName === "view-transfer-case") {
+            navigate(`/view-transfer-case/${cardId}`);
+        }
     }
 
     const goto = (e) => {
@@ -63,6 +68,8 @@ export const ViewRequests = () => {
                     : reqName === "view-trustee-request" ? <h1 className='m-4'>Trustee Requests</h1>
                     : reqName === "view-update-branch" ? <h1 className='m-4'>Update Branch Requests</h1>
                     : reqName === "view-update-officer" ? <h1 className='m-4'>Update Officer Requests</h1>
+                    : reqName === "view-transfer-captain" ? <h1 className='m-4'>Transfer Captain Requests</h1>
+                    : reqName === "view-transfer-case" ? <h1 className='m-4'>Transfer Case Requests</h1>
                     : <h1 className='m-4'>Requests</h1>}
             </div>
 

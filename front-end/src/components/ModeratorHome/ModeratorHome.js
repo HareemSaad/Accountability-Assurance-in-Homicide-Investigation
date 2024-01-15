@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 
 export const ModeratorHome = () => {
 
-    const requestCategory = [{ "name": "Create Branch", "end-point": "create-branch" }, { "name": "Officer Onboard", "end-point": "officer-onboard" }, { "name": "Officer Offboard", "end-point": "officer-offboard" }, { "name": "Transfer Officer Branch", "end-point": "transfer-officer-branch" }, { "name": "Trustee Request", "end-point": "trustee-request" }, { "name": "Update Branch", "end-point": "update-branch" }, { "name": "Update Officer", "end-point": "update-officer" }];
+    const requestCategory = [{ "name": "Create Branch", "end-point": "create-branch" }, { "name": "Officer Onboard", "end-point": "officer-onboard" }, { "name": "Officer Offboard", "end-point": "officer-offboard" }, { "name": "Transfer Officer Branch", "end-point": "transfer-officer-branch" }, { "name": "Trustee Request", "end-point": "trustee-request" }, { "name": "Update Branch", "end-point": "update-branch" }, { "name": "Update Officer", "end-point": "update-officer" }, { "name": "Transfer Captain", "end-point": "transfer-captain" }, { "name": "Transfer Case", "end-point": "transfer-case" }];
 
     let navigate = useNavigate();
 
@@ -26,6 +26,10 @@ export const ModeratorHome = () => {
             navigate(`/view-update-branch`);
         } else if(cardName === "Update Officer") {
             navigate(`/view-update-officer`);
+        } else if(cardName === "Transfer Captain") {
+            navigate(`/view-transfer-captain`);
+        } else if(cardName === "Transfer Case") {
+            navigate(`/view-transfer-case`);
         } 
     }
 
