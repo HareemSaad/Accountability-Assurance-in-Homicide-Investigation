@@ -161,7 +161,7 @@ export const TransferOfficerBranch = () => {
               type="text"
               name="verifiedAddress"
               id="verifiedAddress"
-              placeholder="Enter Precinct Address Here"
+              placeholder="Enter Verified Address Here"
               className="form-control"
               onChange={handleChange}
             ></input>
