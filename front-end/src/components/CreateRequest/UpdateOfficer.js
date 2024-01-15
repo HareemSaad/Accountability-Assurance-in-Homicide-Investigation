@@ -5,7 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap } from "../data/data.js";
+import { employmentStatusMap, rankMap, branchIdMap, updateTypeMap } from "../data/data.js";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -22,6 +22,8 @@ export const UpdateOfficer = () => {
 
   // Function to handle dropdown item selection
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [selectedUpdateType, setSelectedUpdateType] = useState(null);
 
   const [updateOfficerInfo, setUpdateOfficerInfo] = useState({
     verifiedAddress: "",
@@ -31,14 +33,10 @@ export const UpdateOfficer = () => {
     branchId: "",
     rank: "",
     employmentStatus: "",
+    updateType: "",
     expiry: "",
     isOpen: true,
   });
-
-  useEffect(() => {
-    console.log("updateOfficerInfo:: ", updateOfficerInfo);
-    // console.log("expiryDate:: ", expiryDate);
-  }, [updateOfficerInfo]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -66,6 +64,8 @@ export const UpdateOfficer = () => {
       updateOfficerInfo.employmentStatus === 0
     ) {
       notify("error", `Select Employment Status`);
+    } else if (updateOfficerInfo.updateType === "") {
+      notify("error", `Select Update Type`);
     } else if (updateOfficerInfo.expiry === "") {
       notify("error", `Select an Expiry Date`);
     } else {
@@ -89,7 +89,21 @@ export const UpdateOfficer = () => {
           );
         });
     }
-  };
+  };  
+
+  // Function to handle branch id dropdown selection
+  const handleBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedBranchId(categoryValue);
+    const name = "branchId";
+    setUpdateOfficerInfo({ ...updateOfficerInfo, [name]: categoryValue });
+  }
+  
+  // Function to handle Update Type dropdown selection
+  const handleUpdateTypeDropdownSelect = (categoryValue) => {
+    setSelectedUpdateType(categoryValue);
+    const name = "updateType";
+    setUpdateOfficerInfo({ ...updateOfficerInfo, [name]: categoryValue });
+  }
 
   // Function to handle rank dropdown item selection
   const handleRankDropdownSelect = (categoryValue) => {
@@ -214,7 +228,7 @@ export const UpdateOfficer = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="badge"
               id="badge"
               placeholder="Enter Badge Here"
@@ -234,14 +248,19 @@ export const UpdateOfficer = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="branchId"
-              id="branchId"
-              placeholder="Enter Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
+                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
@@ -315,6 +334,43 @@ export const UpdateOfficer = () => {
                   >
                     {" "}
                     {value}{" "}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+        </div>
+
+        {/* Update Type */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="updateType" className="col-form-label">
+              <b>
+                <em>Update Type:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <Dropdown>
+              <Dropdown.Toggle
+                variant="secondary"
+                id="updateType"
+                className="dropdown"
+              >
+                {" "}
+                {selectedUpdateType
+                  ? updateTypeMap.get(selectedUpdateType)
+                  : "Select Update Type"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(updateTypeMap).map(([key, value]) => (
+                  <Dropdown.Item
+                    name="updateType"
+                    key={key}
+                    onClick={() => handleUpdateTypeDropdownSelect(key)}
+                  >
+                    {value}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>

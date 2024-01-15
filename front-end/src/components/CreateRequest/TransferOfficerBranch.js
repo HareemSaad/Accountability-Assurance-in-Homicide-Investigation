@@ -5,7 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap } from "../data/data.js";
+import { employmentStatusMap, rankMap, branchIdMap } from "../data/data.js";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -21,6 +21,8 @@ export const TransferOfficerBranch = () => {
   // const [employeeStatus, setEmployeeStatus] = useState("");
 
   // Function to handle dropdown item selection
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [selectedToBranchId, setSelectedToBranchId] = useState(null);
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
 
   const [transferOfficerInfo, setTransferOfficerInfo] = useState({
@@ -63,9 +65,11 @@ export const TransferOfficerBranch = () => {
       notify("error", `Legal Number is empty`);
     } else if (transferOfficerInfo.badge === "") {
       notify("error", `Badge is empty`);
-    } else if (transferOfficerInfo.branchId === "") {
+    } else if (transferOfficerInfo.branchId === ""
+    ) {
       notify("error", `Branch Id is empty`);
-    } else if (transferOfficerInfo.toBranchId === "") {
+    } else if (transferOfficerInfo.toBranchId === ""
+    ) {
       notify("error", `To Branch Id is empty`);
     } else if (
       transferOfficerInfo.rank === "" ||
@@ -73,8 +77,7 @@ export const TransferOfficerBranch = () => {
     ) {
       notify("error", `Select Officer Rank`);
     } else if (
-      transferOfficerInfo.employmentStatus === "" ||
-      transferOfficerInfo.employmentStatus === 0
+      transferOfficerInfo.employmentStatus === ""
     ) {
       notify("error", `Select Employment Status`);
     } else if (transferOfficerInfo.expiry === "") {
@@ -101,6 +104,20 @@ export const TransferOfficerBranch = () => {
         });
     }
   };
+  
+  // Function to handle branch id dropdown selection
+  const handleBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedBranchId(categoryValue);
+    const name = "branchId";
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
+  }
+
+  // Function to handle to branch id dropdown selection
+  const handleToBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedToBranchId(categoryValue);
+    const name = "toBranchId";
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
+  }
 
   // Function to handle rank dropdown item selection
   const handleRankDropdownSelect = (categoryValue) => {
@@ -221,7 +238,7 @@ export const TransferOfficerBranch = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="badge"
               id="badge"
               placeholder="Enter Badge Here"
@@ -241,14 +258,19 @@ export const TransferOfficerBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="branchId"
-              id="branchId"
-              placeholder="Enter Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
+                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
@@ -262,14 +284,19 @@ export const TransferOfficerBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="toBranchId"
-              id="toBranchId"
-              placeholder="Enter To Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="toBranchId" className="dropdown">
+                {selectedToBranchId ? branchIdMap.get(selectedToBranchId) : "Select To Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="toBranchId" key={key} onClick={() => handleToBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

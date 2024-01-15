@@ -10,6 +10,8 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import { branchIdMap } from "../data/data.js";
+
 
 export const TransferCase = () => {
   let navigate = useNavigate();
@@ -17,6 +19,8 @@ export const TransferCase = () => {
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
+  const [selectedToBranchId, setSelectedToBranchId] = useState(null);
+  const [selectedFromBranchId, setSelectedFromBranchId] = useState(null);
   const [transferCaseInfo, setTransferCaseInfo] = useState({
     fromCaptain: "",
     toCaptain: "",
@@ -70,6 +74,20 @@ export const TransferCase = () => {
         });
     }
   };
+
+  // Function to handle to branch id dropdown selection
+  const handleToBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedToBranchId(categoryValue);
+    const name = "toBranchId";
+    setTransferCaseInfo({ ...transferCaseInfo, [name]: categoryValue });
+  }
+  
+  // Function to handle from branch id dropdown selection
+  const handleFromBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedFromBranchId(categoryValue);
+    const name = "fromBranchId";
+    setTransferCaseInfo({ ...transferCaseInfo, [name]: categoryValue });
+  }
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
@@ -175,14 +193,19 @@ export const TransferCase = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="toBranchId"
-              id="toBranchId"
-              placeholder="To Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="toBranchId" className="dropdown">
+                {selectedToBranchId ? branchIdMap.get(selectedToBranchId) : "Select To Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="toBranchId" key={key} onClick={() => handleToBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
@@ -196,14 +219,19 @@ export const TransferCase = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="fromBranchId"
-              id="fromBranchId"
-              placeholder="From Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+          <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
+                {selectedFromBranchId ? branchIdMap.get(selectedFromBranchId) : "Select From Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="fromBranchId" key={key} onClick={() => handleFromBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

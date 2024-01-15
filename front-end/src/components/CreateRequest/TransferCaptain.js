@@ -5,7 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap } from "../data/data.js";
+import { branchIdMap } from "../data/data.js";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -18,6 +18,7 @@ export const TransferCaptain = () => {
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [transferCaptainInfo, setTransferCaptainInfo] = useState({
     moderator: "",
     fromCaptain: "",
@@ -71,6 +72,13 @@ export const TransferCaptain = () => {
         });
     }
   };
+
+  // Function to handle branch id dropdown selection
+  const handleBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedBranchId(categoryValue);
+    const name = "branchId";
+    setTransferCaptainInfo({ ...transferCaptainInfo, [name]: categoryValue });
+  }
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
@@ -176,14 +184,19 @@ export const TransferCaptain = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="branchId"
-              id="branchId"
-              placeholder="Enter Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
+                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

@@ -9,12 +9,16 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import Dropdown from 'react-bootstrap/Dropdown';
+import { stateCodeMap, branchIdMap } from "../data/data.js";
 
 export const CreateBranch = () => {
   let navigate = useNavigate();
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
+  const [selectedStateCode, setSelectedStateCode] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [createBranchInfo, setCreateBranchInfo] = useState({
     precinctAddress: "",
     jurisdictionArea: "",
@@ -30,6 +34,18 @@ export const CreateBranch = () => {
     console.log("params :: ", name);
     console.log("value :: ", value);
   };
+
+  const handleStateCodeDropdownSelect = (categoryValue) => {
+    setSelectedStateCode(categoryValue);
+    const name = "stateCode";
+    setCreateBranchInfo({ ...createBranchInfo, [name]: categoryValue });
+  }
+
+  const handleBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedBranchId(categoryValue);
+    const name = "branchId";
+    setCreateBranchInfo({ ...createBranchInfo, [name]: categoryValue });
+  }
 
   const handleDateChange = (fullDateTime) => {
     let unixTimestamp = moment(fullDateTime).unix();
@@ -135,7 +151,7 @@ export const CreateBranch = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="text"
+              type="number"
               name="jurisdictionArea"
               id="jurisdictionArea"
               placeholder="Enter Jurisdiction Area Here"
@@ -155,14 +171,19 @@ export const CreateBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="stateCode"
-              id="stateCode"
-              placeholder="Enter State Code Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
+                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(stateCodeMap).map(([key, value]) => (
+                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
@@ -176,14 +197,19 @@ export const CreateBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="branchId"
-              id="branchId"
-              placeholder="Enter Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
+                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

@@ -9,15 +9,19 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import { branchIdMap } from "../data/data.js";
+import Dropdown from "react-bootstrap/Dropdown";
 
 export const TrusteeRequest = () => {
   let navigate = useNavigate();
 
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [trusteeRequestInfo, setTrusteeRequestInfo] = useState({
     caseId: "",
     trustee: "",
+    moderator: "",
     captain: "",
     branchId: "",
     expiry: "",
@@ -37,6 +41,8 @@ export const TrusteeRequest = () => {
       notify("error", `Case Id is empty`);
     } else if (trusteeRequestInfo.trustee === "") {
       notify("error", `Trustee Address is empty`);
+    } else if (trusteeRequestInfo.moderator === "") {
+      notify("error", `Moderator Address is empty`);
     } else if (trusteeRequestInfo.captain === "") {
       notify("error", `Captain Address is empty`);
     } else if (trusteeRequestInfo.branchId === "") {
@@ -62,6 +68,13 @@ export const TrusteeRequest = () => {
         });
     }
   };
+
+  // Function to handle branch id dropdown selection
+  const handleBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedBranchId(categoryValue);
+    const name = "branchId";
+    setTrusteeRequestInfo({ ...trusteeRequestInfo, [name]: categoryValue });
+  }
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
@@ -136,6 +149,27 @@ export const TrusteeRequest = () => {
           </div>
         </div>
 
+        {/* Moderator Address */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="moderator" className="col-form-label">
+              <b>
+                <em>Moderator Address:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="text"
+              name="moderator"
+              id="moderator"
+              placeholder="Moderator Address Here"
+              className="form-control"
+              onChange={handleChange}
+            ></input>
+          </div>
+        </div>
+
         {/* captain address*/}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -167,14 +201,19 @@ export const TrusteeRequest = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="branchId"
-              id="branchId"
-              placeholder="Enter Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
+                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

@@ -5,7 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap } from "../data/data.js";
+import { employmentStatusMap, rankMap, branchIdMap } from "../data/data.js";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -17,9 +17,11 @@ export const OfficerOffboard = () => {
 
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
+  // use states for dropdowns
   const [selectedRankValue, setSelectedRankValue] = useState(null);
-  // Function to handle dropdown item selection
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  
   const [OfficerOffboardInfo, setOfficerOffboardInfo] = useState({
     verifiedAddress: "",
     name: "",
@@ -108,6 +110,13 @@ export const OfficerOffboard = () => {
     console.log("params :: ", name);
     console.log("value :: ", categoryValue);
   };
+  
+  // Function to handle branch id dropdown selection
+  const handleBranchIdDropdownSelect = (categoryValue) => {
+    setSelectedBranchId(categoryValue);
+    const name = "branchId";
+    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
+  }
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
@@ -214,7 +223,7 @@ export const OfficerOffboard = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="badge"
               id="badge"
               placeholder="Enter Badge Here"
@@ -234,14 +243,19 @@ export const OfficerOffboard = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="branchId"
-              id="branchId"
-              placeholder="Enter Branch Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
+                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(branchIdMap).map(([key, value]) => (
+                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
