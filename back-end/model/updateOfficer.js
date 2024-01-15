@@ -22,7 +22,7 @@ const UpdateOfficerSchema = new mongoose.Schema ({
         required: true,
     },
     badge: {
-        type: Number,
+        type: String,
         required: true,
     },
     branchId: {
@@ -30,11 +30,15 @@ const UpdateOfficerSchema = new mongoose.Schema ({
         required: true,
     },
     employmentStatus: {
-        type: String,
+        type: Number,
         required: true,
     },
     rank: {
-        type: String,
+        type: Number,
+        required: true,
+    },
+    updateType: {
+        type: Number,
         required: true,
     },
     signature: {

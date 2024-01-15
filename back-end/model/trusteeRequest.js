@@ -6,12 +6,16 @@ const TrusteeRequestSchema = new mongoose.Schema ({
         required: true
     },
     caseId: {
-        type: String,
+        type: Number,
         required: true
     },
     trustee: {
         type: String,
         required: true,
+    },
+    moderator: {
+        type: String, 
+        required: true
     },
     captain: {
         type: String,

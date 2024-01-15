@@ -14,7 +14,7 @@ const UpdateBranchSchema = new mongoose.Schema ({
         required: true
     },
     jurisdictionArea: {
-        type: String,
+        type: Number,
         required: true,
     },
     stateCode: {
