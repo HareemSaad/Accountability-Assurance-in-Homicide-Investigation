@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const CreateBranchSchema = new mongoose.Schema ({
     id: {
-        type: String,
+        type: Number,
         required: true
     },
     precinctAddress: {
@@ -18,7 +18,7 @@ const CreateBranchSchema = new mongoose.Schema ({
         required: true,
     },
     branchId: {
-        type: Number,
+        type: String,
         required: true,
     },
     nonce: {

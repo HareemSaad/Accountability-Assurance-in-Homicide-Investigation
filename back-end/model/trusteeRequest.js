@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const TrusteeRequestSchema = new mongoose.Schema ({
     id: {
-        type: String,
+        type: Number,
         required: true
     },
     caseId: {
@@ -18,7 +18,7 @@ const TrusteeRequestSchema = new mongoose.Schema ({
         required: true,
     },
     branchId: {
-        type: Number,
+        type: String,
         required: true,
     },
     signature: {

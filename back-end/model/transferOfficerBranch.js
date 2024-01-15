@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const TransferOfficerBranchSchema = new mongoose.Schema ({
     id: {
-        type: String,
+        type: Number,
         required: true
     },
     verifiedAddress: {
@@ -26,11 +26,11 @@ const TransferOfficerBranchSchema = new mongoose.Schema ({
         required: true,
     },
     branchId: {
-        type: Number,
+        type: String,
         required: true,
     },
     toBranchId: {
-        type: Number,
+        type: String,
         required: true,
     },
     employmentStatus: {

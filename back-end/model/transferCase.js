@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const TransferCaseSchema = new mongoose.Schema ({
     id: {
-        type: String,
+        type: Number,
         required: true
     },
     fromCaptain: {
@@ -22,11 +22,11 @@ const TransferCaseSchema = new mongoose.Schema ({
         required: true,
     },
     fromBranchId: {
-        type: Number,
+        type: String,
         required: true,
     },
     toBranchId: {
-        type: Number,
+        type: String,
         required: true,
     },
     receiver: {

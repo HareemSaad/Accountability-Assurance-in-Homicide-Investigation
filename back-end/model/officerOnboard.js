@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const OfficerOnboardSchema = new mongoose.Schema ({
     id: {
-        type: String,
+        type: Number,
         required: true
     },
     verifiedAddress: {
@@ -26,7 +26,7 @@ const OfficerOnboardSchema = new mongoose.Schema ({
         required: true,
     },
     branchId: {
-        type: Number,
+        type: String,
         required: true,
     },
     employmentStatus: {

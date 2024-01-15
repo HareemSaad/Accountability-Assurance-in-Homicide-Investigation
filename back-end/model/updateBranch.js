@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const UpdateBranchSchema = new mongoose.Schema ({
     id: {
-        type: String,
+        type: Number,
         required: true
     },
     nonce: {
@@ -22,7 +22,7 @@ const UpdateBranchSchema = new mongoose.Schema ({
         required: true,
     },
     branchId: {
-        type: Number,
+        type: String,
         required: true,
     },
     signature: {
