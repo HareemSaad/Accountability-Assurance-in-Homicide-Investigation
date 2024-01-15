@@ -9,7 +9,7 @@ router.post('/create-request/transfer-captain', async (req, res) => {
     // console.log("req.body:: ", req.body)
     try {
         let lastId;
-        await TransferCaptain.find().sort({id:-1}).limit(1)  
+        await TransferCaptain.find().sort({ _id: -1 }).limit(1)  
         .then(requests => {
             if (requests.length === 0) {
                 lastId = 0
@@ -19,7 +19,7 @@ router.post('/create-request/transfer-captain', async (req, res) => {
         })
         .catch(err => console.log("errorr:: ", err))
         
-        req.body['id'] = parseInt(lastId) + 1;
+        req.body['id'] = lastId + 1;
         req.body['nonce'] = Math.floor(Math.random() * 10000);
         
         // input req.body into schema

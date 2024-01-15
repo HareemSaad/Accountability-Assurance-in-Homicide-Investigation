@@ -9,7 +9,7 @@ router.post('/create-request/create-branch', async (req, res) => {
     try {
         // Get the last ID
         let lastId;
-        const requests = await CreateBranch.find().sort({ id: -1 }).limit(1);
+        const requests = await CreateBranch.find().sort({ _id: -1 }).limit(1);
 
         if (requests.length === 0) {
             lastId = 0;
@@ -19,7 +19,7 @@ router.post('/create-request/create-branch', async (req, res) => {
         }
         
         // Set id and nonce in req.body
-        req.body['id'] = parseInt(lastId) + 1;
+        req.body['id'] = lastId + 1;
         req.body['nonce'] = Math.floor(Math.random() * 10000);
 
         // Create a new instance of CreateBranch schema

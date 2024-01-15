@@ -9,7 +9,7 @@ router.post('/create-request/officer-onboard', async (req, res) => {
     // console.log("req.body:: ", req.body)
     try {
         let lastId;
-        await OfficerOnboard.find().sort({id:-1}).limit(1)  
+        await OfficerOnboard.find().sort({ _id: -1 }).limit(1)  
         .then(requests => {
             if (requests.length === 0) {
                 lastId = 0
@@ -19,7 +19,7 @@ router.post('/create-request/officer-onboard', async (req, res) => {
         })
         .catch(err => console.log("errorr:: ", err))
         
-        req.body['id'] = parseInt(lastId) + 1;
+        req.body['id'] = lastId + 1;
         req.body['nonce'] = Math.floor(Math.random() * 10000);
         
         // input req.body into schema
