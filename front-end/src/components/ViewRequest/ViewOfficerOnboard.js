@@ -132,7 +132,7 @@ export const ViewOfficerOnboard = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="badge"
               id="badge"
               className="form-control"
@@ -153,7 +153,7 @@ export const ViewOfficerOnboard = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="branchId"
               id="branchId"
               className="form-control"

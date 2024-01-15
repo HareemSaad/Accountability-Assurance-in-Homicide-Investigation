@@ -109,6 +109,27 @@ export const ViewTrusteeRequest = () => {
           </div>
         </div>
 
+        {/* Moderator */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="moderator" className="col-form-label">
+              <b>
+                <em>Moderator Address:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="text"
+              name="moderator"
+              id="moderator"
+              className="form-control"
+              value={requestDetail.moderator}
+              disabled
+            ></input>
+          </div>
+        </div>
+
         {/* captain address*/}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -141,7 +162,7 @@ export const ViewTrusteeRequest = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="branchId"
               id="branchId"
               className="form-control"

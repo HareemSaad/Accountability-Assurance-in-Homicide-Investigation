@@ -96,7 +96,7 @@ export const ViewUpdateBranch = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="text"
+              type="number"
               name="jurisdictionArea"
               id="jurisdictionArea"
               className="form-control"

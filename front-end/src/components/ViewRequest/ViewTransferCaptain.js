@@ -136,7 +136,7 @@ export const ViewTransferCaptain = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="branchId"
               id="branchId"
               className="form-control"

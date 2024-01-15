@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
 import { useUserAddressContext } from "../Context/userAddressContext.tsx";
-import { employmentStatusMap, rankMap } from '../data/data.js';
+import { employmentStatusMap, rankMap, updateTypeMap } from '../data/data.js';
 import moment from "moment";
 
 export const ViewUpdateOfficer = () => {
@@ -137,7 +137,7 @@ export const ViewUpdateOfficer = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="badge"
               id="badge"
               placeholder="Enter Badge Here"
@@ -159,7 +159,7 @@ export const ViewUpdateOfficer = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="branchId"
               id="branchId"
               placeholder="Enter Branch Id Here"
@@ -208,6 +208,27 @@ export const ViewUpdateOfficer = () => {
               id="employmentStatus"
               className="form-control"
               value={employmentStatusMap.get(requestDetail.employmentStatus)}
+              disabled
+            ></input>
+          </div>
+        </div>
+
+        {/* Update Type */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="updateType" className="col-form-label">
+              <b>
+                <em>Update Type:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+          <input
+              type="text"
+              name="updateType"
+              id="updateType"
+              className="form-control"
+              value={updateTypeMap.get(requestDetail.updateType)}
               disabled
             ></input>
           </div>

@@ -135,7 +135,7 @@ export const ViewTransferCase = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="fromBranchId"
               id="fromBranchId"
               className="form-control"
@@ -156,7 +156,7 @@ export const ViewTransferCase = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="toBranchId"
               id="toBranchId"
               className="form-control"
