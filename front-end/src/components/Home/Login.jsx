@@ -79,9 +79,12 @@ export const Login = () => {
     if (isConnected) {
 
       const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
-          ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.branchId])
+        ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.branchId])
       ));
-      const badge = ethers.utils.formatBytes32String(officerInfo.badge);
+      const badge = ethers.utils.hexlify(ethers.utils.keccak256(
+          ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.badge])
+      ));
+      // const badge = ethers.utils.formatBytes32String(officerInfo.badge);
 
       // console.log("branchid ::", branchId)
       // console.log("stateCode ::", officerInfo.stateCode)

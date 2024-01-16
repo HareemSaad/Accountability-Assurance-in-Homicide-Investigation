@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ethers } from 'ethers';
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
+import { writeContract, waitForTransaction, getWalletClient } from '@wagmi/core'
+import { useAccount } from 'wagmi'
+import LedgerABI from "./../Ledger.json";
 import axios from "axios";
-import { branchIdMap, rankMap } from "../data/data.js";
+import { employmentStatusMap, rankMap } from "../data/data.js";
+import { stateCodeMap, branchIdMap } from "../data/data.js";
+import { onboardHash } from "../utils/hashing/onboardHash.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -15,6 +22,7 @@ import { FaCalendarAlt } from "react-icons/fa";
 export const OfficerOnboard = () => {
   let navigate = useNavigate();
 
+  const { address, connector, isConnected, account } = useAccount();
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
@@ -64,21 +72,96 @@ export const OfficerOnboard = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
-      axios
-        .post(
-          "http://localhost:3000/create-request/officer-onboard",
-          officerOnboardInfo
+      const client = await getWalletClient({ account, connector })
+
+      // TODO: get from global
+      // const nonce = await provider.getTransactionCount(address);
+      const nonce = 140
+
+      const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
+          ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.branchId])
+      ));
+
+      const badge = ethers.utils.hexlify(ethers.utils.keccak256(
+          ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.badge])
+      ));
+
+      const legalNumber = ethers.utils.hexlify(ethers.utils.keccak256(
+          ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.legalNumber])
+      ));
+
+      if(officerOnboardInfo.rank === 3) {
+  
+        const hash = onboardHash (
+          officerOnboardInfo.verifiedAddress,
+          nonce,
+          officerOnboardInfo.name,
+          legalNumber,
+          badge,
+          branchId,
+          officerOnboardInfo.employmentStatus,
+          officerOnboardInfo.rank,
+          officerOnboardInfo.expiry
         )
-        .then((res) =>
-          notify("success", "Officer Onboard Request Created successfully")
+  
+        const message = toLedgerTypedDataHash(
+          hash
         )
-        .catch((err) => {
-          // console.log("error:: ", err);
-          notify(
-            "error",
-            `An Error Occured when Creating Officer Onboard Request`
-          );
-        });
+
+        const signature = await client.request(
+          {
+            method: 'eth_sign',
+            params: [
+              address,
+              message 
+            ],
+          },
+          { retryCount: 0 },
+        )
+  
+        const {txnHash} = await writeContract({
+          address: process.env.REACT_APP_LEDGER_CONTRACT,
+          abi: LedgerABI,
+          functionName: 'onboardCaptain',
+          args: [
+            nonce,
+            8888, //TODO: change to dynamic statecode
+            officerOnboardInfo.verifiedAddress,
+            officerOnboardInfo.name,
+            legalNumber,
+            badge,
+            branchId,
+            officerOnboardInfo.expiry,
+            signature,
+            address
+          ],
+          account: address,
+          chainId: 11155111
+        })
+        console.log("hash :: ", txnHash)
+
+        // wait for txn
+        const result = await waitForTransaction({
+          hash: txnHash,
+        })
+        console.log("Transaction result:", result);
+
+      }
+      // axios
+      //   .post(
+      //     "http://localhost:3000/create-request/officer-onboard",
+      //     officerOnboardInfo
+      //   )
+      //   .then((res) =>
+      //     notify("success", "Officer Onboard Request Created successfully")
+      //   )
+      //   .catch((err) => {
+      //     // console.log("error:: ", err);
+      //     notify(
+      //       "error",
+      //       `An Error Occured when Creating Officer Onboard Request`
+      //     );
+      //   });
     }
   };
 
