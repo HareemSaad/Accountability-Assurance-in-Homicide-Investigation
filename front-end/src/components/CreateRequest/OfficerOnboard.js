@@ -18,9 +18,13 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import { useUserAddressContext } from '../Context/userAddressContext.tsx';
+import { StateCodeContext, useStateCodeContext } from '../Context/stateCodeContext.tsx';
 
 export const OfficerOnboard = () => {
   let navigate = useNavigate();
+  const { userAddress, setUserAddress } = useUserAddressContext(); // address
+  const { stateCode, setStateCode } = useStateCodeContext();
 
   const { address, connector, isConnected, account } = useAccount();
   const [expiryDate, setExpiryDate] = useState("");
@@ -36,6 +40,8 @@ export const OfficerOnboard = () => {
     rank: "",
     employmentStatus: 1,
     expiry: "",
+    signature: "",
+    address: userAddress,
     isOpen: true,
   });
 
@@ -79,7 +85,7 @@ export const OfficerOnboard = () => {
       // const nonce = await provider.getTransactionCount(address);
       const nonce = 140
 
-      const stateCode = 8888; //TODO: Amaim change to dynamic statecode
+      // const stateCode = 8888; //TODO: Amaim change to dynamic statecode
 
       const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
           ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.branchId])
@@ -122,8 +128,10 @@ export const OfficerOnboard = () => {
           },
           { retryCount: 0 },
         )
+
+        setOfficerOnboardInfo({...officerOnboardInfo, ['signature']: signature})
       
-        if(officerOnboardInfo.rank === 2) {
+        if(officerOnboardInfo.rank === 1 || officerOnboardInfo.rank === 2) {
     
           // TODO: to add on add officers from captain side
           // const {txnHash} = await writeContract({
