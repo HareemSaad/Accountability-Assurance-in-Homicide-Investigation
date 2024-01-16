@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { LEDGER_DOMAIN_HASH } from "../data/data.js";
+import { LEDGER_DOMAIN_HASH } from "./../../data/data";
 
 export function toLedgerTypedDataHash(structHash) {
     // Prepare the data according to the EIP-712 standard

@@ -1,5 +1,5 @@
 import { ethers } from 'ethers';
-import { ONBOARD_REQUEST_TYPEHASH } from "../data/data.js";
+import { ONBOARD_REQUEST_TYPEHASH } from "./../../data/data";
 
 export const onboardHash = (
     _verifiedAddress,
