@@ -18,13 +18,9 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
-import { useUserAddressContext } from '../Context/userAddressContext.tsx';
-import { StateCodeContext, useStateCodeContext } from '../Context/stateCodeContext.tsx';
 
 export const OfficerOnboard = () => {
   let navigate = useNavigate();
-  const { userAddress, setUserAddress } = useUserAddressContext(); // address
-  const { stateCode, setStateCode } = useStateCodeContext();
 
   const { address, connector, isConnected, account } = useAccount();
   const [expiryDate, setExpiryDate] = useState("");
@@ -41,7 +37,7 @@ export const OfficerOnboard = () => {
     employmentStatus: 1,
     expiry: "",
     signature: "",
-    address: userAddress,
+    address: address,
     isOpen: true,
   });
 
@@ -187,7 +183,7 @@ export const OfficerOnboard = () => {
             functionName: 'onboardCaptain',
             args: [
               nonce,
-              stateCode,
+              localStorage.getItem("statecode"),
               officerOnboardInfo.verifiedAddress,
               officerOnboardInfo.name,
               legalNumber,

@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import '../AddCase/AddCase.css';
-import CaseABI from "./../CasesABI.json";
+import CaseABI from "./../Cases.json";
 import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
 
 export const AddOfficerInCase = () => {
@@ -33,7 +33,7 @@ export const AddOfficerInCase = () => {
                 // call contract
                 const { hash } = await writeContract({
                     address: caseContractAddress,
-                    abi: CaseABI.abi,
+                    abi: CaseABI,
                     functionName: 'addOfficerInCase',
                     args: [caseId, officerAddress],
                     chainId: 11155111

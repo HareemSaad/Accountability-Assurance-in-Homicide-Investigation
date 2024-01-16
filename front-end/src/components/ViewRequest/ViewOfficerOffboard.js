@@ -4,13 +4,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import { useUserAddressContext } from "../Context/userAddressContext.tsx";
 import { employmentStatusMap, rankMap } from "../data/data.js";
 import moment from "moment";
+import { useAccount } from 'wagmi'
 
 export const ViewOfficerOffboard = () => {
   const { reqId } = useParams();
-  const { userAddress, setUserAddress } = useUserAddressContext();
+  const { address } = useAccount();
+
   let navigate = useNavigate();
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
@@ -32,7 +33,7 @@ export const ViewOfficerOffboard = () => {
     // axiospost - update the array of signers/signatures...
     axios
       .post(`http://localhost:3000/view-officer-offboard/:${reqId}`, {
-        userAddress: userAddress,
+        userAddress: address,
       })
       .then((res) => notify("success", "Signed successfully"))
       .catch((err) => {

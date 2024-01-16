@@ -5,12 +5,12 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import "./view.css";
 import axios from "axios";
-import { useUserAddressContext } from "../Context/userAddressContext.tsx";
+import { useAccount } from 'wagmi'
 import moment from "moment";
 
 export const ViewTrusteeRequest = () => {
   const { reqId } = useParams();
-  const { userAddress, setUserAddress } = useUserAddressContext();
+  const { address } = useAccount();
 
   let navigate = useNavigate();
 
@@ -41,7 +41,7 @@ export const ViewTrusteeRequest = () => {
     // axiospost - update the array of signers/signatures...
     axios
       .post(`http://localhost:3000/view-trustee-request/:${reqId}`, {
-        userAddress: userAddress,
+        userAddress: address,
       })
       .then((res) => notify("success", "Signed successfully"))
       .catch((err) => {

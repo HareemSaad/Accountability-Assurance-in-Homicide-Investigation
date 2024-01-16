@@ -6,12 +6,10 @@ import "react-toastify/dist/ReactToastify.css";
 import './AddCase.css';
 import CaseABI from "./../Cases.json";
 import { waitForTransaction, writeContract } from '@wagmi/core';
-import { useUserBranchIdContext } from '../Context/userBranchIdContext.tsx';
 
 export const AddCase = () => {
 
     let navigate = useNavigate();
-    const { userBranchId } = useUserBranchIdContext();
 
     const [caseNum, setCaseNum] = useState({ id: '' });
     const handleChange = (e) => {
@@ -47,7 +45,7 @@ export const AddCase = () => {
                 address: process.env.REACT_APP_CASE_CONTRACT,
                 abi: CaseABI,
                 functionName: 'addCase',
-                args: [caseNum.id, userBranchId],
+                args: [caseNum.id, localStorage.getItem("branchId")],
                 chainId: 11155111
             })
             console.log("hash :: ", hash)

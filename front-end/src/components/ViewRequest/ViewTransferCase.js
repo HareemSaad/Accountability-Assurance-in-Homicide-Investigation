@@ -5,12 +5,12 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import "./view.css";
 import axios from "axios";
-import { useUserAddressContext } from "../Context/userAddressContext.tsx";
+import { useAccount } from 'wagmi';
 import moment from "moment";
 
 export const ViewTransferCase = () => {
   const { reqId } = useParams();
-  const { userAddress, setUserAddress } = useUserAddressContext();
+  const { address } = useAccount();
 
   let navigate = useNavigate();
 
@@ -33,7 +33,7 @@ export const ViewTransferCase = () => {
     // axiospost - update the array of signers/signatures...
     axios
       .post(`http://localhost:3000/view-transfer-case/:${reqId}`, {
-        userAddress: userAddress,
+        userAddress: address,
       })
       .then((res) => notify("success", "Signed successfully"))
       .catch((err) => {

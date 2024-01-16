@@ -2,8 +2,6 @@ import React, { useContext, useState, useEffect } from 'react'
 import './Navbar.css'
 import { Navigate, useNavigate } from "react-router-dom";
 import Container from 'react-bootstrap/Container';
-// CONTEXT
-import { useUserAddressContext } from '../Context/userAddressContext.tsx';
 
 import Navbar from 'react-bootstrap/Navbar';
 import {
@@ -15,9 +13,7 @@ import {
 } from 'wagmi'
 
 export const NavbarComponent = () => {
-  const { userAddress, setUserAddress } = useUserAddressContext();
 
-  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
   const { disconnect } = useDisconnect()
   const { address, connector, isConnected } = useAccount()
   let navigate = useNavigate();
@@ -37,7 +33,6 @@ export const NavbarComponent = () => {
         <Navbar.Collapse className="justify-content-end">
           <Navbar.Text className='text-light navAccount'>
             {isConnected ? address : "0x00"}
-            {setUserAddress(isConnected ? address : "0x00")}
           </Navbar.Text>
         </Navbar.Collapse>
         <button className='logout-button' onClick={disconnect}>Disconnect</button>

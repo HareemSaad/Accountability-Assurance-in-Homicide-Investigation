@@ -12,17 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 import LedgerABI from "./../Ledger.json";
 import { stateCodeMap, rankMap, branchIdMap } from "../data/data.js";
 
-// CONTEXTS - Global Variables
-import { UserContext, useUserContext } from '../Context/userContext.tsx';
-import { UserBadgeContext, useUserBadgeContext } from '../Context/userBadgeContext.tsx';
-import { UserBranchIdContext, useUserBranchIdContext } from '../Context/userBranchIdContext.tsx';
-import { StateCodeContext, useStateCodeContext } from '../Context/stateCodeContext.tsx';
-
 export const Login = () => {
-  const { user, setUser } = useUserContext();
-  const { userBadge, setUserBadge } = useUserBadgeContext();
-  const { userBranchId, setUserBranchId } = useUserBranchIdContext();
-  const { stateCode, setStateCode } = useStateCodeContext();
 
   const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
   const { address, connector, isConnected } = useAccount()
@@ -67,10 +57,11 @@ export const Login = () => {
   }; 
 
   const setGlobalVariables = (rank, stateCode, branchId, badge) => {
-    setUser(rankMap.get(rank));
-    setStateCode(stateCode);
-    setUserBranchId(branchId);
-    setUserBadge(badge);
+    localStorage.setItem("rank", rankMap.get(rank));
+    localStorage.setItem("rankId", rank);
+    localStorage.setItem("statecode", stateCode);
+    localStorage.setItem("branchid", branchId);
+    localStorage.setItem("badge", badge);
   }
 
   // Function to handle successful login
@@ -134,6 +125,7 @@ export const Login = () => {
   };
 
   const handleValidationFail = () => {
+    localStorage.clear();
     if(isConnected) {
       disconnect()
     }

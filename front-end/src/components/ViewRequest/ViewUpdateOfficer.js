@@ -5,13 +5,13 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { useUserAddressContext } from "../Context/userAddressContext.tsx";
+import { useAccount } from 'wagmi';
 import { employmentStatusMap, rankMap, updateTypeMap } from '../data/data.js';
 import moment from "moment";
 
 export const ViewUpdateOfficer = () => {
   const { reqId } = useParams();
-  const { userAddress, setUserAddress } = useUserAddressContext();
+  const { address } = useAccount();
 
   let navigate = useNavigate();
 
@@ -34,7 +34,7 @@ export const ViewUpdateOfficer = () => {
     // axiospost - update the array of signers/signatures...
     axios
       .post(`http://localhost:3000/view-update-officer/:${reqId}`, {
-        userAddress: userAddress,
+        userAddress: address,
       })
       .then((res) => console.log(res))
       .catch((err) => {
