@@ -3,5 +3,18 @@ src = "src"
 out = "out"
 libs = ["lib"]
 viaIr=true
-
+solc="0.8.13"
+libraries = [
+    "src/Libraries/CreateBranch.sol:CreateBranch:0xe68bf65ba53bbadc5b84b5c1895c24dcef0a3e40",
+    "src/Libraries/Evidence.sol:Evidences:0xa1286e1e1b72ac77e0eec7ebb9315746c9e23163",
+    "src/Libraries/Offboard.sol:OfficerOffboard:0xaaa669b8821185d80fee8e4072fe39e8018c26dc",
+    "src/Libraries/Onboard.sol:OfficerOnboard:0x7ea3b6a94c79aa395e34c2d9e17b67a0a7cb2627",
+    "src/Libraries/Participant.sol:Participants:0x71c82f6a9145f6099cca460a0b4f94a95b497d46",
+    "src/Libraries/TransferBranch.sol:TransferBranch:0x079e86f28e372a8d8ae8e5f9b8afccedabfdbea3",
+    "src/Libraries/TransferCaptain.sol:TransferCaptain:0x3a3067670a7cdfb1627e6d6707a7c7b75c7229b7",
+    "src/Libraries/TransferCase.sol:TransferCase:0xdad8d44c36167ac7f2bf7cecc56ea62993176cd3",
+    "src/Libraries/TrusteeRequest.sol:TrusteeRequestLib:0xbb17e45d9ca49f5738c58faeb3a0793c1d41b102",
+    "src/Libraries/UpdateBranch.sol:UpdateBranch:0x0d24a3a9db51f0d073a7c0c9b71aff01a5b4bf05",
+    "src/Libraries/UpdateOfficer.sol:UpdateOfficer:0x86089da9793f3ba732d44a7f6beb122aea4fa8b0"
+]
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config
