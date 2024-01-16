@@ -23,7 +23,8 @@ export const EmployeeCard = () => {
             <div className="d-flex justify-content-between">
                 <h1 className='m-4'>Active Employees</h1>
                 <div className="d-flex">
-                    <button className='card-add-btn' name="add-officer" onClick={(e) => goto(e)}>Add Officer</button>
+                    <button className='card-add-btn' name="view-officer-requests" onClick={(e) => goto(e)}>Officer Requests</button>
+                    <button className='card-add-btn' name="view-detective-requests" onClick={(e) => goto(e)}>Detective Requests</button>
                     <button className='card-add-btn' name="archive-employees" onClick={(e) => goto(e)}>Archive</button>
                 </div>
             </div>

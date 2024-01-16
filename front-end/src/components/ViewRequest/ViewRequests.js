@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import Card from 'react-bootstrap/Card';
 import { useNavigate } from "react-router-dom";
 import { useParams } from 'react-router-dom';
+// import { useUserContext } from '../Context/userContext.tsx';
 import axios from 'axios';
 
 
@@ -11,14 +12,17 @@ export const ViewRequests = () => {
 
     const [allRequests, setAllRequests] = useState([]);
     let navigate = useNavigate();
+    const stateCode = localStorage.getItem("statecode");
 
     useEffect(() => {
         // const allRequests = [{ id: 13, status: "Open" }, { id: 27, status: "Open" }, { id: 36, status: "Open" }, { id: 45, status: "Open" }];
-        setAllRequests(allRequests);
+        // setAllRequests(allRequests);
         // axios.get(`http://localhost:3000/view-create-branch`)
         axios.get(`http://localhost:3000/${reqName}`)
-        .then(result => setAllRequests(result.data))
+        .then(result => {setAllRequests(result.data); console.log("result.data:: ", result.data)})
         .catch(err => console.log("error:: ", err))
+
+        console.log("stateCode: ", stateCode) 
     }, []);
 
     function print(cardId) {
@@ -46,8 +50,16 @@ export const ViewRequests = () => {
         }
         else if (reqName === "view-transfer-captain") {
             navigate(`/view-transfer-captain/${cardId}`);
-        } else if (reqName === "view-transfer-case") {
+        } 
+        else if (reqName === "view-transfer-case") {
             navigate(`/view-transfer-case/${cardId}`);
+        }
+        // from employee card for captain - not for moderators
+        else if (reqName === "view-officer-requests") {
+            navigate(`/view-officer-requests/${cardId}`);
+        }
+        else if (reqName === "view-detective-requests") {
+            navigate(`/view-detective-requests/${cardId}`);
         }
     }
 
@@ -59,6 +71,7 @@ export const ViewRequests = () => {
 
     return (
         <>
+            {/* heading */}
             <div className="d-flex justify-content-between">
                 {reqName === "view-create-branch" ? <h1 className='m-4'>Create Branch Requests</h1>
                     : reqName === "view-officer-onboard" ? <h1 className='m-4'>Officer Onboard Requests</h1>
@@ -69,9 +82,12 @@ export const ViewRequests = () => {
                     : reqName === "view-update-officer" ? <h1 className='m-4'>Update Officer Requests</h1>
                     : reqName === "view-transfer-captain" ? <h1 className='m-4'>Transfer Captain Requests</h1>
                     : reqName === "view-transfer-case" ? <h1 className='m-4'>Transfer Case Requests</h1>
+                    : reqName === "view-officer-requests" ? <h1 className='m-4'>Officer Requests</h1>
+                    : reqName === "view-detective-requests" ? <h1 className='m-4'>Detective Requests</h1>
                     : <h1 className='m-4'>Requests</h1>}
             </div>
 
+            {/* request cards */}
             <div className='card-container'>
                 {allRequests.map((card, index) => (
                     <Card className='case-card'>

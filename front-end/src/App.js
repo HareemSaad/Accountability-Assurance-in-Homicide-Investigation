@@ -39,6 +39,9 @@ import { ViewUpdateBranch } from './components/ViewRequest/ViewUpdateBranch.js';
 import { ViewUpdateOfficer } from './components/ViewRequest/ViewUpdateOfficer.js';
 import { ViewTransferCaptain } from './components/ViewRequest/ViewTransferCaptain.js';
 import { ViewTransferCase } from './components/ViewRequest/ViewTransferCase.js';
+// View - captain approve officers and detectives
+import { ViewOfficerRequests } from './components/AddOfficer/ViewOfficerRequests.js';
+import { ViewDetectiveRequests } from './components/AddOfficer/ViewDetectiveRequests.js';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -100,6 +103,8 @@ function App() {
           {/* Captain-only accessed */}
           <Route path="/add-case" element={<AddCase />} />
           <Route path="/add-officer" element={<AddOfficer />} />
+          <Route path="/view-officer-requests/:reqId" element={<ViewOfficerRequests />} /> {/**/}
+          <Route path="/view-detective-requests/:reqId" element={<ViewDetectiveRequests />} /> {/**/}
           <Route path="/add-officer-in-case/:caseId" element={<AddOfficerInCase />} />
           <Route path="/drop-officer-from-case/:caseId" element={<DropOfficerFromCase />} />
           <Route path="/change-case-status/:caseId" element={<ChangeCaseStatus />} />
