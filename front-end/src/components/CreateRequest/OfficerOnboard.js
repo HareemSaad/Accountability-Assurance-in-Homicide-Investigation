@@ -72,8 +72,9 @@ export const OfficerOnboard = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
-      const client = await getWalletClient({ account, connector })
 
+      const client = await getWalletClient({ account, connector })
+      
       // TODO: get from global
       // const nonce = await provider.getTransactionCount(address);
       const nonce = 140
@@ -89,9 +90,8 @@ export const OfficerOnboard = () => {
       const legalNumber = ethers.utils.hexlify(ethers.utils.keccak256(
           ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.legalNumber])
       ));
-
-      if(officerOnboardInfo.rank === 3) {
   
+      try {
         const hash = onboardHash (
           officerOnboardInfo.verifiedAddress,
           nonce,
@@ -103,7 +103,9 @@ export const OfficerOnboard = () => {
           officerOnboardInfo.rank,
           officerOnboardInfo.expiry
         )
-  
+
+        // console.log("hash", hash)
+
         const message = toLedgerTypedDataHash(
           hash
         )
@@ -118,50 +120,92 @@ export const OfficerOnboard = () => {
           },
           { retryCount: 0 },
         )
-  
-        const {txnHash} = await writeContract({
-          address: process.env.REACT_APP_LEDGER_CONTRACT,
-          abi: LedgerABI,
-          functionName: 'onboardCaptain',
-          args: [
-            nonce,
-            8888, //TODO: change to dynamic statecode
-            officerOnboardInfo.verifiedAddress,
-            officerOnboardInfo.name,
-            legalNumber,
-            badge,
-            branchId,
-            officerOnboardInfo.expiry,
-            signature,
-            address
-          ],
-          account: address,
-          chainId: 11155111
-        })
-        console.log("hash :: ", txnHash)
+      
+        if(officerOnboardInfo.rank === 2) {
+    
+          // TODO: to add on add officers from captain side
+          // const {txnHash} = await writeContract({
+          //   address: process.env.REACT_APP_LEDGER_CONTRACT,
+          //   abi: LedgerABI,
+          //   functionName: 'onboard',
+          //   args: [
+          //     nonce,
+          //     8888, //TODO: change to dynamic statecode
+          //     officerOnboardInfo.verifiedAddress,
+          //     officerOnboardInfo.name,
+          //     legalNumber,
+          //     badge,
+          //     branchId,
+          //     officerOnboardInfo.rank,
+          //     officerOnboardInfo.expiry,
+          //     signature,
+          //     address
+          //   ],
+          //   account: address,
+          //   chainId: 11155111
+          // })
+          // console.log("hash :: ", txnHash)
 
-        // wait for txn
-        const result = await waitForTransaction({
-          hash: txnHash,
-        })
-        console.log("Transaction result:", result);
+          // // wait for txn
+          // const result = await waitForTransaction({
+          //   hash: txnHash,
+          // })
+          // console.log("Transaction result:", result);
 
+          // send request to db
+          axios
+            .post(
+              "http://localhost:3000/create-request/officer-onboard",
+              officerOnboardInfo
+            )
+            .then((res) =>
+              notify("success", "Officer Onboard Request Created successfully")
+            )
+            .catch((err) => {
+              // console.log("error:: ", err);
+              notify(
+                "error",
+                `An Error Occured when Creating Officer Onboard Request`
+              );
+            });
+
+        } else if(officerOnboardInfo.rank === 3) {
+    
+          const {txnHash} = await writeContract({
+            address: process.env.REACT_APP_LEDGER_CONTRACT,
+            abi: LedgerABI,
+            functionName: 'onboardCaptain',
+            args: [
+              nonce,
+              8888, //TODO: change to dynamic statecode
+              officerOnboardInfo.verifiedAddress,
+              officerOnboardInfo.name,
+              legalNumber,
+              badge,
+              branchId,
+              officerOnboardInfo.expiry,
+              signature,
+              address
+            ],
+            account: address,
+            chainId: 11155111
+          })
+          console.log("hash :: ", txnHash)
+
+          // wait for txn
+          const result = await waitForTransaction({
+            hash: txnHash,
+          })
+          console.log("Transaction result:", result);
+
+        }
+      } catch(error) {
+        console.log(error)
+        notify(
+          "error",
+          `Error while sending transaction`
+        );
       }
-      // axios
-      //   .post(
-      //     "http://localhost:3000/create-request/officer-onboard",
-      //     officerOnboardInfo
-      //   )
-      //   .then((res) =>
-      //     notify("success", "Officer Onboard Request Created successfully")
-      //   )
-      //   .catch((err) => {
-      //     // console.log("error:: ", err);
-      //     notify(
-      //       "error",
-      //       `An Error Occured when Creating Officer Onboard Request`
-      //     );
-      //   });
     }
   };
 
