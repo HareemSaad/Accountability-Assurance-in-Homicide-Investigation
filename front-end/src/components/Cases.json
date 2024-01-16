@@ -407,15 +407,13 @@
         "internalType": "struct Participants.Participant",
         "name": "_participant",
         "type": "tuple"
-      },
-      { "internalType": "bytes", "name": "_signature", "type": "bytes" },
-      { "internalType": "address", "name": "_signer", "type": "address" }
+      }
     ],
     "name": "addParticipant",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
-  },
+  },  
   {
     "inputs": [
       { "internalType": "uint256", "name": "_caseId", "type": "uint256" },
@@ -437,7 +435,9 @@
         "internalType": "struct Participants.Participant",
         "name": "_participant",
         "type": "tuple"
-      }
+      },
+      { "internalType": "bytes", "name": "_signature", "type": "bytes" },
+      { "internalType": "address", "name": "_signer", "type": "address" }
     ],
     "name": "addParticipant",
     "outputs": [],

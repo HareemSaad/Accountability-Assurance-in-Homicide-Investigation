@@ -67,7 +67,7 @@ export const Login = () => {
   }; 
 
   const setGlobalVariables = (rank, stateCode, branchId, badge) => {
-    setUser(rank);
+    setUser(rankMap.get(rank));
     setStateCode(stateCode);
     setUserBranchId(branchId);
     setUserBadge(badge);

@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import Dropdown from 'react-bootstrap/Dropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ethers } from 'ethers';
-import CasesABI from '../CasesABI.json';
+import CasesABI from '../Cases.json';
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
-import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
+import { waitForTransaction, writeContract } from '@wagmi/core'
 
 const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, caseId, name }) => {
 
@@ -46,43 +46,24 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
     }
     else {
       try {
-        // converting the details field from formInfo into bytes
-        const message = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)).toString()
-        // console.log("message: ", message);
-
-        // signing the transaction
-        const signature = await signMessage({ message })
-        // console.log("SIG :: ", signature)
-
         // calling the functions from contract
         if (name === "Evidence") {
           try {
-
-            // get typed hash data
-            const hashTypedData = await readContract({
-              address: casesContractAddress,
-              abi: CasesABI.abi,
-              functionName: 'hashTypedDataV4',
-              args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
-              chainId: 11155111
-            })
-            // console.log("hashTypedData: ", hashTypedData);
-
             // create evidence struct
             const evidence = {
               evidenceId: formInfo.id,
               category: formInfo.category - 1,
-              data: message,
-              signature: signature
+              data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)),
+              approved: false
             }
             // console.log("evidence :: ", evidence)
 
             // call contract
             const { hash } = await writeContract({
               address: casesContractAddress,
-              abi: CasesABI.abi,
+              abi: CasesABI,
               functionName: 'addEvidence',
-              args: [caseId, 0, evidence, hashTypedData],
+              args: [caseId, evidence],
               chainId: 11155111
             })
             console.log("hash :: ", hash)
@@ -99,31 +80,21 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
         }
         else if (name === "Participant") {
           try {
-            // get typed hash data
-            const hashTypedData = await readContract({
-              address: casesContractAddress,
-              abi: CasesABI.abi,
-              functionName: 'hashTypedDataV4',
-              args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
-              chainId: 11155111
-            })
-            // console.log("hashTypedData: ", hashTypedData);
-
             // create evidence struct
             const participant = {
-              suspectId: formInfo.id,
+              participantId: formInfo.id,
               category: formInfo.category - 1,
-              data: message,
-              signature: signature
+              data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)),
+              approved: false
             }
             console.log("participant :: ", participant)
 
             // call contract
             const { hash } = await writeContract({
               address: casesContractAddress,
-              abi: CasesABI.abi,
+              abi: CasesABI,
               functionName: 'addParticipant',
-              args: [caseId, 0, participant, hashTypedData],
+              args: [caseId, participant],
               chainId: 11155111
             })
             console.log("hash :: ", hash)
@@ -140,6 +111,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
         } else {
           notify("error", `Case Number is empty`);
         }
+        notify("success", "Transaction Success")
       }
       catch (error) {
         console.error(error);
