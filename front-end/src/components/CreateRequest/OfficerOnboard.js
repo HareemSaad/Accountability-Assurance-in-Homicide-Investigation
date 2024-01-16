@@ -79,6 +79,8 @@ export const OfficerOnboard = () => {
       // const nonce = await provider.getTransactionCount(address);
       const nonce = 140
 
+      const stateCode = 8888; //TODO: Amaim change to dynamic statecode
+
       const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
           ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.branchId])
       ));
@@ -130,7 +132,7 @@ export const OfficerOnboard = () => {
           //   functionName: 'onboard',
           //   args: [
           //     nonce,
-          //     8888, //TODO: change to dynamic statecode
+          //     stateCode,
           //     officerOnboardInfo.verifiedAddress,
           //     officerOnboardInfo.name,
           //     legalNumber,
@@ -177,7 +179,7 @@ export const OfficerOnboard = () => {
             functionName: 'onboardCaptain',
             args: [
               nonce,
-              8888, //TODO: change to dynamic statecode
+              stateCode,
               officerOnboardInfo.verifiedAddress,
               officerOnboardInfo.name,
               legalNumber,
