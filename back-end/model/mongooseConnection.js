@@ -1,6 +1,9 @@
 const mongoose = require('mongoose')
 
-mongoose.connect('mongodb://127.0.0.1:27017/moderatorRequests').then(() => {
+// amaimshaikh - username
+// 6aoeTKfTLEdFh5yc - password
+
+mongoose.connect('mongodb+srv://amaimshaikh:6aoeTKfTLEdFh5yc@requests.dtmre0v.mongodb.net/?retryWrites=true&w=majority').then(() => {
     console.log("Mongoose Connected")
 })
 .catch(err => {
