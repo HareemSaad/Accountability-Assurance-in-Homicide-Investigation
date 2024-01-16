@@ -66,11 +66,11 @@ export const Login = () => {
     console.log("value :: ", value);
   }; 
 
-  const setGlobalVariables = () => {
-    setUser(selectedValue);
-    setStateCode(stateCodeMap.get(officerInfo.stateCode));
-    setUserBranchId(branchIdMap.get(officerInfo.branchId));
-    setUserBadge(officerInfo.badge);
+  const setGlobalVariables = (rank, stateCode, branchId, badge) => {
+    setUser(rank);
+    setStateCode(stateCode);
+    setUserBranchId(branchId);
+    setUserBadge(badge);
   }
 
   // Function to handle successful login
@@ -108,10 +108,10 @@ export const Login = () => {
 
       if (validity) {
       // if (validityRank) {
-        if (selectedValue === 'Captain') { navigate('/cases-captain'); setGlobalVariables(); }
-        else if (selectedValue === 'Detective') { navigate('/cases-detective'); setGlobalVariables(); }
-        else if (selectedValue === 'Officer') { navigate('/cases-officer'); setGlobalVariables(); }
-        else if (selectedValue === 'Moderator') { navigate('/moderator-home'); setGlobalVariables(); }
+        if (selectedValue === 'Captain') { navigate('/cases-captain'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
+        else if (selectedValue === 'Detective') { navigate('/cases-detective'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
+        else if (selectedValue === 'Officer') { navigate('/cases-officer'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
+        else if (selectedValue === 'Moderator') { navigate('/moderator-home'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
         else { handleValidationFail(); }
       } else {
         handleValidationFail();

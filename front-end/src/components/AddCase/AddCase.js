@@ -4,12 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import './AddCase.css';
-import CaseABI from "./../CasesABI.json";
-import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
+import CaseABI from "./../Cases.json";
+import { waitForTransaction, writeContract } from '@wagmi/core';
+import { useUserBranchIdContext } from '../Context/userBranchIdContext.tsx';
 
 export const AddCase = () => {
 
     let navigate = useNavigate();
+    const { userBranchId } = useUserBranchIdContext();
 
     const [caseNum, setCaseNum] = useState({ id: '' });
     const handleChange = (e) => {
@@ -18,7 +20,6 @@ export const AddCase = () => {
         console.log("params :: ", name)
         console.log("value :: ", value)
     };
-    const caseContractAddress = process.env.REACT_APP_CASE_CONTRACT;
 
     const handleNavigate = (e) => {
         e.preventDefault();
@@ -40,21 +41,27 @@ export const AddCase = () => {
             notify("error", `Case Number is empty`);
         } 
         
-        // call contract
-        const { hash } = await writeContract({
-            address: caseContractAddress,
-            abi: CaseABI.abi,
-            functionName: 'addCase',
-            args: [caseNum.id],
-            chainId: 11155111
-        })
-        console.log("hash :: ", hash)
+        try {
+            // call contract
+            const { hash } = await writeContract({
+                address: process.env.REACT_APP_CASE_CONTRACT,
+                abi: CaseABI,
+                functionName: 'addCase',
+                args: [caseNum.id, userBranchId],
+                chainId: 11155111
+            })
+            console.log("hash :: ", hash)
 
-        // wait for txn
-        const result = await waitForTransaction({
-            hash: hash,
-        })
-        console.log("Transaction result:", result);
+            // wait for txn
+            const result = await waitForTransaction({
+                hash: hash,
+            })
+            console.log("Transaction result:", result);
+        } catch (error) {
+            console.log(error);
+            notify('error', "Failed to add case");
+        }
+        notify('success', "Added case successfully");
     }
 
     return (
