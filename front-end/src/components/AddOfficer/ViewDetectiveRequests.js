@@ -242,6 +242,27 @@ export const ViewDetectiveRequests = () => {
           </div>
         </div>
 
+        {/* Signers */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="signers" className="col-form-label">
+              <b>
+                <em>Signers:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input d-flex flex-wrap">
+              <input
+                type="text"
+                name="signers"
+                id="signers"
+                className="form-control"
+                value={requestDetail.signers}
+                disabled
+              />
+          </div>
+        </div>
+
         {/* Expiry */}
         <div className="row g-3 align-items-center m-3 mb-5">
           <div className="col-2">

@@ -206,6 +206,27 @@ export const ViewOfficerOnboard = () => {
           </div>
         </div>
 
+        {/* Signers */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="signers" className="col-form-label">
+              <b>
+                <em>Signers:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input d-flex flex-wrap">
+              <input
+                type="text"
+                name="signers"
+                id="signers"
+                className="form-control"
+                value={requestDetail.signers}
+                disabled
+              />
+          </div>
+        </div>
+
         {/* Expiry */}
         <div className="row g-3 align-items-center m-3 mb-5">
           <div className="col-2">
@@ -227,15 +248,6 @@ export const ViewOfficerOnboard = () => {
           </div>
         </div>
 
-        {/* sign button */}
-        <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-          type="submit"
-          onClick={async (e) => await handleSubmit(e)}
-          disabled={isButtonDisabled}
-        >
-          Sign
-        </button>
       </form>
     </div>
   );
