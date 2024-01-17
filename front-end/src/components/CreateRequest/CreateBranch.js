@@ -32,7 +32,7 @@ export const CreateBranch = () => {
     signers: address,
     isOpen: true,
   });
-  
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCreateBranchInfo({ ...createBranchInfo, [name]: value });
@@ -176,19 +176,14 @@ export const CreateBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
-                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown">
-                {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+           <input
+              type="number"
+              name="stateCode"
+              id="stateCode"
+              placeholder="Enter State Code Here"
+              className="form-control"
+              onChange={handleChange}
+            ></input>
           </div>
         </div>
 
@@ -202,19 +197,14 @@ export const CreateBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
-                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown">
-                {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+            <input
+              type="text"
+              name="branchId"
+              id="branchId"
+              placeholder="Enter Branch Id Here"
+              className="form-control"
+              onChange={handleChange}
+            ></input>
           </div>
         </div>
 
