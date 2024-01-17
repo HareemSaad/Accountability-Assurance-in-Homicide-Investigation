@@ -6,6 +6,9 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { employmentStatusMap, rankMap } from "../data/data.js";
 import moment from "moment";
+import { waitForTransaction, writeContract } from '@wagmi/core';
+import CaseABI from "./../Cases.json"
+import { keccakString } from "../utils/hashing/keccak-hash.js";
 
 export const ViewDetectiveRequests = () => {
   const { reqId } = useParams();
@@ -17,7 +20,7 @@ export const ViewDetectiveRequests = () => {
   useEffect(() => {
     axios
       .get(`http://localhost:3000/view-detective-requests/:${reqId}`)
-      .then((result) => {setRequestDetail(result.data[0]); console.log(result.data[0])})
+      .then((result) => {setRequestDetail(result.data[0])})
       .catch((err) => console.log("error:: ", err));
   }, []);
 
@@ -28,6 +31,42 @@ export const ViewDetectiveRequests = () => {
       setButtonDisabled(false);
     }, 5000);
     // hareem - send button...
+    try {
+
+      console.log("output:: ", requestDetail);
+      
+      // call contract
+      const { hash } = await writeContract({
+        address: process.env.REACT_APP_CASE_CONTRACT,
+        abi: CaseABI,
+        functionName: 'onboard',
+        args: [
+          requestDetail.nonce,
+          localStorage.getItem("statecode"),
+          requestDetail.verifiedAddress,
+          requestDetail.name,
+          keccakString(requestDetail.legalNumber),
+          keccakString(requestDetail.badge),
+          keccakString(requestDetail.branchId),
+          requestDetail.rank,
+          requestDetail.expiry,
+          requestDetail.signature[0], // amaim back-end not saving signature or signer
+          requestDetail.signer[0]
+        ],
+        chainId: 11155111
+      })
+      console.log("hash :: ", hash)
+
+      // wait for txn
+      const result = await waitForTransaction({
+          hash: hash,
+      })
+      console.log("Transaction result:", result);
+      
+    } catch (error) {
+      console.log(error)
+      notify("error", "Error sending transaction");
+    }
     // axios
     //   .post(`http://localhost:3000/view-detective-requests/:${reqId}`, {
     //     userAddress: userAddress,
