@@ -6,6 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Dropdown from "react-bootstrap/Dropdown";
 import "./createRequests.css";
+import { useAccount } from 'wagmi'
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -15,6 +16,7 @@ import { stateCodeMap, branchIdMap } from "../data/data.js";
 export const UpdateBranch = () => {
   let navigate = useNavigate();
   const [isButtonDisabled, setButtonDisabled] = useState(false);
+  const { address, connector, isConnected, account } = useAccount();
 
   const [expiryDate, setExpiryDate] = useState("");
   const [selectedStateCode, setSelectedStateCode] = useState(null);
@@ -25,6 +27,7 @@ export const UpdateBranch = () => {
     stateCode: "",
     branchId: "",
     expiry: "",
+    signers: address,
     isOpen: true,
   });
 

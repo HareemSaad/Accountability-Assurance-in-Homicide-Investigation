@@ -86,6 +86,11 @@ export const ViewCreateBranch = () => {
 
   const handleSend = async (e) => {
     // hareem handlesend todo
+    e.preventDefault();
+    setButtonDisabled(true);
+    setTimeout(() => {
+      setButtonDisabled(false);
+    }, 5000);
   };
 
   const getDate = (expiryDate) => {

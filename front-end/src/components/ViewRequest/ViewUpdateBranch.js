@@ -4,8 +4,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
+import { readContract } from "@wagmi/core";
 import { useAccount } from 'wagmi';
 import moment from "moment";
+import LedgerABI from "./../Ledger.json";
 
 export const ViewUpdateBranch = () => {
   const { reqId } = useParams();
@@ -13,20 +15,51 @@ export const ViewUpdateBranch = () => {
 
   let navigate = useNavigate();
 
-  // const requestDetail = {
-  //     precinctAddress: 'ABC Road',
-  //     jurisdictionArea: 'XYZ',
-  //     stateCode: '234',
-  //     branchId: 'DKFJ2311',
-  // }
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [requestDetail, setRequestDetail] = useState({});
+  const [isPassedMessage, setIsPassedMessage] = useState("");
+  const [isPassed, setIsPassed] = useState(false);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/view-update-branch/:${reqId}`)
-      .then((result) => setRequestDetail(result.data[0]))
-      .catch((err) => console.log("error:: ", err));
+    const fetchData = () => {
+      axios
+        .get(`http://localhost:3000/view-update-branch/:${reqId}`)
+        .then(async (result) => {
+          setRequestDetail(result.data.document);
+          // console.log("result:: ", result.data);
+
+          if (result.data.document.isOpen == false) {
+            const modCount = await readContract({
+              address: process.env.REACT_APP_LEDGER_CONTRACT,
+              abi: LedgerABI,
+              functionName: "moderatorCount",
+              args: [
+                result.data.document.stateCode, // uint _stateCode
+              ],
+              account: address,
+              chainId: 11155111,
+            });
+
+            const signersCount = BigInt(result.data.document.signers.length);
+            const calculateModerator = (signersCount / modCount) * 100n;
+
+            // console.log("modCount: ", modCount);
+            // console.log("calculateModerator: ", calculateModerator);
+
+            if (calculateModerator > 51) {
+              // hareem todo - send request
+              setIsPassedMessage("Send! Request approved by over 51%.");
+              setIsPassed(true);
+            } else {
+              setIsPassedMessage(
+                "Request not approved. Less than 51% support."
+              );
+            }
+          }
+        })
+        .catch((err) => console.log("error:: ", err));
+    }
+    fetchData();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -40,15 +73,27 @@ export const ViewUpdateBranch = () => {
       .post(`http://localhost:3000/view-update-branch/:${reqId}`, {
         userAddress: address,
       })
-      .then((res) => notify("success", "Signed successfully"))
+      .then((res) => {
+        const message = res.data.message;
+        notify("success", message);
+      })
       .catch((err) => {
         // console.log("error:: ", err);
         notify("error", `An Error Occured when Signing`);
       });
   };
 
+  const handleSend = async (e) => {
+    // hareem handlesend todo
+    e.preventDefault();
+    setButtonDisabled(true);
+    setTimeout(() => {
+      setButtonDisabled(false);
+    }, 5000);
+  };
+
   const getDate = (expiryDate) => {
-    var date = new Date(expiryDate * 1000);
+    const date = new Date(expiryDate * 1000);
     return moment(date).format("MMMM Do YYYY");
   };
 
@@ -148,6 +193,38 @@ export const ViewUpdateBranch = () => {
           </div>
         </div>
 
+        {/* Signers */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="signers" className="col-form-label">
+              <b>
+                <em>Signers:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input d-flex flex-wrap">
+            {(requestDetail.signers ?? []).length === 0 ? (
+              <input
+                type="text"
+                className="form-control mb-2"
+                value="No one has signed yet."
+                disabled
+              />
+            ) : (
+              requestDetail.signers.map((signer, index) => (
+                <input
+                  type="text"
+                  name={`signer-${index}`}
+                  id={`signer-${index}`}
+                  className="form-control signer mb-2"
+                  value={signer}
+                  disabled
+                />
+              ))
+            )}
+          </div>
+        </div>
+
         {/* Expiry */}
         <div className="row g-3 align-items-center m-3 mb-5">
           <div className="col-2">
@@ -170,14 +247,32 @@ export const ViewUpdateBranch = () => {
         </div>
 
         {/* sign button */}
-        <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-          type="submit"
-          onClick={async (e) => await handleSubmit(e)}
-          disabled={isButtonDisabled}
-        >
-          Sign
-        </button>
+        {requestDetail && requestDetail.isOpen ? (
+          <button
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            type="submit"
+            onClick={async (e) => await handleSubmit(e)}
+            disabled={isButtonDisabled}
+          >
+            Sign
+          </button>
+        ) : isPassed ? (
+          <button
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            type="submit"
+            onClick={async (e) => await handleSend(e)}
+            disabled={isButtonDisabled}
+          >
+            {isPassedMessage}
+          </button>
+        ) : (
+          <button
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            disabled="true"
+          >
+            {isPassedMessage}
+          </button>
+        )}
       </form>
     </div>
   );

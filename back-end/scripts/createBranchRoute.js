@@ -72,7 +72,7 @@ router.get('/view-create-branch/:reqId', async (req, res) => {
                 await CreateBranch.updateOne({ 'id': idParam }, { $set: { isOpen: false } });
     
                 // Send the updated document as the response
-                res.status(200).json({ message: 'Document updated successfully', updatedDocument: await CreateBranch.findOne({ 'id': idParam }) });
+                res.status(200).json({ message: 'Document updated successfully', document: await CreateBranch.findOne({ 'id': idParam }) });
             } else {
                 // If expiry date is not greater than current date, no need to update isOpen status
                 res.status(200).json({ message: 'Document not updated', document: request });
