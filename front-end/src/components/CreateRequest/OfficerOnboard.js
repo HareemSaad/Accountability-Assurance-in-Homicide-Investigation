@@ -37,7 +37,7 @@ export const OfficerOnboard = () => {
     employmentStatus: 1,
     expiry: "",
     signature: "",
-    address: address,
+    signers: address,
     isOpen: true,
   });
 
@@ -162,7 +162,10 @@ export const OfficerOnboard = () => {
           axios
             .post(
               "http://localhost:3000/create-request/officer-onboard",
-              officerOnboardInfo
+              {
+                "officerOnboardInfo": officerOnboardInfo, 
+                "signatureOfficerOnboard": signature
+              }
             )
             .then((res) =>
               notify("success", "Officer Onboard Request Created successfully")

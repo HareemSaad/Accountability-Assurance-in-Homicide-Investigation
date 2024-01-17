@@ -1,8 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 const dotenv = require('dotenv').config()
-import { fetchOfficerInfo, validateOfficer } from "../scripts/OfficerInfo";
 
+// moderator page requests - create and view
 const createBranchRoute = require("../scripts/createBranchRoute")
 const OfficerOnboard = require('../scripts/officerOnboardRoute')
 const OfficerOffboard = require('../scripts/officerOffboardRoute')
@@ -12,15 +12,15 @@ const UpdateBranch = require('../scripts/updateBranchRoute')
 const UpdateOfficer = require('../scripts/updateOfficerRoute')
 const TransferCaptain = require('../scripts/transferCaptainRoute')
 const TransferCase = require('../scripts/transferCaseRoute')
+
+// captain request - view only
 const ViewOfficerRequests = require('../scripts/viewOfficerRequests')
 const ViewDetectiveRequests = require('../scripts/viewDetectiveRequests')
 
 const router = express.Router();
 router.use(cors());
 
-router.post("/fetchOfficerInfo", fetchOfficerInfo);
-router.get('/validateOfficer', validateOfficer);
-
+// moderator page requests - create and view
 router.use(createBranchRoute);
 router.use(OfficerOnboard);
 router.use(OfficerOffboard);
@@ -30,6 +30,8 @@ router.use(UpdateBranch);
 router.use(UpdateOfficer);
 router.use(TransferCaptain);
 router.use(TransferCase);
+
+// captain request - view only
 router.use(ViewOfficerRequests)
 router.use(ViewDetectiveRequests)
 

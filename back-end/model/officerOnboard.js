@@ -38,10 +38,10 @@ const OfficerOnboardSchema = new mongoose.Schema ({
         required: true,
     },
     signature: {
-        type: Array
+        type: String
     },
     signers: {
-        type: Array
+        type: String
     },
     expiry: {
         type: Number,

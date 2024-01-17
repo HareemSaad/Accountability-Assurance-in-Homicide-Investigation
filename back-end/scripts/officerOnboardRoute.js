@@ -6,7 +6,8 @@ const OfficerOnboard = require('../model/officerOnboard')
 
 // create officer-onboard request - page
 router.post('/create-request/officer-onboard', async (req, res) => {
-    // console.log("req.body:: ", req.body)
+    // console.log("req.body:: ", req.body['officerOnboardInfo'])
+    
     try {
         let lastId;
         await OfficerOnboard.find().sort({ _id: -1 }).limit(1)  
@@ -19,11 +20,14 @@ router.post('/create-request/officer-onboard', async (req, res) => {
         })
         .catch(err => console.log("errorr:: ", err))
         
-        req.body['id'] = lastId + 1;
-        req.body['nonce'] = Math.floor(Math.random() * 10000);
+        req.body['officerOnboardInfo']['id'] = lastId + 1;
+        req.body['officerOnboardInfo']['nonce'] = Math.floor(Math.random() * 10000);
+        req.body['officerOnboardInfo']['signature'] = req.body['signatureOfficerOnboard']
+        
+        console.log("req.body2:: ", req.body['officerOnboardInfo'])
         
         // input req.body into schema
-        const OfficerOnboardInfo = new OfficerOnboard(req.body)
+        const OfficerOnboardInfo = new OfficerOnboard(req.body['officerOnboardInfo'])
         console.log("OfficerOnboardInfo:: ",OfficerOnboardInfo)
         
         // saving the data in mongodb database
