@@ -3,6 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAccount } from 'wagmi'
 import axios from "axios";
 import "./createRequests.css";
 import moment from "moment";
@@ -14,6 +15,8 @@ import { stateCodeMap, branchIdMap } from "../data/data.js";
 
 export const CreateBranch = () => {
   let navigate = useNavigate();
+  const { address, connector, isConnected, account } = useAccount();
+
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
@@ -25,9 +28,11 @@ export const CreateBranch = () => {
     stateCode: "",
     branchId: "",
     expiry: "",
+    // signature: "",
+    signers: address,
     isOpen: true,
   });
-
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setCreateBranchInfo({ ...createBranchInfo, [name]: value });

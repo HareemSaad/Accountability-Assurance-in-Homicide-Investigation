@@ -175,7 +175,7 @@ export const ViewTrusteeRequest = () => {
         {/* Signers */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
-            <label htmlFor="branchId" className="col-form-label">
+            <label htmlFor="signers" className="col-form-label">
               <b>
                 <em>Signers:</em>
               </b>
