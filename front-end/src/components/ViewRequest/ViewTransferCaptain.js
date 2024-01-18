@@ -125,6 +125,27 @@ export const ViewTransferCaptain = () => {
           </div>
         </div>
 
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="number"
+              name="stateCode"
+              id="stateCode"
+              className="form-control"
+              value={requestDetail.stateCode}
+              disabled
+            ></input>
+          </div>
+        </div>
+
         {/* Branch Id */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">

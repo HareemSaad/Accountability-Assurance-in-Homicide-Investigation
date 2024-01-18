@@ -5,7 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap, branchIdMap } from "../data/data.js";
+import { stateCodeMap, employmentStatusMap, rankMap, branchIdMap } from "../data/data.js";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -18,6 +18,7 @@ export const OfficerOffboard = () => {
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   // use states for dropdowns
+  const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedRankValue, setSelectedRankValue] = useState(null);
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
@@ -27,6 +28,7 @@ export const OfficerOffboard = () => {
     name: "",
     legalNumber: "",
     badge: "",
+    stateCode: "",
     branchId: "",
     rank: "",
     employmentStatus: "",
@@ -57,6 +59,8 @@ export const OfficerOffboard = () => {
       notify("error", `Legal Number is empty`);
     } else if (OfficerOffboardInfo.badge === "") {
       notify("error", `Badge is empty`);
+    } else if (OfficerOffboardInfo.stateCode === "") {
+      notify("error", `State Code is empty`);
     } else if (OfficerOffboardInfo.branchId === "") {
       notify("error", `Branch Id is empty`);
     } else if (
@@ -93,6 +97,13 @@ export const OfficerOffboard = () => {
         });
     }
   };
+
+  // Function to handle state code dropdown selection
+  const handleStateCodeDropdownSelect = (categoryValue) => {
+    setSelectedStateCode(categoryValue);
+    const name = "stateCode";
+    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
+  }
 
   // Function to handle dropdown item selection
   const handleRankDropdownSelect = (categoryValue) => {
@@ -230,6 +241,32 @@ export const OfficerOffboard = () => {
               className="form-control"
               onChange={handleChange}
             ></input>
+          </div>
+        </div>
+
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
+                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(stateCodeMap).map(([key, value]) => (
+                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

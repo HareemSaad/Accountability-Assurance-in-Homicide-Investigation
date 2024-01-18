@@ -25,6 +25,7 @@ export const OfficerOnboard = () => {
   const { address, connector, isConnected, account } = useAccount();
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
+  const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedRankValue, setSelectedRankValue] = useState(null);
   const [officerOnboardInfo, setOfficerOnboardInfo] = useState({
@@ -32,6 +33,7 @@ export const OfficerOnboard = () => {
     name: "",
     legalNumber: "",
     badge: "",
+    stateCode: "",
     branchId: "",
     rank: "",
     employmentStatus: 1,
@@ -60,6 +62,8 @@ export const OfficerOnboard = () => {
       notify("error", `Legal Number is empty`);
     } else if (officerOnboardInfo.badge === "") {
       notify("error", `Badge is empty`);
+    } else if (officerOnboardInfo.stateCode === "") {
+      notify("error", `State Code is empty`);
     } else if (officerOnboardInfo.branchId === "") {
       notify("error", `Branch Id is empty`);
     } else if (
@@ -218,6 +222,13 @@ export const OfficerOnboard = () => {
     }
   };
 
+  // Function to handle state code dropdown selection
+  const handleStateCodeDropdownSelect = (categoryValue) => {
+    setSelectedStateCode(categoryValue);
+    const name = "stateCode";
+    setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: categoryValue });
+  }
+
   // Function to handle dropdown item selection
   const handleRankDropdownSelect = (categoryValue) => {
     setSelectedRankValue(categoryValue);
@@ -344,6 +355,32 @@ export const OfficerOnboard = () => {
               className="form-control"
               onChange={handleChange}
             ></input>
+          </div>
+        </div>
+
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
+                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(stateCodeMap).map(([key, value]) => (
+                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

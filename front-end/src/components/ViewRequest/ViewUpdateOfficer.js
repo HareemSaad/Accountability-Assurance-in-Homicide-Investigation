@@ -148,6 +148,27 @@ export const ViewUpdateOfficer = () => {
           </div>
         </div>
 
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="number"
+              name="stateCode"
+              id="stateCode"
+              className="form-control"
+              value={requestDetail.stateCode}
+              disabled
+            ></input>
+          </div>
+        </div>
+
         {/* Branch Id */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -207,7 +228,7 @@ export const ViewUpdateOfficer = () => {
               name="employmentStatus"
               id="employmentStatus"
               className="form-control"
-              value={employmentStatusMap.get(requestDetail.employmentStatus)}
+              value={employmentStatusMap.get(`${requestDetail.employmentStatus}`)}
               disabled
             ></input>
           </div>
@@ -228,7 +249,7 @@ export const ViewUpdateOfficer = () => {
               name="updateType"
               id="updateType"
               className="form-control"
-              value={updateTypeMap.get(requestDetail.updateType)}
+              value={updateTypeMap.get(`${requestDetail.updateType}`)}
               disabled
             ></input>
           </div>

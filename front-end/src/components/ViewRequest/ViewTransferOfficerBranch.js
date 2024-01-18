@@ -177,6 +177,27 @@ export const ViewTransferOfficerBranch = () => {
           </div>
         </div>
 
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="number"
+              name="stateCode"
+              id="stateCode"
+              className="form-control"
+              value={requestDetail.stateCode}
+              disabled
+            ></input>
+          </div>
+        </div>
+
         {/* Branch Id */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -197,6 +218,7 @@ export const ViewTransferOfficerBranch = () => {
             ></input>
           </div>
         </div>
+
         {/* To Branch Id */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -255,7 +277,7 @@ export const ViewTransferOfficerBranch = () => {
               name="employmentStatus"
               id="employmentStatus"
               className="form-control"
-              value={employmentStatusMap.get(requestDetail.employmentStatus)}
+              value={employmentStatusMap.get(`${requestDetail.employmentStatus}`)}
               disabled
             ></input>
           </div>

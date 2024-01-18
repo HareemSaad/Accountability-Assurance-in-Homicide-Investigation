@@ -5,7 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap, branchIdMap, updateTypeMap } from "../data/data.js";
+import { stateCodeMap, employmentStatusMap, rankMap, branchIdMap, updateTypeMap } from "../data/data.js";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -21,6 +21,7 @@ export const UpdateOfficer = () => {
   // const [employeeStatus, setEmployeeStatus] = useState("");
 
   // Function to handle dropdown item selection
+  const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedUpdateType, setSelectedUpdateType] = useState(null);
@@ -30,6 +31,7 @@ export const UpdateOfficer = () => {
     name: "",
     legalNumber: "",
     badge: "",
+    stateCode: "",
     branchId: "",
     rank: "",
     employmentStatus: "",
@@ -55,14 +57,14 @@ export const UpdateOfficer = () => {
       notify("error", `Legal Number is empty`);
     } else if (updateOfficerInfo.badge === "") {
       notify("error", `Badge is empty`);
+    } else if (updateOfficerInfo.stateCode === "") {
+      notify("error", `State Code is empty`);
     } else if (updateOfficerInfo.branchId === "") {
       notify("error", `Branch Id is empty`);
     } else if (updateOfficerInfo.rank === "" || updateOfficerInfo.rank === 0) {
       notify("error", `Select Officer Rank`);
     } else if (
-      updateOfficerInfo.employmentStatus === "" ||
-      updateOfficerInfo.employmentStatus === 0
-    ) {
+      updateOfficerInfo.employmentStatus === "") {
       notify("error", `Select Employment Status`);
     } else if (updateOfficerInfo.updateType === "") {
       notify("error", `Select Update Type`);
@@ -90,6 +92,19 @@ export const UpdateOfficer = () => {
         });
     }
   };  
+
+  // useEffect(() => {
+  //   console.log("selectedStatusValue:: ", selectedStatusValue);
+  //   console.log("getStatusValue:: ", stateCodeMap.get(selectedStatusValue));
+  // }, [selectedStatusValue])
+  
+
+  // Function to handle state code dropdown selection
+  const handleStateCodeDropdownSelect = (categoryValue) => {
+    setSelectedStateCode(categoryValue);
+    const name = "stateCode";
+    setUpdateOfficerInfo({ ...updateOfficerInfo, [name]: categoryValue });
+  }
 
   // Function to handle branch id dropdown selection
   const handleBranchIdDropdownSelect = (categoryValue) => {
@@ -235,6 +250,32 @@ export const UpdateOfficer = () => {
               className="form-control"
               onChange={handleChange}
             ></input>
+          </div>
+        </div>
+
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
+                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(stateCodeMap).map(([key, value]) => (
+                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

@@ -1,8 +1,8 @@
 export const employmentStatusMap = new Map();
-employmentStatusMap.set(0, "Inactive")
-employmentStatusMap.set(1, "Active")
-employmentStatusMap.set(2, "Retired")
-employmentStatusMap.set(3, "Fired")
+employmentStatusMap.set("0", "Inactive") 
+employmentStatusMap.set("1", "Active")
+employmentStatusMap.set("2", "Retired")
+employmentStatusMap.set("3", "Fired")
 
 export const rankMap = new Map();
 rankMap.set(1, "Officer")
@@ -17,9 +17,9 @@ export const branchIdMap = new Map();
 branchIdMap.set("PRECINCT 1", "PRECINCT 1")
 
 export const updateTypeMap = new Map();
-updateTypeMap.set(0, "Address")
-updateTypeMap.set(1, "Name")
-updateTypeMap.set(2, "Badge")
+updateTypeMap.set("0", "Address")
+updateTypeMap.set("1", "Name")
+updateTypeMap.set("2", "Badge")
 
 export const ONBOARD_REQUEST_TYPEHASH = "0xa65232949d0eaed8dfcb6f03cec2c2ac850c9b714568c8ddfe9a736d734b3c60";
 export const LEDGER_DOMAIN_HASH = "0x12cb74dffbe65b86ab84fa31e2d59855a67f3d073a66c2a6a3b4b6d8d22c7404";

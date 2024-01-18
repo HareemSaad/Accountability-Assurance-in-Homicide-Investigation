@@ -10,7 +10,7 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
-import { branchIdMap } from "../data/data.js";
+import { stateCodeMap, branchIdMap } from "../data/data.js";
 
 
 export const TransferCase = () => {
@@ -19,12 +19,14 @@ export const TransferCase = () => {
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
 
+  const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedToBranchId, setSelectedToBranchId] = useState(null);
   const [selectedFromBranchId, setSelectedFromBranchId] = useState(null);
   const [transferCaseInfo, setTransferCaseInfo] = useState({
     fromCaptain: "",
     toCaptain: "",
     caseId: "",
+    stateCode: "",
     fromBranchId: "",
     toBranchId: "",
     expiry: "",
@@ -46,6 +48,8 @@ export const TransferCase = () => {
       notify("error", `To Captain is empty`);
     } else if (transferCaseInfo.caseId === "") {
       notify("error", `Case Id is empty`);
+    } else if (transferCaseInfo.stateCode === "") {
+      notify("error", `State Code is empty`);
     } else if (transferCaseInfo.toBranchId === "") {
       notify("error", `To Branch Id is empty`);
     } else if (transferCaseInfo.fromBranchId === "") {
@@ -74,6 +78,13 @@ export const TransferCase = () => {
         });
     }
   };
+
+  // Function to handle state code dropdown selection
+  const handleStateCodeDropdownSelect = (categoryValue) => {
+    setSelectedStateCode(categoryValue);
+    const name = "stateCode";
+    setTransferCaseInfo({ ...transferCaseInfo, [name]: categoryValue });
+  }
 
   // Function to handle to branch id dropdown selection
   const handleToBranchIdDropdownSelect = (categoryValue) => {
@@ -180,6 +191,32 @@ export const TransferCase = () => {
               className="form-control"
               onChange={handleChange}
             ></input>
+          </div>
+        </div>
+
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
+                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(stateCodeMap).map(([key, value]) => (
+                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

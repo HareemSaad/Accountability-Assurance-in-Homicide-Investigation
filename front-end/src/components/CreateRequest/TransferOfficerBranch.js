@@ -5,7 +5,7 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
-import { employmentStatusMap, rankMap, branchIdMap } from "../data/data.js";
+import { stateCodeMap, employmentStatusMap, rankMap, branchIdMap } from "../data/data.js";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
@@ -21,6 +21,7 @@ export const TransferOfficerBranch = () => {
   // const [employeeStatus, setEmployeeStatus] = useState("");
 
   // Function to handle dropdown item selection
+  const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedToBranchId, setSelectedToBranchId] = useState(null);
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
@@ -30,6 +31,7 @@ export const TransferOfficerBranch = () => {
     name: "",
     legalNumber: "",
     badge: "",
+    stateCode: "",
     branchId: "",
     toBranchId: "",
     rank: "",
@@ -65,6 +67,8 @@ export const TransferOfficerBranch = () => {
       notify("error", `Legal Number is empty`);
     } else if (transferOfficerInfo.badge === "") {
       notify("error", `Badge is empty`);
+    } else if (transferOfficerInfo.stateCode === "") {
+      notify("error", `State Code is empty`);
     } else if (transferOfficerInfo.branchId === ""
     ) {
       notify("error", `Branch Id is empty`);
@@ -93,17 +97,24 @@ export const TransferOfficerBranch = () => {
           transferOfficerInfo
         )
         .then((res) =>
-          notify("success", "Update Officer Request Created successfully")
+          notify("success", "Transfer Officer Branch Request Created successfully")
         )
         .catch((err) => {
           // console.log("error:: ", err);
           notify(
             "error",
-            `An Error Occured when Creating Update Officer Request`
+            `An Error Occured when Creating Transfer Officer Branch Request`
           );
         });
     }
   };
+
+  // Function to handle state code dropdown selection
+  const handleStateCodeDropdownSelect = (categoryValue) => {
+    setSelectedStateCode(categoryValue);
+    const name = "stateCode";
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
+  }
   
   // Function to handle branch id dropdown selection
   const handleBranchIdDropdownSelect = (categoryValue) => {
@@ -245,6 +256,32 @@ export const TransferOfficerBranch = () => {
               className="form-control"
               onChange={handleChange}
             ></input>
+          </div>
+        </div>
+
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <Dropdown>
+              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
+                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown">
+                {Array.from(stateCodeMap).map(([key, value]) => (
+                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                    {value}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
