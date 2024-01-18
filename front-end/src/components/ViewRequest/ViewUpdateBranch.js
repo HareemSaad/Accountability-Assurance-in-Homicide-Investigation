@@ -17,7 +17,7 @@ export const ViewUpdateBranch = () => {
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [requestDetail, setRequestDetail] = useState({});
-  const [isPassedMessage, setIsPassedMessage] = useState("");
+  const [isPassedMessage, setIsPassedMessage] = useState("Sign");
   const [isPassed, setIsPassed] = useState(false);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export const ViewUpdateBranch = () => {
           setRequestDetail(result.data.document);
           // console.log("result:: ", result.data);
 
-          if (result.data.document.isOpen == false) {
+          if (result.data.document.isOpen) {
             const modCount = await readContract({
               address: process.env.REACT_APP_LEDGER_CONTRACT,
               abi: LedgerABI,
@@ -40,21 +40,26 @@ export const ViewUpdateBranch = () => {
               chainId: 11155111,
             });
 
-            const signersCount = BigInt(result.data.document.signers.length);
-            const calculateModerator = (signersCount / modCount) * 100n;
+            if (modCount !== 0n) {
+              const signersCount = BigInt(result.data.document.signers.length);
+              const calculateModerator = (signersCount / modCount) * 100n;
 
-            // console.log("modCount: ", modCount);
-            // console.log("calculateModerator: ", calculateModerator);
+              if (calculateModerator >= 51n) {
+                // hareem todo - send request
+                setIsPassedMessage("Send! Request approved by over 51%.");
+                setIsPassed(true);
+              } 
+              // console.log("modCount: ", modCount);
+              // console.log("calculateModerator: ", calculateModerator);
 
-            if (calculateModerator > 51) {
-              // hareem todo - send request
-              setIsPassedMessage("Send! Request approved by over 51%.");
-              setIsPassed(true);
             } else {
-              setIsPassedMessage(
-                "Request not approved. Less than 51% support."
-              );
+              // Handle the case when modCount is 0
+              notify("error", "No moderator in the State Code");
+              setIsPassedMessage("Request not approved. Less than 51% support.");
             }
+
+          } else {
+              setIsPassedMessage("Request not approved. Less than 51% support.");
           }
         })
         .catch((err) => console.log("error:: ", err));
@@ -252,15 +257,6 @@ export const ViewUpdateBranch = () => {
             className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
             type="submit"
             onClick={async (e) => await handleSubmit(e)}
-            disabled={isButtonDisabled}
-          >
-            Sign
-          </button>
-        ) : isPassed ? (
-          <button
-            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-            type="submit"
-            onClick={async (e) => await handleSend(e)}
             disabled={isButtonDisabled}
           >
             {isPassedMessage}
