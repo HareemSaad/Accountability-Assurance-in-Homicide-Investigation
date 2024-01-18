@@ -42,9 +42,17 @@ router.post('/create-request/transfer-captain', async (req, res) => {
 
 // view all transfer-captain requests - page
 router.get('/view-transfer-captain', async (req, res) => {
-    await TransferCaptain.find({})
-    .then(requests => res.send(requests))
-    .catch(err => console.log("errorr:: ", err))
+    // console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+
+    await TransferCaptain.find({ stateCode: userStateCode })
+    .then(requests => {
+        res.send(requests);
+    })
+    .catch(err => {
+        // console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
 })
 
 // view details of a transfer-captain request - page

@@ -41,7 +41,7 @@ router.post('/create-request/create-branch', async (req, res) => {
 
 // view all create branch requests - page
 router.get('/view-create-branch', async (req, res) => {
-    console.log("req.query:: ", req.query.userStateCode)
+    // console.log("req.query:: ", req.query.userStateCode)
     const userStateCode = req.query.userStateCode;
 
     await CreateBranch.find({ stateCode: userStateCode })

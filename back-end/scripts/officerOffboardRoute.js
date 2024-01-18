@@ -42,9 +42,17 @@ router.post('/create-request/officer-offboard', async (req, res) => {
 
 // view all officer-offboard requests - page
 router.get('/view-officer-offboard', async (req, res) => {
-    await OfficerOffboard.find({})
-    .then(requests => res.send(requests))
-    .catch(err => console.log("errorr:: ", err))
+    // console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+
+    await OfficerOffboard.find({ stateCode: userStateCode })
+    .then(requests => {
+        res.send(requests);
+    })
+    .catch(err => {
+        // console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
 })
 
 // view details of a officer-offboard request - page

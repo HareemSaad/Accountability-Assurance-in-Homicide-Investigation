@@ -41,9 +41,17 @@ router.post('/create-request/update-officer', async (req, res) => {
 
 // view all Update Officer requests - page
 router.get('/view-update-officer', async (req, res) => {
-    await UpdateOfficer.find({})
-    .then(requests => res.send(requests))
-    .catch(err => console.log("errorr:: ", err))
+    // console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+
+    await UpdateOfficer.find({ stateCode: userStateCode })
+    .then(requests => {
+        res.send(requests);
+    })
+    .catch(err => {
+        // console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
 })
 
 // view details of a Update Officer request - page

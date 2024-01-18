@@ -42,9 +42,17 @@ router.post('/create-request/transfer-case', async (req, res) => {
 
 // view all transfer-case requests - page
 router.get('/view-transfer-case', async (req, res) => {
-    await TransferCase.find({})
-    .then(requests => res.send(requests))
-    .catch(err => console.log("errorr:: ", err))
+    // console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+
+    await TransferCase.find({ stateCode: userStateCode })
+    .then(requests => {
+        res.send(requests);
+    })
+    .catch(err => {
+        // console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
 })
 
 // view details of a transfer-case request - page

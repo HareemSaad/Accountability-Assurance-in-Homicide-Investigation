@@ -41,9 +41,17 @@ router.post('/create-request/transfer-officer-branch', async (req, res) => {
 
 // view all Update Officer requests - page
 router.get('/view-transfer-officer-branch', async (req, res) => {
-    await TransferOfficerBranch.find({})
-    .then(requests => res.send(requests))
-    .catch(err => console.log("errorr:: ", err))
+    // console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+
+    await TransferOfficerBranch.find({ stateCode: userStateCode })
+    .then(requests => {
+        res.send(requests);
+    })
+    .catch(err => {
+        // console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
 })
 
 // view details of a Update Officer request - page

@@ -46,9 +46,17 @@ router.post('/create-request/officer-onboard', async (req, res) => {
 
 // view all officer-onboard requests - page
 router.get('/view-officer-onboard', async (req, res) => {
-    await OfficerOnboard.find({})
-    .then(requests => res.send(requests))
-    .catch(err => console.log("errorr:: ", err))
+    console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+
+    await OfficerOnboard.find({ stateCode: userStateCode })
+    .then(requests => {
+        res.send(requests);
+    })
+    .catch(err => {
+        // console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
 })
 
 // view details of a officer-onboard request - page
