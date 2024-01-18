@@ -16,12 +16,26 @@ export const ViewTrusteeRequest = () => {
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [requestDetail, setRequestDetail] = useState({});
+  const [isPassedMessage, setIsPassedMessage] = useState("Sign");
+  const [isPassed, setIsPassed] = useState(false);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/view-trustee-request/:${reqId}`)
-      .then((result) => setRequestDetail(result.data[0]))
-      .catch((err) => console.log("error:: ", err));
+    const fetchData = () => {
+      axios
+        .get(`http://localhost:3000/view-trustee-request/:${reqId}`)
+        .then((result) => {
+          setRequestDetail(result.data.document);
+          if (result.data.document.signers.length > 0) {
+            setIsPassedMessage("Request approved! Send.");
+            setIsPassed(true);
+          }
+          else {
+            setIsPassedMessage("Request not approved.");
+          }
+        })
+        .catch((err) => console.log("error:: ", err));
+    }
+    fetchData();
   }, []);
 
   // const requestDetail = {
@@ -32,7 +46,7 @@ export const ViewTrusteeRequest = () => {
   //     signer: ['0X24335faerw', '0Xkdfa3245325', '0Xklouwrn34iy08', '0Xkdfa3245325', '0X24335faerw', '0X24335faerw', '0Xkdfa3245325', '0Xklouwrn34iy08', '0Xkdfa3245325', '0X24335faerw', '0Xklouwrn34iy08', '0Xkdfa3245325', '0X24335faerw', '0Xkdfa3245325', '0Xklouwrn34iy08', '0Xkdfa3245325', '0X24335faerw', '0X24335faerw', '0Xkdfa3245325', '0Xklouwrn34iy08', '0Xkdfa3245325', '0X24335faerw', '0Xklouwrn34iy08', '0Xklouwrn34iy080Xkdfa32453250Xklouwrn34iy08']
   // };
 
-  const handleSubmit = async (e) => {
+  const handleSign = async (e) => {
     e.preventDefault();
     setButtonDisabled(true);
     setTimeout(() => {
@@ -43,11 +57,22 @@ export const ViewTrusteeRequest = () => {
       .post(`http://localhost:3000/view-trustee-request/:${reqId}`, {
         userAddress: address,
       })
-      .then((res) => notify("success", "Signed successfully"))
+      .then((res) => {
+        const message = res.data.message;
+        notify("success", message);
+      })
       .catch((err) => {
         // console.log("error:: ", err);
         notify("error", `An Error Occured when Signing`);
       });
+  };
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    setButtonDisabled(true);
+    setTimeout(() => {
+      setButtonDisabled(false);
+    }, 5000);
   };
 
   const getDate = (expiryDate) => {
@@ -151,6 +176,27 @@ export const ViewTrusteeRequest = () => {
           </div>
         </div>
 
+        {/* State Code */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="stateCode" className="col-form-label">
+              <b>
+                <em>State Code:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="number"
+              name="stateCode"
+              id="stateCode"
+              className="form-control"
+              value={requestDetail.stateCode}
+              disabled
+            ></input>
+          </div>
+        </div>
+
         {/* Branch Id */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -225,15 +271,46 @@ export const ViewTrusteeRequest = () => {
           </div>
         </div>
 
-        {/* sign button */}
-        <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-          type="submit"
-          onClick={async (e) => await handleSubmit(e)}
-          disabled={isButtonDisabled}
-        >
-          Sign
-        </button>
+        {/* button */}
+        {requestDetail && requestDetail.isOpen ? 
+          localStorage.getItem("rank") === "Captain" && isPassed ? 
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSend(e)}
+              disabled={isButtonDisabled}
+            >
+              {/* send */}
+              {isPassedMessage}
+            </button>
+          : localStorage.getItem("rank") === "Captain" && isPassed === false ?
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              // onClick={async (e) => await handleSend(e)}
+              disabled="true"
+              >
+              No one has signed yet.
+            </button>
+          :
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSign(e)}
+              disabled={isButtonDisabled}
+              >
+              Sign
+            </button>
+        : 
+          <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              // onClick={async (e) => await handleSubmit(e)}
+              disabled="true"
+            >
+              {/* cant sign or send */}
+              {isPassedMessage}
+            </button>}
       </form>
     </div>
   );

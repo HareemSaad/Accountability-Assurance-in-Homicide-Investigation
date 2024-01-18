@@ -60,3 +60,12 @@ body {
   color: white;
   font-weight: bold;
 }
+
+.page-dropdown {
+  margin: 1.6rem 3rem 1.2rem 0rem;
+}
+
+.page-dropdown-item {
+  border: 0.32rem solid black;
+  font-size: large;
+}

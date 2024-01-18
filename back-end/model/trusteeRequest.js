@@ -21,6 +21,10 @@ const TrusteeRequestSchema = new mongoose.Schema ({
         type: String,
         required: true,
     },
+    stateCode: {
+        type: Number,
+        required: true,
+    },
     branchId: {
         type: String,
         required: true,
