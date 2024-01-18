@@ -42,9 +42,17 @@ router.post('/create-request/update-branch', async (req, res) => {
 
 // view all Update Branch requests - page
 router.get('/view-update-branch', async (req, res) => {
-    await UpdateBranch.find({})
-    .then(requests => res.send(requests))
-    .catch(err => console.log("errorr:: ", err))
+    console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+
+    await UpdateBranch.find({ stateCode: userStateCode })
+    .then(requests => {
+        res.send(requests);
+    })
+    .catch(err => {
+        console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
 })
 
 // view details of a Update Branch request - page

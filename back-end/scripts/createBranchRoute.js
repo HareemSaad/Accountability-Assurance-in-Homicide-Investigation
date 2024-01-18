@@ -41,16 +41,22 @@ router.post('/create-request/create-branch', async (req, res) => {
 
 // view all create branch requests - page
 router.get('/view-create-branch', async (req, res) => {
-    await CreateBranch.find({})
+    console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+
+    await CreateBranch.find({ stateCode: userStateCode })
     .then(requests => {
         res.send(requests);
     })
-    .catch(err => console.log("errorr:: ", err))
+    .catch(err => {
+        // console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
+
 })
 
 // view details of a create branch request - page
 router.get('/view-create-branch/:reqId', async (req, res) => {
-    // console.log("req.params:: ", req.params)
     let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
     // console.log("matches:: ", idParam)
 
@@ -61,7 +67,7 @@ router.get('/view-create-branch/:reqId', async (req, res) => {
         if (request) {
             // Convert Unix timestamp to JavaScript Date object
             const expiryDate = new Date(request.expiry * 1000);
-            console.log("expiryDate: ", expiryDate)
+            // console.log("expiryDate: ", expiryDate)
     
             // Get the current date
             const currentDate = new Date();

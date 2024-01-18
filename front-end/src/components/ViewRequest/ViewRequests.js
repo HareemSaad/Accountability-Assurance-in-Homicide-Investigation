@@ -12,17 +12,14 @@ export const ViewRequests = () => {
 
     const [allRequests, setAllRequests] = useState([]);
     let navigate = useNavigate();
-    const stateCode = localStorage.getItem("statecode");
+    // const stateCode = localStorage.getItem("statecode");
 
     useEffect(() => {
-        // const allRequests = [{ id: 13, status: "Open" }, { id: 27, status: "Open" }, { id: 36, status: "Open" }, { id: 45, status: "Open" }];
-        // setAllRequests(allRequests);
-        // axios.get(`http://localhost:3000/view-create-branch`)
-        axios.get(`http://localhost:3000/${reqName}`)
+        axios.get(`http://localhost:3000/${reqName}`, { params: {"userStateCode": localStorage.getItem("statecode")}})
         .then(result => {setAllRequests(result.data); console.log("result.data:: ", result.data)})
         .catch(err => console.log("error:: ", err))
 
-        console.log("stateCode: ", stateCode) 
+        // console.log("stateCode: ", stateCode) 
     }, []);
 
     function print(cardId) {
