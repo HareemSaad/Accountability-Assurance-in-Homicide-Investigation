@@ -21,6 +21,10 @@ const TransferCaseSchema = new mongoose.Schema ({
         type: Number,
         required: true,
     },
+    stateCode: {
+        type: Number,
+        required: true,
+    },
     fromBranchId: {
         type: String,
         required: true,
