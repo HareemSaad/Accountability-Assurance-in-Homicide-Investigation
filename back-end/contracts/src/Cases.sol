@@ -243,7 +243,6 @@ contract Cases is EIP712 {
         if(newCase.status == CaseStatus.NULL) { revert InvalidCase(); }
         if(!newCase.officers[msg.sender]) { revert InvalidOfficer(); }
 
-        CaseStatus oldStatus = newCase.status;
         newCase.status = _status;
 
         emit CaseUpdated(_caseId, msg.sender, newCase.branch, _status);
