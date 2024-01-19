@@ -625,6 +625,7 @@ contract Ledger is EIP712 {
     /// @param _signature Signature of the moderator authorizing the update
     /// @param _signer Address of the moderator who signed the update request
     /// @param _expiry expiry date
+    /// @dev make sure that this address is kicked from all cases before calling other wise new address will have to be added to its cases 
     function updateAddress(
         uint _nonce,
         uint _stateCode,
