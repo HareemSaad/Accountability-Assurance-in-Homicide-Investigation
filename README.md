@@ -51,3 +51,13 @@ UpdateBranch: 0x0d24a3a9db51f0d073a7c0c9b71aff01a5b4bf05
 UpdateOfficer: 0x86089da9793f3ba732d44a7f6beb122aea4fa8b0
 
 ```
+
+## Subgraph Deployment
+```
+graph init --studio <SLUG> # use interactive console to add first contract
+cd <SUBGRAPH_FOLDER>
+graph add <CONTRACT_ADDRESS --abi <PATH_TO_ABI> --contract-name <NAME>
+
+
+
+```

@@ -1,7 +1,4 @@
 specVersion: 0.0.5
-features: 
-  - fullTextSearch
-  - ipfsOnEthereumContracts
 schema:
   file: ./schema.graphql
 dataSources:
@@ -9,9 +6,9 @@ dataSources:
     name: Ledger
     network: sepolia
     source:
-      address: "0xa4F0cB2AacA2c58e0A9C0611644BF03e224B9859"
+      address: "0x52Eb33299a6Ab2BD09AdB0d7A5E422c5Bc004eFA"
       abi: Ledger
-      startBlock: 5114125
+      startBlock: 5114806
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -44,53 +41,8 @@ dataSources:
           handler: handleOfficerNameUpdated
         - event: OfficerTransferred(indexed address,indexed bytes32,indexed bytes32)
           handler: handleOfficerTransferred
-        - event: Onboard(indexed address,string,bytes32,bytes32,indexed bytes32,indexed
-            uint8,uint256,address)
+        - event: Onboard(indexed address,string,bytes32,bytes32,indexed bytes32,indexed uint8,uint256,address)
           handler: handleOnboard
         - event: Promotion(indexed address,indexed uint8,indexed uint8)
           handler: handlePromotion
       file: ./src/ledger.ts
-  - kind: ethereum
-    name: Cases
-    network: sepolia
-    source:
-      address: "0xf89Dc9D18c3bd4F0bCf76c1755eBa308FA9Ff906"
-      abi: Cases
-      startBlock: 5114125
-    mapping:
-      kind: ethereum/events
-      apiVersion: 0.0.7
-      language: wasm/assemblyscript
-      entities:
-        - AddOfficerInCase
-        - CaseUpdated
-        - CasesEIP712DomainChanged
-        - EvidenceApproved
-        - NewEvidenceInCase
-        - NewParticipantInCase
-        - ParticipantApproved
-        - RemoveOfficerInCase
-        - Trustee
-      abis:
-        - name: Cases
-          file: ./abis/Cases.json
-      eventHandlers:
-        - event: AddOfficerInCase(uint256,indexed address,indexed address)
-          handler: handleAddOfficerInCase
-        - event: CaseUpdated(indexed uint256,indexed address,bytes32,indexed uint8)
-          handler: handleCaseUpdated
-        - event: EIP712DomainChanged()
-          handler: handleEIP712DomainChanged
-        - event: EvidenceApproved(uint48)
-          handler: handleEvidenceApproved
-        - event: NewEvidenceInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
-          handler: handleNewEvidenceInCase
-        - event: NewParticipantInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
-          handler: handleNewParticipantInCase
-        - event: ParticipantApproved(uint48)
-          handler: handleParticipantApproved
-        - event: RemoveOfficerInCase(uint256,indexed address,indexed address)
-          handler: handleRemoveOfficerInCase
-        - event: Trustee(uint256,indexed bytes32,indexed address,indexed address,bool)
-          handler: handleTrustee
-      file: ./src/cases.ts
