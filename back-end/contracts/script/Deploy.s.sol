@@ -25,8 +25,8 @@ contract OfficerScript is Script {
             8888,
             vm.addr(deployer),
             "Alice",
-            "9876086",
-            "MOD-1"
+            keccak256(abi.encode("9876086")),
+            keccak256(abi.encode("MOD-1"))
         );
 
         cases = new Cases(address(ledger));
