@@ -19,6 +19,10 @@ import {
   ParticipantApproved,
   RemoveOfficerInCase,
   Trustee,
+  Case,
+  Officer,
+  Evidence,
+  Participant
 } from "../generated/schema"
 
 export function handleAddOfficerInCase(event: AddOfficerInCaseEvent): void {
@@ -34,6 +38,29 @@ export function handleAddOfficerInCase(event: AddOfficerInCaseEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  let officer = Officer.load(event.params.officer)
+  if (!officer) return 
+  //  load case
+  let _case = Case.load(event.params.caseId.toString())
+  if(!_case) {
+    return
+  } else {
+    // if rank == 3 add to captain array
+    if(officer.rank == 3) {
+      let temp = _case.captain!
+      temp.push(officer.id)
+      _case.captain = temp
+    }
+
+    // add to officer array regardless
+    let temp = _case.officers!
+    temp.push(officer.id)
+    _case.officers = temp
+  }
+
+  _case.save()
 }
 
 export function handleCaseUpdated(event: CaseUpdatedEvent): void {
@@ -50,6 +77,31 @@ export function handleCaseUpdated(event: CaseUpdatedEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  //  load case
+  let _case = Case.load(event.params.caseId.toString())
+  if(!_case) {
+    _case = new Case(event.params.caseId.toString())
+  } 
+
+  // add captain
+  let temp = _case.captain!
+  temp.push(event.params.initiator)
+  _case.captain = temp
+
+  // add officer
+  temp = _case.officers!
+  temp.push(event.params.initiator)
+  _case.officers = temp
+  
+  _case.status =  event.params.status
+  _case.branch = event.params.branch
+  _case.blockNumber = event.block.number
+  _case.blockTimestamp = event.block.timestamp
+  _case.transactionHash = event.transaction.hash
+
+  _case.save()
 }
 
 export function handleEIP712DomainChanged(
@@ -77,6 +129,14 @@ export function handleEvidenceApproved(event: EvidenceApprovedEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  let evidence = Evidence.load(event.params.evidenceId.toString())
+  if(!evidence) {
+    return
+  } 
+  evidence.approve = true;
+
+  evidence.save()
 }
 
 export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
@@ -95,6 +155,30 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+  
+  //  load case
+  let _case = Case.load(event.params.caseId.toString())
+  // if case does not exist do nothing
+  if(!_case) {
+    return;
+  } else {
+    let temp = _case.evidences!
+    temp.push(event.params.evidenceId.toString())
+    _case.evidences = temp
+  }
+
+  _case.save()
+
+  let evidence = Evidence.load(event.params.evidenceId.toString())
+  if(!evidence) {
+    evidence = new Evidence(event.params.evidenceId.toString());
+  } 
+
+  evidence.approve = false
+  evidence.category = event.params.category
+  evidence.from = event.params.initiator
+
+  evidence.save()
 }
 
 export function handleNewParticipantInCase(
@@ -115,6 +199,30 @@ export function handleNewParticipantInCase(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+  
+  //  load case
+  let _case = Case.load(event.params.caseId.toString())
+  // if case does not exist do nothing
+  if(!_case) {
+    return;
+  } else {
+    let temp = _case.participants!
+    temp.push(event.params.suspectId.toString())
+    _case.participants = temp
+  }
+
+  _case.save()
+
+  let participant = Participant.load(event.params.suspectId.toString())
+  if(!participant) {
+    participant = new Participant(event.params.suspectId.toString());
+  } 
+
+  participant.approve = false
+  participant.category = event.params.category
+  participant.from = event.params.initiator
+
+  participant.save()
 }
 
 export function handleParticipantApproved(
@@ -130,6 +238,14 @@ export function handleParticipantApproved(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  let participant = Participant.load(event.params.participantId.toString())
+  if(!participant) {
+    return
+  } 
+  participant.approve = true;
+
+  participant.save()
 }
 
 export function handleRemoveOfficerInCase(
@@ -147,6 +263,27 @@ export function handleRemoveOfficerInCase(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  // Core business logic
+  let officer = Officer.load(event.params.officer)
+  if (!officer) return 
+  //  load case
+  let _case = Case.load(event.params.caseId.toString())
+  if(!_case) {
+    return
+  } else {
+    // if rank == 3 remove from captain array
+    if(officer.rank == 3) {
+      const temp = _case?.captain?.filter((officer) => officer !== event.params.initiator);
+      _case.captain = temp!
+    }
+
+    // remove officer array regardless
+    const temp = _case?.officers?.filter((officer) => officer !== event.params.initiator);
+    _case.captain = temp!
+  }
+
+  _case.save()
 }
 
 export function handleTrustee(event: TrusteeEvent): void {
