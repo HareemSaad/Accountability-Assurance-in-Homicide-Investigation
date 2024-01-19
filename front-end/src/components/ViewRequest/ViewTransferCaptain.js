@@ -1,27 +1,45 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ethers } from "ethers";
 import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import "./view.css";
 import axios from "axios";
-import { useAccount } from 'wagmi';
+import { useAccount } from "wagmi";
 import moment from "moment";
+import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+// hashes
+import { transferCaptainHash } from "../utils/hashing/transferCaptainHash.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
 
 export const ViewTransferCaptain = () => {
   const { reqId } = useParams();
-  const { address } = useAccount();
+  const { address, connector, isConnected, account } = useAccount();
 
   let navigate = useNavigate();
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
+  const [isPassedMessage, setIsPassedMessage] = useState("Send");
   const [requestDetail, setRequestDetail] = useState({});
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/view-transfer-captain/:${reqId}`)
-      .then((result) => setRequestDetail(result.data[0]))
-      .catch((err) => console.log("error:: ", err));
+    // console.log("rank::", localStorage.getItem("rank"))
+    // console.log("rank::")
+    const fetchData = async () => {
+      axios
+        .get(`http://localhost:3000/view-transfer-captain/:${reqId}`, {
+          params: {
+            userAddress: address,
+          },
+        })
+        .then((result) => {
+          setRequestDetail(result.data.document);
+          // console.log("result: ", result.data.document);
+        })
+        .catch((err) => console.log("error:: ", err));
+    };
+    fetchData();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -31,16 +49,67 @@ export const ViewTransferCaptain = () => {
       setButtonDisabled(false);
     }, 5000);
     // axiospost - update the array of signers/signatures...
-    axios
-      .post(`http://localhost:3000/view-transfer-captain/:${reqId}`, {
-        userAddress: address,
-      })
-      .then((res) => notify("success", "Signed successfully"))
-      .catch((err) => {
-        // console.log("error:: ", err);
-        notify("error", `An Error Occured when Signing`);
-      });
+    const client = await getWalletClient({ account, connector });
+
+    const branchId = ethers.utils.hexlify(
+      ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [requestDetail.branchId])
+    ));
+
+    try {
+      const hash = transferCaptainHash(
+        requestDetail.moderator,
+        requestDetail.fromCaptain,
+        requestDetail.toCaptain,
+        branchId,
+        requestDetail.nonce,
+        requestDetail.caseId,
+        requestDetail.receiver,
+        requestDetail.expiry
+      );
+
+      // console.log("hash", hash)
+
+      const message = toLedgerTypedDataHash(hash);
+
+      const signature = await client.request(
+        {
+          method: "eth_sign",
+          params: [address, message],
+        },
+        { retryCount: 0 }
+      );
+      console.log("signature:: ", signature)
+
+      // send signers address and signature to backend
+      axios
+        .post(`http://localhost:3000/view-transfer-captain/:${reqId}`, {
+          userAddress: address, 
+          signature: signature
+        })
+        .then((res) => {
+          const message = res.data.message;
+          notify("success", message);
+        })
+        .catch((err) => {
+          // console.log("error:: ", err);
+          notify("error", `An Error Occured when Signing`);
+        });
+
+    } catch (err) {
+      console.log("Error:: ", err);
+    }
   };
+
+  const handleSend = (e) => {
+    // Hareem todo - send by moderator
+    e.preventDefault();
+    setButtonDisabled(true);
+    setTimeout(() => {
+      setButtonDisabled(false);
+    }, 5000);
+    // after send
+    // setIsPassedMessage("Sent")
+  }
 
   const getDate = (expiryDate) => {
     var date = new Date(expiryDate * 1000);
@@ -242,15 +311,57 @@ export const ViewTransferCaptain = () => {
         </div>
 
         {/* sign button */}
-        <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-          type="submit"
-          onClick={async (e) => await handleSubmit(e)}
-          disabled={isButtonDisabled}
-        >
-          Sign
-        </button>
-      </form>
+        {requestDetail && requestDetail.isOpen ? (
+          requestDetail.signers.length === 2 && localStorage.getItem("rank") == "Captain" ? (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSubmit(e)}
+              disabled="true"
+            >
+              Signed by Both Captains
+            </button>
+          ) : requestDetail.signers.length < 2 && localStorage.getItem("rank") == "Captain" ? (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSubmit(e)}
+              disabled={isButtonDisabled}
+            >
+              Sign
+            </button>
+            ) : requestDetail.signers.length === 2 && localStorage.getItem("rank") == "Moderator" ? (
+              <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+                type="submit"
+                onClick={async (e) => await handleSend(e)}
+                disabled={isButtonDisabled}
+              >
+                Send
+              </button>
+            )
+            : (
+              <button
+                className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+                  type="submit"
+                  onClick={async (e) => await handleSubmit(e)}
+                  disabled="true"
+                >
+                  Both Captains haven't Signed Yet.
+                  {/* Send */}
+                </button>
+            )
+        ) : (
+          <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              disabled="true"
+            >
+              {/* {isPassedMessage} */}
+              Expiry Date has Passed. 
+            </button>
+        )}
+        </form>
     </div>
   );
 };

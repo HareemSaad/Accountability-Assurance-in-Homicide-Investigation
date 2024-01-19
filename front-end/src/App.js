@@ -42,6 +42,7 @@ import { ViewTransferCase } from './components/ViewRequest/ViewTransferCase.js';
 // View - captain approve officers and detectives
 import { ViewOfficerRequests } from './components/AddOfficer/ViewOfficerRequests.js';
 import { ViewDetectiveRequests } from './components/AddOfficer/ViewDetectiveRequests.js';
+import { CaptainViewTranferRequest } from './components/CaptainTransferCaseCaptain/CaptainViewTranferRequest.js';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -105,6 +106,7 @@ function App() {
           <Route path="/add-officer" element={<AddOfficer />} />
           <Route path="/view-officer-requests/:reqId" element={<ViewOfficerRequests />} /> {/**/}
           <Route path="/view-detective-requests/:reqId" element={<ViewDetectiveRequests />} /> {/**/}
+          <Route path="/captain/:reqName" element={<CaptainViewTranferRequest />} /> {/**/}
           <Route path="/add-officer-in-case/:caseId" element={<AddOfficerInCase />} />
           <Route path="/drop-officer-from-case/:caseId" element={<DropOfficerFromCase />} />
           <Route path="/change-case-status/:caseId" element={<ChangeCaseStatus />} />
@@ -124,8 +126,8 @@ function App() {
           <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
           <Route path="/create-request/update-branch" element={<UpdateBranch />} />
           <Route path="/create-request/update-officer" element={<UpdateOfficer />} />
-          <Route path="/create-request/transfer-captain" element={<TransferCaptain />} />
-          <Route path="/create-request/transfer-case" element={<TransferCase />} />
+          <Route path="/create-request/transfer-captain/:caseId" element={<TransferCaptain />} />
+          <Route path="/create-request/transfer-case/:caseId" element={<TransferCase />} />
           {/* Moderator-only view requests */}
           <Route path="/:reqName" element={<ViewRequests />} />
           <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />

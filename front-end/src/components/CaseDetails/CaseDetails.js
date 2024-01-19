@@ -88,7 +88,20 @@ const CaseDetailsPage = () => {
   const goto = (e) => {
     const { name } = e.target;
     console.log("params ::", name, caseId)
-    navigate(`/${name}/${caseId}`);
+    
+    switch (name) {
+      case "change-case-status":
+        navigate(`/${name}/${caseId}`);
+        break;
+      case "transfer-case":
+        navigate(`/create-request/transfer-case/${caseId}`);
+        break;
+      case "transfer-captain":
+        navigate(`/create-request/transfer-captain/${caseId}`);
+        break;
+      default:
+        break;
+    }
   }
 
   return (
@@ -100,8 +113,14 @@ const CaseDetailsPage = () => {
           {/* case status */}
           <h6 className='statusTagOpen ms-4'>#OPEN</h6>
         </div>
+        <div className="d-flex">
+          {localStorage.getItem("rank") && (<button className='card-add-btn' name="change-case-status" onClick={(e) => goto(e)}>Change Status</button>)}
+          {localStorage.getItem("rank") && (<button className='card-add-btn' name="transfer-case" onClick={(e) => goto(e)}>Transfer Case</button>)}
+          {localStorage.getItem("rank") && (<button className='card-add-btn' name="transfer-captain" onClick={(e) => goto(e)}>Transfer to Captain</button>)}
 
-        {localStorage.getItem("rank") && (<button className='case-nav-btn m-4' name="change-case-status" onClick={(e) => goto(e)}>Change Status</button>)}
+          {/* {localStorage.getItem("rank") && (<button className='case-nav-btn' name="change-case-status" onClick={(e) => goto(e)}>Transfer Case Captain</button>)} */}
+            {/* <button className='card-add-btn' name="archive-cases" onClick={(e) => goto(e)}>Archive Cases</button> */}
+        </div>
       </div>
 
 

@@ -16,6 +16,8 @@ const TransferCase = require('../scripts/transferCaseRoute')
 // captain request - view only
 const ViewOfficerRequests = require('../scripts/viewOfficerRequests')
 const ViewDetectiveRequests = require('../scripts/viewDetectiveRequests')
+const CaptainViewTranferRequestRoute = require('../scripts/CaptainViewTranferRequestRoute')
+
 
 const router = express.Router();
 router.use(cors());
@@ -34,6 +36,7 @@ router.use(TransferCase);
 // captain request - view only
 router.use(ViewOfficerRequests)
 router.use(ViewDetectiveRequests)
+router.use(CaptainViewTranferRequestRoute)
 
 module.exports = {
   routes: router

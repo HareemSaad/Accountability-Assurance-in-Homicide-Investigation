@@ -19,7 +19,7 @@ const client = createClient({
 export const CaseCard_Captain = () => {
   // const [CaptainCard, setCaptainCard] = useState([]);
   const casePageArray = [ "Add Case", "Archive Cases", "Employees"];
-  const trusteeReqPage = ["Create Trustee Request", "View Trustee Request"];
+  const requestsPage = ["Create Trustee Request", "View Trustee Request", "View Transfer Case", "View Transfer Captain"];
 //   const employeesPage = [ "Employees", "Archive Cases"];
   const [cardResponse, setCardResponse] = useState([]);
   const { address, connector, isConnected } = useAccount();
@@ -68,6 +68,12 @@ export const CaseCard_Captain = () => {
       case "Create Trustee Request":
         navigate("/create-request/trustee-request");
         break;
+      case "View Transfer Captain":
+        navigate("/captain/view-transfer-captain");
+        break;
+      case "View Transfer Case":
+        navigate("/captain/view-transfer-case");
+        break;
       case "Employees":
         navigate("/employees");
         break;
@@ -110,21 +116,21 @@ export const CaseCard_Captain = () => {
               </Dropdown.Menu>
             </Dropdown>
           </div>
-          {/* Trustee Requests */}
+          {/* Requests */}
           <div className="col-5">
             <Dropdown>
               <Dropdown.Toggle
                 variant="secondary"
-                id="stateCode"
+                id="requestsPage"
                 className="dropdown page-dropdown-toggle"
               >
-                Trustee Requests <IoNavigateCircleOutline />
+                Requests <IoNavigateCircleOutline />
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {trusteeReqPage.map((page, index) => (
+                {requestsPage.map((page, index) => (
                   <Dropdown.Item
-                    name="stateCode"
+                    name="requestsPage"
                     className="page-dropdown-item"
                     key={index}
                     onClick={(e) => goto(e, page)}

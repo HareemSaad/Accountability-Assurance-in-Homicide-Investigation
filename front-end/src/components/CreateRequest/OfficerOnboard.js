@@ -136,7 +136,7 @@ export const OfficerOnboard = () => {
           //   abi: LedgerABI,
           //   functionName: 'onboard',
           //   args: [
-          //     nonce,
+          //     officerOnboardInfo.nonce,
           //     stateCode,
           //     officerOnboardInfo.verifiedAddress,
           //     officerOnboardInfo.name,

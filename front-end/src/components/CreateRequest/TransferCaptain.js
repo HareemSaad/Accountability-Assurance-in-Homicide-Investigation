@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate } from "react-router-dom";
+import { ethers } from "ethers";
+import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -11,9 +12,16 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+import { useAccount } from "wagmi";
+// hashes
+import { transferCaptainHash } from "../utils/hashing/transferCaptainHash.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
 
 export const TransferCaptain = () => {
+  const { caseId } = useParams();
   let navigate = useNavigate();
+  const { address, connector, isConnected, account } = useAccount();
 
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
@@ -26,7 +34,10 @@ export const TransferCaptain = () => {
     toCaptain: "",
     stateCode: "",
     branchId: "",
-    caseId: "",
+    nonce: Math.floor(Math.random() * 10000),
+    caseId: caseId,
+    signers: address,
+    receiver: false,
     expiry: "",
     isOpen: true,
   });
@@ -59,21 +70,59 @@ export const TransferCaptain = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
-      axios
-        .post(
-          "http://localhost:3000/create-request/transfer-captain",
-          transferCaptainInfo
-        )
-        .then((res) =>
-          notify("success", "Transfer Captain Request Created successfully")
-        )
-        .catch((err) => {
-          // console.log("error:: ", err);
-          notify(
-            "error",
-            `An Error Occured when Creating Transfer Captain Request`
-          );
-        });
+
+      const client = await getWalletClient({ account, connector });
+
+      const branchId = ethers.utils.hexlify(
+        ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [transferCaptainInfo.branchId])
+      ));
+
+      try {
+        const hash = transferCaptainHash(
+          transferCaptainInfo.moderator,
+          transferCaptainInfo.fromCaptain,
+          transferCaptainInfo.toCaptain,
+          branchId,
+          transferCaptainInfo.nonce,
+          transferCaptainInfo.caseId,
+          transferCaptainInfo.receiver,
+          transferCaptainInfo.expiry
+        );
+
+        // console.log("hash", hash)
+
+        const message = toLedgerTypedDataHash(hash);
+
+        const signature = await client.request(
+          {
+            method: "eth_sign",
+            params: [address, message],
+          },
+          { retryCount: 0 }
+        );
+        // console.log("signature:: ", signature)
+
+        axios
+          .post(
+            "http://localhost:3000/create-request/transfer-captain/:caseId",
+            {
+              transferCaptainInfo: transferCaptainInfo,
+              signatureTransferCaptain: signature,
+            }
+          )
+          .then((res) =>
+            notify("success", "Transfer Captain Request Created successfully")
+          )
+          .catch((err) => {
+            // console.log("error:: ", err);
+            notify(
+              "error",
+              `An Error Occured when Creating Transfer Captain Request`
+            );
+          });
+      } catch (err) {
+        console.log("Error:: ", err);
+      }
     }
   };
 
@@ -82,14 +131,14 @@ export const TransferCaptain = () => {
     setSelectedStateCode(categoryValue);
     const name = "stateCode";
     setTransferCaptainInfo({ ...transferCaptainInfo, [name]: categoryValue });
-  }
+  };
 
   // Function to handle branch id dropdown selection
   const handleBranchIdDropdownSelect = (categoryValue) => {
     setSelectedBranchId(categoryValue);
     const name = "branchId";
     setTransferCaptainInfo({ ...transferCaptainInfo, [name]: categoryValue });
-  }
+  };
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
@@ -196,13 +245,23 @@ export const TransferCaptain = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
-                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              <Dropdown.Toggle
+                variant="secondary"
+                id="stateCode"
+                className="dropdown"
+              >
+                {selectedStateCode
+                  ? stateCodeMap.get(selectedStateCode)
+                  : "Select State Code"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="stateCode"
+                    key={key}
+                    onClick={() => handleStateCodeDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}
@@ -222,13 +281,23 @@ export const TransferCaptain = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
-                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              <Dropdown.Toggle
+                variant="secondary"
+                id="branchId"
+                className="dropdown"
+              >
+                {selectedBranchId
+                  ? branchIdMap.get(selectedBranchId)
+                  : "Select Branch Id"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="branchId"
+                    key={key}
+                    onClick={() => handleBranchIdDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}
@@ -251,9 +320,9 @@ export const TransferCaptain = () => {
               type="number"
               name="caseId"
               id="caseId"
-              placeholder="Case Id Here"
               className="form-control"
-              onChange={handleChange}
+              value={caseId}
+              disabled="true"
             ></input>
           </div>
         </div>
