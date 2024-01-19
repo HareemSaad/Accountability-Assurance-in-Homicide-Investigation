@@ -49,7 +49,6 @@ TransferCase: 0xdad8d44c36167ac7f2bf7cecc56ea62993176cd3
 TrusteeRequestLib: 0xbb17e45d9ca49f5738c58faeb3a0793c1d41b102
 UpdateBranch: 0x0d24a3a9db51f0d073a7c0c9b71aff01a5b4bf05
 UpdateOfficer: 0x86089da9793f3ba732d44a7f6beb122aea4fa8b0
-
 ```
 
 ## Subgraph Deployment
