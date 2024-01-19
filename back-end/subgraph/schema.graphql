@@ -206,6 +206,7 @@ type Case @entity(immutable: false) {
 
 type Officer @entity(immutable: false) {
   id: Bytes! # address
+  name: String!
   legalNumber: Bytes!
   badge: Bytes!
   branch: Bytes!
