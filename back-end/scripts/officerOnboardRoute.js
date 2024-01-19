@@ -21,7 +21,7 @@ router.post('/create-request/officer-onboard', async (req, res) => {
         .catch(err => console.log("errorr:: ", err))
         
         req.body['officerOnboardInfo']['id'] = lastId + 1;
-        req.body['officerOnboardInfo']['nonce'] = Math.floor(Math.random() * 10000);
+        // req.body['officerOnboardInfo']['nonce'] = Math.floor(Math.random() * 10000);
         req.body['officerOnboardInfo']['signature'] = req.body['signatureOfficerOnboard']
         
         console.log("req.body2:: ", req.body['officerOnboardInfo'])

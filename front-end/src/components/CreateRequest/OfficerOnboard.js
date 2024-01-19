@@ -18,6 +18,7 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import { keccakInt, keccakString } from "../utils/hashing/keccak-hash.js";
 
 export const OfficerOnboard = () => {
   let navigate = useNavigate();
@@ -41,6 +42,7 @@ export const OfficerOnboard = () => {
     signature: "",
     signers: address,
     isOpen: true,
+    nonce: 0
   });
 
   // const rankArray = ["Null", "Officer", "Detective", "Captain"];
@@ -83,26 +85,21 @@ export const OfficerOnboard = () => {
       
       // TODO: get from global
       // const nonce = await provider.getTransactionCount(address);
-      const nonce = 140
+      officerOnboardInfo.nonce = Math.floor(Math.random() * 10000)
+      console.log("nonce: ", officerOnboardInfo.nonce);
 
       // const stateCode = 8888; //TODO: Amaim change to dynamic statecode
 
-      const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
-          ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.branchId])
-      ));
+      const branchId = keccakString(officerOnboardInfo.branchId)
 
-      const badge = ethers.utils.hexlify(ethers.utils.keccak256(
-          ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.badge])
-      ));
+      const badge = keccakString(officerOnboardInfo.badge)
 
-      const legalNumber = ethers.utils.hexlify(ethers.utils.keccak256(
-          ethers.utils.defaultAbiCoder.encode(['string'], [officerOnboardInfo.legalNumber])
-      ));
+      const legalNumber = keccakInt(officerOnboardInfo.legalNumber)
   
       try {
         const hash = onboardHash (
           officerOnboardInfo.verifiedAddress,
-          nonce,
+          officerOnboardInfo.nonce,
           officerOnboardInfo.name,
           legalNumber,
           badge,
@@ -189,7 +186,7 @@ export const OfficerOnboard = () => {
             abi: LedgerABI,
             functionName: 'onboardCaptain',
             args: [
-              nonce,
+              officerOnboardInfo.nonce,
               localStorage.getItem("statecode"),
               officerOnboardInfo.verifiedAddress,
               officerOnboardInfo.name,

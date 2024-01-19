@@ -7,8 +7,8 @@ import axios from "axios";
 import { employmentStatusMap, rankMap } from "../data/data.js";
 import moment from "moment";
 import { waitForTransaction, writeContract } from '@wagmi/core';
-import CaseABI from "./../Cases.json"
-import { keccakString } from "../utils/hashing/keccak-hash.js";
+import LedgerABI from "./../Ledger.json"
+import { keccakString, keccakInt } from "../utils/hashing/keccak-hash.js";
 
 export const ViewDetectiveRequests = () => {
   const { reqId } = useParams();
@@ -34,24 +34,25 @@ export const ViewDetectiveRequests = () => {
     try {
 
       console.log("output:: ", requestDetail);
+      console.log(requestDetail.legalNumber, keccakInt(requestDetail.legalNumber));
       
       // call contract
       const { hash } = await writeContract({
-        address: process.env.REACT_APP_CASE_CONTRACT,
-        abi: CaseABI,
+        address: process.env.REACT_APP_LEDGER_CONTRACT,
+        abi: LedgerABI,
         functionName: 'onboard',
         args: [
           requestDetail.nonce,
           localStorage.getItem("statecode"),
           requestDetail.verifiedAddress,
           requestDetail.name,
-          keccakString(requestDetail.legalNumber),
+          keccakInt(requestDetail.legalNumber),
           keccakString(requestDetail.badge),
           keccakString(requestDetail.branchId),
           requestDetail.rank,
           requestDetail.expiry,
-          requestDetail.signature[0], // amaim back-end not saving signature or signer
-          requestDetail.signer[0]
+          requestDetail.signature,
+          requestDetail.signers
         ],
         chainId: 11155111
       })
@@ -62,6 +63,8 @@ export const ViewDetectiveRequests = () => {
           hash: hash,
       })
       console.log("Transaction result:", result);
+
+      // amaim -- delete request from table
       
     } catch (error) {
       console.log(error)
@@ -291,7 +294,7 @@ export const ViewDetectiveRequests = () => {
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}
         >
-          Send
+          Onboard
         </button>
       </form>
     </div>
