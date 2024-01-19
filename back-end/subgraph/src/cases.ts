@@ -1,3 +1,4 @@
+import { Bytes } from "@graphprotocol/graph-ts"
 import {
   AddOfficerInCase as AddOfficerInCaseEvent,
   CaseUpdated as CaseUpdatedEvent,
@@ -274,13 +275,23 @@ export function handleRemoveOfficerInCase(
   } else {
     // if rank == 3 remove from captain array
     if(officer.rank == 3) {
-      const temp = _case?.captain?.filter((officer) => officer !== event.params.initiator);
-      _case.captain = temp!
+      const temp: Bytes[] = []
+      for (let i = 0; i < _case.captain!.length; i++) {
+        if (_case.captain![i] != event.params.initiator) {
+          temp.push(_case.captain![i]);
+        }
+      }
+      _case.captain = temp
     }
 
     // remove officer array regardless
-    const temp = _case?.officers?.filter((officer) => officer !== event.params.initiator);
-    _case.captain = temp!
+    const temp: Bytes[] = [];
+    for (let i = 0; i < _case.officers!.length; i++) {
+      if (_case.officers![i] != event.params.initiator) {
+        temp.push(_case.officers![i]);
+      }
+    }
+    _case.captain = temp
   }
 
   _case.save()
