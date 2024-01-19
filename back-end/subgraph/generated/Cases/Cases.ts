@@ -10,16 +10,16 @@ import {
   BigInt,
 } from "@graphprotocol/graph-ts";
 
-export class CaseShifted extends ethereum.Event {
-  get params(): CaseShifted__Params {
-    return new CaseShifted__Params(this);
+export class AddOfficerInCase extends ethereum.Event {
+  get params(): AddOfficerInCase__Params {
+    return new AddOfficerInCase__Params(this);
   }
 }
 
-export class CaseShifted__Params {
-  _event: CaseShifted;
+export class AddOfficerInCase__Params {
+  _event: AddOfficerInCase;
 
-  constructor(event: CaseShifted) {
+  constructor(event: AddOfficerInCase) {
     this._event = event;
   }
 
@@ -27,12 +27,12 @@ export class CaseShifted__Params {
     return this._event.parameters[0].value.toBigInt();
   }
 
-  get captain(): Address {
+  get initiator(): Address {
     return this._event.parameters[1].value.toAddress();
   }
 
-  get branch(): Bytes {
-    return this._event.parameters[2].value.toBytes();
+  get officer(): Address {
+    return this._event.parameters[2].value.toAddress();
   }
 }
 
@@ -61,12 +61,8 @@ export class CaseUpdated__Params {
     return this._event.parameters[2].value.toBytes();
   }
 
-  get oldStatus(): i32 {
+  get status(): i32 {
     return this._event.parameters[3].value.toI32();
-  }
-
-  get newStatus(): i32 {
-    return this._event.parameters[4].value.toI32();
   }
 }
 
@@ -196,16 +192,16 @@ export class ParticipantApproved__Params {
   }
 }
 
-export class RemoveOfficer extends ethereum.Event {
-  get params(): RemoveOfficer__Params {
-    return new RemoveOfficer__Params(this);
+export class RemoveOfficerInCase extends ethereum.Event {
+  get params(): RemoveOfficerInCase__Params {
+    return new RemoveOfficerInCase__Params(this);
   }
 }
 
-export class RemoveOfficer__Params {
-  _event: RemoveOfficer;
+export class RemoveOfficerInCase__Params {
+  _event: RemoveOfficerInCase;
 
-  constructor(event: RemoveOfficer) {
+  constructor(event: RemoveOfficerInCase) {
     this._event = event;
   }
 
@@ -253,32 +249,6 @@ export class Trustee__Params {
 
   get approved(): boolean {
     return this._event.parameters[4].value.toBoolean();
-  }
-}
-
-export class UpdateOfficerInCase extends ethereum.Event {
-  get params(): UpdateOfficerInCase__Params {
-    return new UpdateOfficerInCase__Params(this);
-  }
-}
-
-export class UpdateOfficerInCase__Params {
-  _event: UpdateOfficerInCase;
-
-  constructor(event: UpdateOfficerInCase) {
-    this._event = event;
-  }
-
-  get caseId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get initiator(): Address {
-    return this._event.parameters[1].value.toAddress();
-  }
-
-  get officer(): Address {
-    return this._event.parameters[2].value.toAddress();
   }
 }
 

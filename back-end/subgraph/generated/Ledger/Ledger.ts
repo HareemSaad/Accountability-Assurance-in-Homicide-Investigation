@@ -1056,12 +1056,12 @@ export class OffboardCall__Inputs {
     return this._call.inputValues[6].value.toBigInt();
   }
 
-  get _signature(): Bytes {
-    return this._call.inputValues[7].value.toBytes();
+  get _signatures(): Array<Bytes> {
+    return this._call.inputValues[7].value.toBytesArray();
   }
 
-  get _signer(): Address {
-    return this._call.inputValues[8].value.toAddress();
+  get _signers(): Array<Address> {
+    return this._call.inputValues[8].value.toAddressArray();
   }
 }
 
@@ -1118,12 +1118,12 @@ export class OffboardCaptainCall__Inputs {
     return this._call.inputValues[6].value.toBigInt();
   }
 
-  get _signature(): Bytes {
-    return this._call.inputValues[7].value.toBytes();
+  get _signatures(): Array<Bytes> {
+    return this._call.inputValues[7].value.toBytesArray();
   }
 
-  get _signer(): Address {
-    return this._call.inputValues[8].value.toAddress();
+  get _signers(): Array<Address> {
+    return this._call.inputValues[8].value.toAddressArray();
   }
 }
 
@@ -1180,12 +1180,12 @@ export class OffboardModeratorCall__Inputs {
     return this._call.inputValues[6].value.toBigInt();
   }
 
-  get _signature(): Bytes {
-    return this._call.inputValues[7].value.toBytes();
+  get _signatures(): Array<Bytes> {
+    return this._call.inputValues[7].value.toBytesArray();
   }
 
-  get _signer(): Address {
-    return this._call.inputValues[8].value.toAddress();
+  get _signers(): Array<Address> {
+    return this._call.inputValues[8].value.toAddressArray();
   }
 }
 

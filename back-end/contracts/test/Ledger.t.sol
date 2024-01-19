@@ -1492,6 +1492,12 @@ contract OfficersTest is BaseTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
         bytes memory moderator1Signature = abi.encodePacked(r, s, v);
 
+        bytes[] memory signatures = new bytes[](1);
+        address[] memory signers = new address[](1);
+
+        signatures[0] = moderator1Signature;
+        signers[0] = moderator1.publicKey;
+
         vm.prank(moderator1.publicKey);
         ledger.offboard(
             2,
@@ -1501,8 +1507,8 @@ contract OfficersTest is BaseTest {
             Ledger.EmploymentStatus.INACTIVE,
             detective1.rank,
             expiry,
-            moderator1Signature,
-            moderator1.publicKey
+            signatures,
+            signers
         );
 
         (
@@ -1544,6 +1550,12 @@ contract OfficersTest is BaseTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
         bytes memory moderator1Signature = abi.encodePacked(r, s, v);
 
+        bytes[] memory signatures = new bytes[](1);
+        address[] memory signers = new address[](1);
+
+        signatures[0] = moderator1Signature;
+        signers[0] = moderator1.publicKey;
+
         vm.prank(moderator1.publicKey);
         ledger.offboardCaptain(
             2,
@@ -1553,8 +1565,8 @@ contract OfficersTest is BaseTest {
             Ledger.EmploymentStatus.FIRED,
             captain1.rank,
             expiry,
-            moderator1Signature,
-            moderator1.publicKey
+            signatures,
+            signers
         );
 
         (
@@ -1597,6 +1609,17 @@ contract OfficersTest is BaseTest {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
         bytes memory moderator1Signature = abi.encodePacked(r, s, v);
 
+        (v, r, s) = vm.sign(moderator4.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator4Signature = abi.encodePacked(r, s, v);
+        
+        bytes[] memory signatures = new bytes[](2);
+        address[] memory signers = new address[](2);
+
+        signatures[0] = moderator1Signature;
+        signers[0] = moderator1.publicKey;
+        signatures[1] = moderator4Signature;
+        signers[1] = moderator4.publicKey;
+
         vm.prank(moderator1.publicKey);
         ledger.offboardModerator(
             2,
@@ -1606,8 +1629,8 @@ contract OfficersTest is BaseTest {
             Ledger.EmploymentStatus.RETIRED,
             moderator4.rank,
             expiry,
-            moderator1Signature,
-            moderator1.publicKey
+            signatures,
+            signers
         );
 
         (
@@ -1650,6 +1673,12 @@ contract OfficersTest is BaseTest {
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator1.privateKey, _hashTypedDataV4(messageHash));
         bytes memory moderator1Signature = abi.encodePacked(r, s, v);
+        
+        bytes[] memory signatures = new bytes[](1);
+        address[] memory signers = new address[](1);
+
+        signatures[0] = moderator1Signature;
+        signers[0] = moderator1.publicKey;
 
         vm.prank(moderator1.publicKey);
         vm.expectRevert(StateNeedsAtleastOneModerator.selector);
@@ -1661,8 +1690,8 @@ contract OfficersTest is BaseTest {
             Ledger.EmploymentStatus.INACTIVE,
             moderator1.rank,
             expiry,
-            moderator1Signature,
-            moderator1.publicKey
+            signatures,
+            signers
         );
 
         (

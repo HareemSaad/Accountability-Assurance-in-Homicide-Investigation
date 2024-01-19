@@ -516,8 +516,8 @@
       },
       { "internalType": "enum Ledger.Rank", "name": "_rank", "type": "uint8" },
       { "internalType": "uint256", "name": "_expiry", "type": "uint256" },
-      { "internalType": "bytes", "name": "_signature", "type": "bytes" },
-      { "internalType": "address", "name": "_signer", "type": "address" }
+      { "internalType": "bytes[]", "name": "_signatures", "type": "bytes[]" },
+      { "internalType": "address[]", "name": "_signers", "type": "address[]" }
     ],
     "name": "offboard",
     "outputs": [],
@@ -537,8 +537,8 @@
       },
       { "internalType": "enum Ledger.Rank", "name": "_rank", "type": "uint8" },
       { "internalType": "uint256", "name": "_expiry", "type": "uint256" },
-      { "internalType": "bytes", "name": "_signature", "type": "bytes" },
-      { "internalType": "address", "name": "_signer", "type": "address" }
+      { "internalType": "bytes[]", "name": "_signatures", "type": "bytes[]" },
+      { "internalType": "address[]", "name": "_signers", "type": "address[]" }
     ],
     "name": "offboardCaptain",
     "outputs": [],
@@ -558,8 +558,8 @@
       },
       { "internalType": "enum Ledger.Rank", "name": "_rank", "type": "uint8" },
       { "internalType": "uint256", "name": "_expiry", "type": "uint256" },
-      { "internalType": "bytes", "name": "_signature", "type": "bytes" },
-      { "internalType": "address", "name": "_signer", "type": "address" }
+      { "internalType": "bytes[]", "name": "_signatures", "type": "bytes[]" },
+      { "internalType": "address[]", "name": "_signers", "type": "address[]" }
     ],
     "name": "offboardModerator",
     "outputs": [],

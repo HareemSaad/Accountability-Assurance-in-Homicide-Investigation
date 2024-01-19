@@ -1,9 +1,9 @@
 specVersion: 0.0.5
-features: 
+features:
   - fullTextSearch
   - ipfsOnEthereumContracts
 schema:
-  file: ./schema.graphql
+  file: schema.graphql
 dataSources:
   - kind: ethereum
     name: Ledger
@@ -28,7 +28,7 @@ dataSources:
         - Promotion
       abis:
         - name: Ledger
-          file: ./abis/Ledger.json
+          file: Ledger/abis/Ledger.json
       eventHandlers:
         - event: BranchUpdate(indexed bytes32,string,indexed uint256,indexed uint256)
           handler: handleBranchUpdate
@@ -49,7 +49,7 @@ dataSources:
           handler: handleOnboard
         - event: Promotion(indexed address,indexed uint8,indexed uint8)
           handler: handlePromotion
-      file: ./src/ledger.ts
+      file: Ledger/Ledger.wasm
   - kind: ethereum
     name: Cases
     network: sepolia
@@ -73,7 +73,7 @@ dataSources:
         - Trustee
       abis:
         - name: Cases
-          file: ./abis/Cases.json
+          file: Cases/abis/Cases.json
       eventHandlers:
         - event: AddOfficerInCase(uint256,indexed address,indexed address)
           handler: handleAddOfficerInCase
@@ -93,4 +93,4 @@ dataSources:
           handler: handleRemoveOfficerInCase
         - event: Trustee(uint256,indexed bytes32,indexed address,indexed address,bool)
           handler: handleTrustee
-      file: ./src/cases.ts
+      file: Cases/Cases.wasm

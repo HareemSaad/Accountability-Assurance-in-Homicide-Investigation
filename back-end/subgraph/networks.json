@@ -1,12 +1,11 @@
 {
   "sepolia": {
     "Ledger": {
-      "address": "0x75B2471d49FdbB456730ae630c7A19b4f9E6c6A9",
-      "startBlock": 5081786
+      "address": "0xa4F0cB2AacA2c58e0A9C0611644BF03e224B9859",
+      "startBlock": 5114125
     },
     "Cases": {
-      "address": "0x9AbA4B15C8Cd4Af56ef08a4349f574D479b6b966",
-      "startBlock": 5081786
+      "address": "0xf89Dc9D18c3bd4F0bCf76c1755eBa308FA9Ff906"
     }
   }
 }

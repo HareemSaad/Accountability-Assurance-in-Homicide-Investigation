@@ -625,6 +625,7 @@ contract Ledger is EIP712 {
     /// @param _signature Signature of the moderator authorizing the update
     /// @param _signer Address of the moderator who signed the update request
     /// @param _expiry expiry date
+    /// @dev make sure that this address is kicked from all cases before calling other wise new address will have to be added to its cases 
     function updateAddress(
         uint _nonce,
         uint _stateCode,
@@ -781,8 +782,8 @@ contract Ledger is EIP712 {
     /// @param _employmentStatus The new employment status to be set for the officer
     /// @param _rank The rank of the officer being offboarded
     /// @param _expiry expiry date
-    /// @param _signature Signature of the moderator authorizing the offboarding
-    /// @param _signer Address of the moderator performing the offboarding
+    /// @param _signatures Signature of the moderator authorizing the offboarding
+    /// @param _signers Address of the moderator performing the offboarding
     function offboard(
         uint256 _nonce,
         address _officer, 
@@ -791,12 +792,12 @@ contract Ledger is EIP712 {
         EmploymentStatus _employmentStatus, 
         Rank _rank,
         uint _expiry,
-        bytes memory _signature,
-        address _signer
+        bytes[] memory _signatures,
+        address[] memory _signers
     ) external onlyModerator(_stateCode) {
         //captain cannot offboard another aptain or moderator
         if (_rank >= Rank.CAPTAIN || _rank == Rank.NULL) { revert InvalidRank(); }
-        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signature, _signer);
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signatures, _signers);
     }
 
     /// @notice Offboards a captain from their current position
@@ -807,8 +808,8 @@ contract Ledger is EIP712 {
     /// @param _branchId Branch ID from which the captain is being offboarded
     /// @param _employmentStatus The new employment status to be set for the captain
     /// @param _rank The rank of the officer, should be CAPTAIN
-    /// @param _signature Signature of the moderator authorizing the offboarding
-    /// @param _signer Address of the moderator performing the offboarding
+    /// @param _signatures Signature of the moderator authorizing the offboarding
+    /// @param _signers Address of the moderator performing the offboarding
     /// @param _expiry expiry date
     function offboardCaptain(
         uint256 _nonce,
@@ -818,11 +819,11 @@ contract Ledger is EIP712 {
         EmploymentStatus _employmentStatus, 
         Rank _rank,
         uint _expiry,
-        bytes memory _signature,
-        address _signer
+        bytes[] memory _signatures,
+        address[] memory _signers
     ) external onlyModerator(_stateCode) {
         if (_rank != Rank.CAPTAIN) { revert InvalidRank(); }
-        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signature, _signer);
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signatures, _signers);
     }
 
     /// @notice Offboards a moderator from their current position
@@ -835,8 +836,8 @@ contract Ledger is EIP712 {
     /// @param _employmentStatus The new employment status to be set for the moderator
     /// @param _rank The rank of the officer, should be MODERATOR
     /// @param _expiry expiry date
-    /// @param _signature Signature of the moderator authorizing the offboarding
-    /// @param _signer Address of the moderator performing the offboarding
+    /// @param _signatures Signature of the moderator authorizing the offboarding
+    /// @param _signers Address of the moderator performing the offboarding
     function offboardModerator(
         uint256 _nonce,
         address _officer, 
@@ -845,12 +846,12 @@ contract Ledger is EIP712 {
         EmploymentStatus _employmentStatus, 
         Rank _rank,
         uint _expiry,
-        bytes memory _signature,
-        address _signer
+        bytes[] memory _signatures,
+        address[] memory _signers
     ) external onlyModerator(_stateCode) {
         if (_rank != Rank.MODERATOR) { revert InvalidRank(); }
         if (moderatorCount[_stateCode] == 1) { revert StateNeedsAtleastOneModerator(); }
-        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signature, _signer);
+        _offboard(_nonce, _officer, _stateCode, _branchId, _employmentStatus, _rank, _expiry, _signatures, _signers);
     }
 
     /// @dev Internal function to handle the logic of offboarding an officer, captain, or moderator
@@ -860,8 +861,8 @@ contract Ledger is EIP712 {
     /// @param _branchId Branch ID from which the person is being offboarded
     /// @param _employmentStatus The new employment status to be set for the person
     /// @param _rank The rank of the person being offboarded
-    /// @param _signature Signature of the person authorizing the offboarding
-    /// @param _signer Address of the person performing the offboarding
+    /// @param _signatures Signatures of the persons authorizing the offboarding
+    /// @param _signers Addresses of the persons signing the offboarding
     /// @param _expiry expiry date
     function _offboard(
         uint256 _nonce,
@@ -871,12 +872,13 @@ contract Ledger is EIP712 {
         EmploymentStatus _employmentStatus, 
         Rank _rank,
         uint _expiry,
-        bytes memory _signature,
-        address _signer
+        bytes[] memory _signatures,
+        address[] memory _signers
     ) internal {
         _validateExpiry(_expiry);
 
         if (_officer == address(0)) { revert InvalidAddress(); }
+        if((moderatorCount[_stateCode] / 2) + 1  > _signers.length) revert NotEnoughSignatures();
         if (!isValidRank(_officer, _rank)) { revert InvalidOfficer(); }
         if (_employmentStatus == EmploymentStatus.ACTIVE) { revert InvalidStatus(); }
         if (branches[_branchId].stateCode == 0) { revert NonexistingBranch(); }
@@ -896,7 +898,7 @@ contract Ledger is EIP712 {
             _expiry
         ));
 
-        _validateSignatures(messageHash, _signature, _signer);
+        _validateSignatures(messageHash, _signatures, _signers);
 
         newOfficer.employmentStatus = _employmentStatus;
         branches[newOfficer.branchId].numberOfOfficers--;

@@ -1,46 +1,44 @@
 import { newMockEvent } from "matchstick-as"
 import { ethereum, BigInt, Address, Bytes } from "@graphprotocol/graph-ts"
 import {
-  CaseShifted,
+  AddOfficerInCase,
   CaseUpdated,
   EIP712DomainChanged,
   EvidenceApproved,
   NewEvidenceInCase,
   NewParticipantInCase,
   ParticipantApproved,
-  RemoveOfficer,
-  Trustee,
-  UpdateOfficerInCase
+  RemoveOfficerInCase,
+  Trustee
 } from "../generated/Cases/Cases"
 
-export function createCaseShiftedEvent(
+export function createAddOfficerInCaseEvent(
   caseId: BigInt,
-  captain: Address,
-  branch: Bytes
-): CaseShifted {
-  let caseShiftedEvent = changetype<CaseShifted>(newMockEvent())
+  initiator: Address,
+  officer: Address
+): AddOfficerInCase {
+  let addOfficerInCaseEvent = changetype<AddOfficerInCase>(newMockEvent())
 
-  caseShiftedEvent.parameters = new Array()
+  addOfficerInCaseEvent.parameters = new Array()
 
-  caseShiftedEvent.parameters.push(
+  addOfficerInCaseEvent.parameters.push(
     new ethereum.EventParam("caseId", ethereum.Value.fromUnsignedBigInt(caseId))
   )
-  caseShiftedEvent.parameters.push(
-    new ethereum.EventParam("captain", ethereum.Value.fromAddress(captain))
+  addOfficerInCaseEvent.parameters.push(
+    new ethereum.EventParam("initiator", ethereum.Value.fromAddress(initiator))
   )
-  caseShiftedEvent.parameters.push(
-    new ethereum.EventParam("branch", ethereum.Value.fromFixedBytes(branch))
+  addOfficerInCaseEvent.parameters.push(
+    new ethereum.EventParam("officer", ethereum.Value.fromAddress(officer))
   )
 
-  return caseShiftedEvent
+  return addOfficerInCaseEvent
 }
 
 export function createCaseUpdatedEvent(
   caseId: BigInt,
   initiator: Address,
   branch: Bytes,
-  oldStatus: i32,
-  newStatus: i32
+  status: i32
 ): CaseUpdated {
   let caseUpdatedEvent = changetype<CaseUpdated>(newMockEvent())
 
@@ -57,14 +55,8 @@ export function createCaseUpdatedEvent(
   )
   caseUpdatedEvent.parameters.push(
     new ethereum.EventParam(
-      "oldStatus",
-      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(oldStatus))
-    )
-  )
-  caseUpdatedEvent.parameters.push(
-    new ethereum.EventParam(
-      "newStatus",
-      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(newStatus))
+      "status",
+      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(status))
     )
   )
 
@@ -195,26 +187,26 @@ export function createParticipantApprovedEvent(
   return participantApprovedEvent
 }
 
-export function createRemoveOfficerEvent(
+export function createRemoveOfficerInCaseEvent(
   caseId: BigInt,
   initiator: Address,
   officer: Address
-): RemoveOfficer {
-  let removeOfficerEvent = changetype<RemoveOfficer>(newMockEvent())
+): RemoveOfficerInCase {
+  let removeOfficerInCaseEvent = changetype<RemoveOfficerInCase>(newMockEvent())
 
-  removeOfficerEvent.parameters = new Array()
+  removeOfficerInCaseEvent.parameters = new Array()
 
-  removeOfficerEvent.parameters.push(
+  removeOfficerInCaseEvent.parameters.push(
     new ethereum.EventParam("caseId", ethereum.Value.fromUnsignedBigInt(caseId))
   )
-  removeOfficerEvent.parameters.push(
+  removeOfficerInCaseEvent.parameters.push(
     new ethereum.EventParam("initiator", ethereum.Value.fromAddress(initiator))
   )
-  removeOfficerEvent.parameters.push(
+  removeOfficerInCaseEvent.parameters.push(
     new ethereum.EventParam("officer", ethereum.Value.fromAddress(officer))
   )
 
-  return removeOfficerEvent
+  return removeOfficerInCaseEvent
 }
 
 export function createTrusteeEvent(
@@ -245,26 +237,4 @@ export function createTrusteeEvent(
   )
 
   return trusteeEvent
-}
-
-export function createUpdateOfficerInCaseEvent(
-  caseId: BigInt,
-  initiator: Address,
-  officer: Address
-): UpdateOfficerInCase {
-  let updateOfficerInCaseEvent = changetype<UpdateOfficerInCase>(newMockEvent())
-
-  updateOfficerInCaseEvent.parameters = new Array()
-
-  updateOfficerInCaseEvent.parameters.push(
-    new ethereum.EventParam("caseId", ethereum.Value.fromUnsignedBigInt(caseId))
-  )
-  updateOfficerInCaseEvent.parameters.push(
-    new ethereum.EventParam("initiator", ethereum.Value.fromAddress(initiator))
-  )
-  updateOfficerInCaseEvent.parameters.push(
-    new ethereum.EventParam("officer", ethereum.Value.fromAddress(officer))
-  )
-
-  return updateOfficerInCaseEvent
 }

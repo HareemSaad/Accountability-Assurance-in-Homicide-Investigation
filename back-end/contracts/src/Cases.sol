@@ -38,19 +38,7 @@ contract Cases is EIP712 {
         uint indexed caseId, 
         address indexed initiator, 
         bytes32 branch,
-        CaseStatus oldStatus, 
-        CaseStatus indexed newStatus
-    );
-
-    /// @notice Emitted when a case is transferred from one captain to another
-    /// @dev This event signifies a change in the leadership of a case.
-    /// @param caseId The identifier of the case that is being transferred.
-    /// @param captain The address of the new captain to whom the case has been transferred.
-    /// @param branch The identifier of the branch where the case is now assigned.
-    event CaseShifted(
-        uint indexed caseId, 
-        address indexed captain, 
-        bytes32 branch
+        CaseStatus indexed status
     );
     
     /**
@@ -59,7 +47,7 @@ contract Cases is EIP712 {
      * @dev `initiator` The address of the officer initiating the addition.
      * @dev `officer` The address of the officer being added.
      */
-    event UpdateOfficerInCase(
+    event AddOfficerInCase(
         uint caseId, 
         address indexed initiator, 
         address indexed officer
@@ -72,7 +60,7 @@ contract Cases is EIP712 {
      * @dev `officer` The address of the officer being removed.
      * @dev `caseSpecificOfficerId` The unique identifier for the officer within the case.
      */
-    event RemoveOfficer(
+    event RemoveOfficerInCase(
         uint caseId, 
         address indexed initiator, 
         address indexed officer
@@ -240,7 +228,7 @@ contract Cases is EIP712 {
         newCase.branch = _branch;
         newCase.officers[msg.sender] = true;
 
-        emit CaseUpdated(_caseId, msg.sender, _branch, CaseStatus.NULL, CaseStatus.OPEN);
+        emit CaseUpdated(_caseId, msg.sender, _branch, CaseStatus.OPEN);
     }
 
     /// @notice Updates the status of an existing case.
@@ -258,7 +246,7 @@ contract Cases is EIP712 {
         CaseStatus oldStatus = newCase.status;
         newCase.status = _status;
 
-        emit CaseUpdated(_caseId, msg.sender, newCase.branch, oldStatus, _status);
+        emit CaseUpdated(_caseId, msg.sender, newCase.branch, _status);
     }
 
     /// @notice Adds an officer to a case.
@@ -282,7 +270,7 @@ contract Cases is EIP712 {
 
         newCase.officers[_officer] = true; 
 
-        emit UpdateOfficerInCase(_caseId, msg.sender, _officer);
+        emit AddOfficerInCase(_caseId, msg.sender, _officer);
     }
 
     /// @notice Transfers the assigned captain of a case.
@@ -333,7 +321,8 @@ contract Cases is EIP712 {
         delete(newCase.officers[params.fromCaptain]);
         newCase.officers[params.toCaptain] = true;
 
-        emit UpdateOfficerInCase(params.caseId, params.fromCaptain, params.toCaptain);
+        emit AddOfficerInCase(params.caseId, msg.sender, params.toCaptain);
+        emit RemoveOfficerInCase(params.caseId, msg.sender, params.fromCaptain);
 
         delete(fromBranchId);
         delete(toBranchId);
@@ -404,7 +393,9 @@ contract Cases is EIP712 {
         newCase.officers[_params.toCaptain] = true;
         newCase.branch = _params.toBranchId;
 
-        emit CaseShifted(_params.caseId, _params.toCaptain, newCase.branch);
+        emit AddOfficerInCase(_params.caseId, msg.sender, _params.toCaptain);
+        emit RemoveOfficerInCase(_params.caseId, msg.sender, _params.fromCaptain);
+        emit CaseUpdated(_params.caseId, msg.sender, newCase.branch, newCase.status);
 
         delete(fromBranchId);
         delete(toBranchId);
@@ -431,7 +422,7 @@ contract Cases is EIP712 {
 
         delete(newCase.officers[_officer]);
 
-        emit RemoveOfficer(_caseId, msg.sender, _officer);
+        emit RemoveOfficerInCase(_caseId, msg.sender, _officer);
     }
 
     /// @notice Adds a participant to a case.
