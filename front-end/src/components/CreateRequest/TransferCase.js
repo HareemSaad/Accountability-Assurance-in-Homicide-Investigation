@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { useNavigate } from "react-router-dom";
+import { ethers } from "ethers";
+import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
@@ -11,10 +12,16 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import { stateCodeMap, branchIdMap } from "../data/data.js";
-
+import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+import { useAccount } from "wagmi";
+// hashes
+import { transferCaseHash } from "../utils/hashing/transferCaseHash.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
 
 export const TransferCase = () => {
+  const { caseId } = useParams();
   let navigate = useNavigate();
+  const { address, connector, isConnected, account } = useAccount();
 
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
@@ -25,13 +32,20 @@ export const TransferCase = () => {
   const [transferCaseInfo, setTransferCaseInfo] = useState({
     fromCaptain: "",
     toCaptain: "",
-    caseId: "",
+    nonce: Math.floor(Math.random() * 10000),
+    caseId: caseId,
     stateCode: "",
     fromBranchId: "",
     toBranchId: "",
+    signers: address,
+    receiver: false,
     expiry: "",
     isOpen: true,
   });
+
+  useEffect(() => {
+    console.log("transferCaseInfo: ", transferCaseInfo);
+  }, [transferCaseInfo]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,8 +60,8 @@ export const TransferCase = () => {
       notify("error", `From Captain is empty`);
     } else if (transferCaseInfo.toCaptain === "") {
       notify("error", `To Captain is empty`);
-    } else if (transferCaseInfo.caseId === "") {
-      notify("error", `Case Id is empty`);
+      // } else if (transferCaseInfo.caseId === "") {
+      // notify("error", `Case Id is empty`);
     } else if (transferCaseInfo.stateCode === "") {
       notify("error", `State Code is empty`);
     } else if (transferCaseInfo.toBranchId === "") {
@@ -61,21 +75,62 @@ export const TransferCase = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
-      axios
-        .post(
-          "http://localhost:3000/create-request/transfer-case",
-          transferCaseInfo
-        )
-        .then((res) =>
-          notify("success", "Transfer Case Request Created successfully")
-        )
-        .catch((err) => {
-          // console.log("error:: ", err);
-          notify(
-            "error",
-            `An Error Occured when Creating Transfer Case Request`
-          );
-        });
+
+      const client = await getWalletClient({ account, connector });
+
+      const fromBranchId = ethers.utils.hexlify(
+        ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [transferCaseInfo.fromBranchId])
+      ));
+      
+      const toBranchId = ethers.utils.hexlify(
+        ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [transferCaseInfo.toBranchId])
+      ));
+
+      try {
+        const hash = transferCaseHash (
+          transferCaseInfo.fromCaptain,
+          transferCaseInfo.toCaptain,
+          transferCaseInfo.nonce,
+          transferCaseInfo.caseId,
+          fromBranchId,
+          toBranchId,
+          transferCaseInfo.receiver,
+          transferCaseInfo.expiry
+        );
+        // console.log("hash", hash)
+
+        const message = toLedgerTypedDataHash(hash);
+
+        const signature = await client.request(
+          {
+            method: "eth_sign",
+            params: [address, message],
+          },
+          { retryCount: 0 }
+        );
+        console.log("signature:: ", signature)
+
+        axios
+          .post(
+            "http://localhost:3000/create-request/transfer-case/:caseId",
+            {
+              transferCaseInfo : transferCaseInfo,
+              signatureTransferCase : signature
+            }
+          )
+          .then((res) =>
+            notify("success", "Transfer Case Request Created successfully")
+          )
+          .catch((err) => {
+            // console.log("error:: ", err);
+            notify(
+              "error",
+              `An Error Occured when Creating Transfer Case Request`
+            );
+          });
+      } catch (err) {
+        console.log("Error:: ", err);
+      }
     }
   };
 
@@ -84,21 +139,21 @@ export const TransferCase = () => {
     setSelectedStateCode(categoryValue);
     const name = "stateCode";
     setTransferCaseInfo({ ...transferCaseInfo, [name]: categoryValue });
-  }
+  };
 
   // Function to handle to branch id dropdown selection
   const handleToBranchIdDropdownSelect = (categoryValue) => {
     setSelectedToBranchId(categoryValue);
     const name = "toBranchId";
     setTransferCaseInfo({ ...transferCaseInfo, [name]: categoryValue });
-  }
-  
+  };
+
   // Function to handle from branch id dropdown selection
   const handleFromBranchIdDropdownSelect = (categoryValue) => {
     setSelectedFromBranchId(categoryValue);
     const name = "fromBranchId";
     setTransferCaseInfo({ ...transferCaseInfo, [name]: categoryValue });
-  }
+  };
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
@@ -187,9 +242,9 @@ export const TransferCase = () => {
               type="number"
               name="caseId"
               id="caseId"
-              placeholder="Case Id Here"
               className="form-control"
-              onChange={handleChange}
+              value={caseId}
+              disabled="true"
             ></input>
           </div>
         </div>
@@ -205,13 +260,23 @@ export const TransferCase = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
-                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              <Dropdown.Toggle
+                variant="secondary"
+                id="stateCode"
+                className="dropdown"
+              >
+                {selectedStateCode
+                  ? stateCodeMap.get(selectedStateCode)
+                  : "Select State Code"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="stateCode"
+                    key={key}
+                    onClick={() => handleStateCodeDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}
@@ -231,13 +296,23 @@ export const TransferCase = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="toBranchId" className="dropdown">
-                {selectedToBranchId ? branchIdMap.get(selectedToBranchId) : "Select To Branch Id"}
+              <Dropdown.Toggle
+                variant="secondary"
+                id="toBranchId"
+                className="dropdown"
+              >
+                {selectedToBranchId
+                  ? branchIdMap.get(selectedToBranchId)
+                  : "Select To Branch Id"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="toBranchId" key={key} onClick={() => handleToBranchIdDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="toBranchId"
+                    key={key}
+                    onClick={() => handleToBranchIdDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}
@@ -256,14 +331,24 @@ export const TransferCase = () => {
             </label>
           </div>
           <div className="col-9 input">
-          <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
-                {selectedFromBranchId ? branchIdMap.get(selectedFromBranchId) : "Select From Branch Id"}
+            <Dropdown>
+              <Dropdown.Toggle
+                variant="secondary"
+                id="branchId"
+                className="dropdown"
+              >
+                {selectedFromBranchId
+                  ? branchIdMap.get(selectedFromBranchId)
+                  : "Select From Branch Id"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="fromBranchId" key={key} onClick={() => handleFromBranchIdDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="fromBranchId"
+                    key={key}
+                    onClick={() => handleFromBranchIdDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}

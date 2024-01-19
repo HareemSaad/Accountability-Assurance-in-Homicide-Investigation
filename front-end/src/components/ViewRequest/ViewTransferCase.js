@@ -1,26 +1,39 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ethers } from "ethers";
 import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import "./view.css";
 import axios from "axios";
-import { useAccount } from 'wagmi';
+import { useAccount } from "wagmi";
 import moment from "moment";
+import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+// hashes
+import { transferCaseHash } from "../utils/hashing/transferCaseHash.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
 
 export const ViewTransferCase = () => {
   const { reqId } = useParams();
-  const { address } = useAccount();
+  const { address, connector, isConnected, account } = useAccount();
 
   let navigate = useNavigate();
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
+  const [isPassedMessage, setIsPassedMessage] = useState("Send");
   const [requestDetail, setRequestDetail] = useState({});
 
   useEffect(() => {
     axios
-      .get(`http://localhost:3000/view-transfer-case/:${reqId}`)
-      .then((result) => setRequestDetail(result.data[0]))
+      .get(`http://localhost:3000/view-transfer-case/:${reqId}`, {
+        params: {
+          userAddress: address,
+        },
+      })
+      .then((result) => {
+        setRequestDetail(result.data.document);
+        // console.log("result: ", result.data.document);
+      })
       .catch((err) => console.log("error:: ", err));
   }, []);
 
@@ -31,15 +44,69 @@ export const ViewTransferCase = () => {
       setButtonDisabled(false);
     }, 5000);
     // axiospost - update the array of signers/signatures...
-    axios
-      .post(`http://localhost:3000/view-transfer-case/:${reqId}`, {
-        userAddress: address,
-      })
-      .then((res) => notify("success", "Signed successfully"))
-      .catch((err) => {
-        // console.log("error:: ", err);
-        notify("error", `An Error Occured when Signing`);
-      });
+    const client = await getWalletClient({ account, connector });
+
+    const fromBranchId = ethers.utils.hexlify(
+      ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [requestDetail.fromBranchId])
+    ));
+    
+    const toBranchId = ethers.utils.hexlify(
+      ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [requestDetail.toBranchId])
+    ));
+
+    try {
+      const hash = transferCaseHash (
+        requestDetail.fromCaptain,
+        requestDetail.toCaptain,
+        requestDetail.nonce,
+        requestDetail.caseId,
+        fromBranchId,
+        toBranchId,
+        requestDetail.receiver,
+        requestDetail.expiry
+      );
+      // console.log("hash", hash)
+
+      const message = toLedgerTypedDataHash(hash);
+
+      const signature = await client.request(
+        {
+          method: "eth_sign",
+          params: [address, message],
+        },
+        { retryCount: 0 }
+      );
+      console.log("signature:: ", signature);
+
+      // send signers address and signature to backend
+      // axiospost - update the array of signers/signatures...
+      axios
+        .post(`http://localhost:3000/view-transfer-case/:${reqId}`, {
+          userAddress: address,
+          signature: signature,
+        })
+        .then((res) => {
+          const message = res.data.message;
+          notify("success", message);
+        })
+        .catch((err) => {
+          // console.log("error:: ", err);
+          notify("error", `An Error Occured when Signing`);
+        });
+    } catch (err) {
+      console.log("Error:: ", err);
+    }
+  };
+
+  const handleSend = (e) => {
+    // Hareem todo - send by moderator
+    e.preventDefault();
+    setButtonDisabled(true);
+    setTimeout(() => {
+      setButtonDisabled(false);
+    }, 5000);
+    // after send
+    // setIsPassedMessage("Sent")
   };
 
   const getDate = (expiryDate) => {
@@ -241,14 +308,58 @@ export const ViewTransferCase = () => {
         </div>
 
         {/* sign button */}
-        <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-          type="submit"
-          onClick={async (e) => await handleSubmit(e)}
-          disabled={isButtonDisabled}
-        >
-          Sign
-        </button>
+        {requestDetail && requestDetail.isOpen ? (
+          requestDetail.signers.length === 2 &&
+          localStorage.getItem("rank") == "Captain" ? (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSubmit(e)}
+              disabled="true"
+            >
+              Signed by Both Captains
+            </button>
+          ) : requestDetail.signers.length < 2 &&
+            localStorage.getItem("rank") == "Captain" ? (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSubmit(e)}
+              disabled={isButtonDisabled}
+            >
+              Sign
+            </button>
+          ) : requestDetail.signers.length === 2 &&
+            localStorage.getItem("rank") == "Moderator" ? (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSend(e)}
+              disabled={isButtonDisabled}
+            >
+              Send
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSubmit(e)}
+              disabled="true"
+            >
+              Both Captains haven't Signed Yet.
+              {/* Send */}
+            </button>
+          )
+        ) : (
+          <button
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            type="submit"
+            disabled="true"
+          >
+            {/* {isPassedMessage} */}
+            Expiry Date has Passed.
+          </button>
+        )}
       </form>
     </div>
   );
