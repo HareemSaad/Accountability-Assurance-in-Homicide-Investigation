@@ -1,4 +1,5 @@
-.statusTagActive {
+/* active */
+.statusTag1 {
     align-self: center;
     padding: 0.1rem 0.7rem 0.1rem 0.7rem;
     background-color: #1CAC78;
@@ -7,7 +8,8 @@
     color: white;
 }
 
-.statusTagInactive {
+/* inactive */
+.statusTag0 {
     align-self: center;
     padding: 0.1rem 0.7rem 0.1rem 0.7rem;
     background-color: #848884;
@@ -16,7 +18,8 @@
     color: white;
 }
 
-.statusTagFired {
+/* fired */
+.statusTag3 {
     align-self: flex-end;
     padding: 0.1rem 0.7rem 0.1rem 0.7rem;
     background-color: #D2122E;
@@ -25,7 +28,8 @@
     color: white;
 }
 
-.statusTagRetired {
+/* retired */
+.statusTag2{
     align-self: flex-end;
     padding: 0.1rem 0.7rem 0.1rem 0.7rem;
     background-color: #2d88c9;

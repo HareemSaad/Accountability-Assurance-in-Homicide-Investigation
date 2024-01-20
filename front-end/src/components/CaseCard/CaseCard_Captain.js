@@ -3,18 +3,11 @@ import "./CaseCard.css";
 import CaseDetailsPage from "../CaseDetails/CaseDetails";
 import Card from "react-bootstrap/Card";
 import { useNavigate } from "react-router-dom";
-import { createClient, cacheExchange, fetchExchange } from "urql";
 import { useAccount } from "wagmi";
 import Dropdown from "react-bootstrap/Dropdown";
 import { InputGroup } from "react-bootstrap";
 import { IoNavigateCircleOutline } from "react-icons/io5";
-
-const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
-
-const client = createClient({
-  url: APIURL,
-  exchanges: [cacheExchange, fetchExchange],
-});
+import { client } from "../data/data";
 
 export const CaseCard_Captain = () => {
   // const [CaptainCard, setCaptainCard] = useState([]);

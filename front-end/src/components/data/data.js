@@ -1,3 +1,12 @@
+import { createClient, cacheExchange, fetchExchange } from "urql";
+
+const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/version/latest";
+
+export const client = createClient({
+  url: APIURL,
+  exchanges: [cacheExchange, fetchExchange],
+});
+
 export const employmentStatusMap = new Map();
 employmentStatusMap.set("0", "Inactive") 
 employmentStatusMap.set("1", "Active")
