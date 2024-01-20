@@ -1,6 +1,5 @@
 type BranchUpdate @entity(immutable: true) {
   id: Bytes!
-  Ledger_id: Bytes! # bytes32
   precinctAddress: String! # string
   jurisdictionArea: BigInt! # uint256
   stateCode: BigInt! # uint256
@@ -195,7 +194,7 @@ type Case @entity(immutable: false) {
   id: String! # uint256
   captain: [Officer!] # address
   status: Int! # uint8
-  branch: Bytes!
+  branch: BranchUpdate!
   officers: [Officer!] # array of addresses
   participants: [Participant!] # array of participants
   evidences: [Evidence!] # array of evidences
@@ -209,7 +208,7 @@ type Officer @entity(immutable: false) {
   name: String!
   legalNumber: Bytes!
   badge: Bytes!
-  branch: Bytes!
+  branch: BranchUpdate!
   rank: Int! # uint8
   employmentStatus: Int! # uint8
   from: Bytes! # address

@@ -28,9 +28,8 @@ import {
 
 export function handleBranchUpdate(event: BranchUpdateEvent): void {
   let entity = new BranchUpdate(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
+    event.params.id
   )
-  entity.Ledger_id = event.params.id
   entity.precinctAddress = event.params.precinctAddress
   entity.jurisdictionArea = event.params.jurisdictionArea
   entity.stateCode = event.params.stateCode

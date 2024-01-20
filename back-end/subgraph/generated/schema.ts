@@ -54,19 +54,6 @@ export class BranchUpdate extends Entity {
     this.set("id", Value.fromBytes(value));
   }
 
-  get Ledger_id(): Bytes {
-    let value = this.get("Ledger_id");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set Ledger_id(value: Bytes) {
-    this.set("Ledger_id", Value.fromBytes(value));
-  }
-
   get precinctAddress(): string {
     let value = this.get("precinctAddress");
     if (!value || value.kind == ValueKind.NULL) {
