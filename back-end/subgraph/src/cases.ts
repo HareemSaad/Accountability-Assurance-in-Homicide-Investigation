@@ -50,14 +50,14 @@ export function handleAddOfficerInCase(event: AddOfficerInCaseEvent): void {
   } else {
     // if rank == 3 add to captain array
     if(officer.rank == 3) {
-      let temp = _case.captain!
-      temp.push(officer.id)
+      let temp = _case.captain ? _case.captain : []
+      temp!.push(officer.id)
       _case.captain = temp
     }
 
     // add to officer array regardless
-    let temp = _case.officers!
-    temp.push(officer.id)
+    let temp = _case.officers ? _case.officers : []
+    temp!.push(officer.id)
     _case.officers = temp
   }
 
@@ -87,13 +87,13 @@ export function handleCaseUpdated(event: CaseUpdatedEvent): void {
   } 
 
   // add captain
-  let temp = _case.captain!
-  temp.push(event.params.initiator)
+  let temp = _case.captain ? _case.captain : []
+  temp!.push(event.params.initiator)
   _case.captain = temp
 
   // add officer
-  temp = _case.officers!
-  temp.push(event.params.initiator)
+  temp = _case.officers ? _case.officers : []
+  temp!.push(event.params.initiator)
   _case.officers = temp
   
   _case.status =  event.params.status
@@ -163,8 +163,8 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
   if(!_case) {
     return;
   } else {
-    let temp = _case.evidences!
-    temp.push(event.params.evidenceId.toString())
+    let temp = _case.evidences ? _case.evidences : []
+    temp!.push(event.params.evidenceId.toString())
     _case.evidences = temp
   }
 
@@ -207,8 +207,8 @@ export function handleNewParticipantInCase(
   if(!_case) {
     return;
   } else {
-    let temp = _case.participants!
-    temp.push(event.params.suspectId.toString())
+    let temp = _case.participants ? _case.participants : []
+    temp!.push(event.params.suspectId.toString())
     _case.participants = temp
   }
 
