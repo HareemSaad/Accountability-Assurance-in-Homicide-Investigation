@@ -12,10 +12,12 @@ import { FaCalendarAlt } from "react-icons/fa";
 import { stateCodeMap, branchIdMap } from "../data/data.js";
 import Dropdown from "react-bootstrap/Dropdown";
 import { useAccount } from 'wagmi'
+import { client } from "../data/data.js";
+import { caseStatusTypeMap } from "../data/data.js";
 
 export const TrusteeRequest = () => {
   let navigate = useNavigate();
-  const { address, connector, isConnected, account } = useAccount();
+  const { address } = useAccount();
 
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
@@ -31,6 +33,29 @@ export const TrusteeRequest = () => {
     expiry: "",
     isOpen: true,
   });
+  const [cases, setCases] = useState([]);
+  const [caseId, setCaseId] = useState(0);
+  
+  useEffect(() => {
+      fetchData();
+  }, [cases]);
+
+  async function fetchData() {
+      const query = `
+      {
+          officer(id: "${address}") {
+            cases {
+              id
+              status
+            }
+          }
+      }
+      `;
+      const response = await client.query(query).toPromise();
+      const { data } = response;
+      console.log(data.officer.cases);
+      setCases(data.officer.cases);
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +66,7 @@ export const TrusteeRequest = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (trusteeRequestInfo.caseId === "") {
+    if (caseId === "") {
       notify("error", `Case Id is empty`);
     } else if (trusteeRequestInfo.trustee === "") {
       notify("error", `Trustee Address is empty`);
@@ -58,6 +83,7 @@ export const TrusteeRequest = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
+      trusteeRequestInfo.caseId = caseId;
       axios
         .post(
           "http://localhost:3000/create-request/trustee-request",
@@ -94,6 +120,11 @@ export const TrusteeRequest = () => {
     setTrusteeRequestInfo({ ...trusteeRequestInfo, ["expiry"]: unixTimestamp });
   };
 
+  // Function to handle dropdown item selection
+  const handleDropdownSelect = async (value) => {
+    setCaseId(value);
+  };
+
   const CustomInput = ({ value, onClick }) => {
     return (
       <div className="input-group">
@@ -118,6 +149,7 @@ export const TrusteeRequest = () => {
     <div className="container">
       <h2 className="m-3 mt-5 mb-4">Trustee Request</h2>
       <form>
+
         {/* Case Id */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -128,14 +160,24 @@ export const TrusteeRequest = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="number"
-              name="caseId"
-              id="caseId"
-              placeholder="Enter Case Id Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+            <Dropdown>
+            <Dropdown.Toggle variant="light" id="rank" className="dropdown">
+                {/* {selectedValue ? rankMap.get(selectedValue) : "Select Rank"} */}
+                {caseId ? (caseId) : "Select a Case"}
+            </Dropdown.Toggle>
+
+            <Dropdown.Menu className="dropdown">
+            {cases.length > 0 ? (
+                cases.map(element => (
+                    <Dropdown.Item key={element.id} name="rank" onClick={() => handleDropdownSelect(element.id)}>
+                        {`${element.id} (${caseStatusTypeMap[element.status]})`}
+                    </Dropdown.Item>
+                ))
+            ) : (
+                <Dropdown.Item disabled>Loading officers...</Dropdown.Item>
+            )}
+            </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 

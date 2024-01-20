@@ -5,14 +5,23 @@ import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import "./view.css";
 import axios from "axios";
-import { useAccount } from 'wagmi'
+import { useAccount } from "wagmi";
 import moment from "moment";
+import { trusteeHash } from "../utils/hashing/trusteeHash";
+import { toCaseTypedDataHash } from "../utils/hashing/caseDomainHash";
+import {
+  writeContract,
+  waitForTransaction,
+  getWalletClient,
+} from "@wagmi/core";
+import { keccakString } from "../utils/hashing/keccak-hash";
+import CaseABI from "./../Cases.json";
 
 export const ViewTrusteeRequest = () => {
   const { reqId } = useParams();
-  const { address } = useAccount();
 
   let navigate = useNavigate();
+  const { address, connector, isConnected, account } = useAccount();
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [requestDetail, setRequestDetail] = useState({});
@@ -28,13 +37,12 @@ export const ViewTrusteeRequest = () => {
           if (result.data.document.signers.length > 0) {
             setIsPassedMessage("Request approved! Send.");
             setIsPassed(true);
-          }
-          else {
+          } else {
             setIsPassedMessage("Request not approved.");
           }
         })
         .catch((err) => console.log("error:: ", err));
-    }
+    };
     fetchData();
   }, []);
 
@@ -52,19 +60,60 @@ export const ViewTrusteeRequest = () => {
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
-    // axiospost - update the array of signers/signatures...
-    axios
-      .post(`http://localhost:3000/view-trustee-request/:${reqId}`, {
-        userAddress: address,
-      })
-      .then((res) => {
-        const message = res.data.message;
-        notify("success", message);
-      })
-      .catch((err) => {
-        // console.log("error:: ", err);
-        notify("error", `An Error Occured when Signing`);
-      });
+
+    try {
+      const client = await getWalletClient({ account, connector });
+
+      console.log(
+        requestDetail.caseId,
+        requestDetail.trustee,
+        address,
+        requestDetail.captain,
+        keccakString(requestDetail.branchId),
+        requestDetail.expiry
+      );
+
+      const hash = trusteeHash(
+        requestDetail.caseId,
+        requestDetail.trustee,
+        address,
+        requestDetail.captain,
+        keccakString(requestDetail.branchId),
+        requestDetail.expiry
+      );
+
+      console.log("hash", hash);
+
+      const message = toCaseTypedDataHash(hash);
+
+      const signature = await client.request(
+        {
+          method: "eth_sign",
+          params: [address, message],
+        },
+        { retryCount: 0 }
+      );
+
+      console.log("sig: ", signature);
+
+      // axiospost - update the array of signers/signatures...
+      axios
+        .post(`http://localhost:3000/view-trustee-request/:${reqId}`, {
+          userAddress: address,
+          signature: signature,
+        })
+        .then((res) => {
+          const message = res.data.message;
+          notify("success", message);
+        })
+        .catch((err) => {
+          // console.log("error:: ", err);
+          notify("error", `An Error Occured when Signing`);
+        });
+    } catch (error) {
+      console.log(error);
+      notify("error", `Error while sending transaction`);
+    }
   };
 
   const handleSend = async (e) => {
@@ -73,6 +122,46 @@ export const ViewTrusteeRequest = () => {
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
+    try {
+      console.log(address);
+      // call contract
+      const { hash } = await writeContract({
+        address: process.env.REACT_APP_CASE_CONTRACT,
+        abi: CaseABI,
+        functionName: "grantTrusteeAccess",
+        args: [
+          {
+            caseId: requestDetail.caseId,
+            trustee: requestDetail.trustee,
+            moderator: requestDetail.moderator,
+            captain: requestDetail.captain,
+            branchId: keccakString(requestDetail.branchId),
+            expiry: requestDetail.expiry,
+          },
+          requestDetail.signature[0],
+        ],
+        chainId: 11155111,
+      });
+      console.log("hash :: ", hash);
+
+      // wait for txn
+      const result = await waitForTransaction({
+        hash: hash,
+      });
+      console.log("Transaction result:", result);
+      notify("success", "Transaction Success");
+      axios
+        .delete(`http://localhost:3000/delete-trustee-request/:${reqId}`)
+        .then((response) => {
+          console.log(response.data); // Handle the response from the server
+        })
+        .catch((error) => {
+          console.error(error); // Handle errors
+        });
+    } catch (error) {
+      console.log(error);
+      notify("error", "Transaction Failed");
+    }
   };
 
   const getDate = (expiryDate) => {
@@ -82,11 +171,14 @@ export const ViewTrusteeRequest = () => {
 
   return (
     <div className="container">
-      
       <div className="m-3 mt-5 mb-4 d-flex flex-row">
         {/* <h2 className="m-3 mt-5 mb-4">Trustee Request #{reqId}</h2> */}
         <h2>Trustee Request #{reqId}</h2>
-        <h6 className={`statusTag${requestDetail.isOpen === true ? "Open" : "Close"} ms-3`} >
+        <h6
+          className={`statusTag${
+            requestDetail.isOpen === true ? "Open" : "Close"
+          } ms-3`}
+        >
           #{requestDetail.isOpen === true ? "OPEN" : "CLOSED"}
         </h6>
       </div>
@@ -219,7 +311,7 @@ export const ViewTrusteeRequest = () => {
         </div>
 
         {/* Signers */}
-        <div className="row g-3 align-items-center m-3">
+        {/* <div className="row g-3 align-items-center m-3">
           <div className="col-2">
             <label htmlFor="signers" className="col-form-label">
               <b>
@@ -248,7 +340,7 @@ export const ViewTrusteeRequest = () => {
               ))
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Expiry */}
         <div className="row g-3 align-items-center m-3 mb-5">
@@ -272,8 +364,8 @@ export const ViewTrusteeRequest = () => {
         </div>
 
         {/* button */}
-        {requestDetail && requestDetail.isOpen ? 
-          localStorage.getItem("rank") === "Captain" && isPassed ? 
+        {requestDetail && requestDetail.isOpen ? (
+          localStorage.getItem("rank") === "Captain" && isPassed ? (
             <button
               className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
               type="submit"
@@ -283,34 +375,37 @@ export const ViewTrusteeRequest = () => {
               {/* send */}
               {isPassedMessage}
             </button>
-          : localStorage.getItem("rank") === "Captain" && isPassed === false ?
+          ) : localStorage.getItem("rank") === "Captain" &&
+            isPassed === false ? (
             <button
               className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
               type="submit"
               // onClick={async (e) => await handleSend(e)}
               disabled="true"
-              >
+            >
               No one has signed yet.
             </button>
-          :
+          ) : (
             <button
               className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
               type="submit"
               onClick={async (e) => await handleSign(e)}
               disabled={isButtonDisabled}
-              >
+            >
               Sign
             </button>
-        : 
+          )
+        ) : (
           <button
-              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-              type="submit"
-              // onClick={async (e) => await handleSubmit(e)}
-              disabled="true"
-            >
-              {/* cant sign or send */}
-              {isPassedMessage}
-            </button>}
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            type="submit"
+            // onClick={async (e) => await handleSubmit(e)}
+            disabled="true"
+          >
+            {/* cant sign or send */}
+            {isPassedMessage}
+          </button>
+        )}
       </form>
     </div>
   );

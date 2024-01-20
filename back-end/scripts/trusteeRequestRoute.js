@@ -112,11 +112,29 @@ router.post('/view-trustee-request/:reqId', async (req, res) => {
         // If userAddress doesn't exist, add it to the signers array
         await TrusteeRequest.updateOne(
             { 'id': `${idParam}` },
-            { $addToSet: { signers: req.body.userAddress } }
+            { $addToSet: { signers: req.body.userAddress, signature: req.body.signature } }
         )
         .then(requests => res.status(200).json({ message: 'Signed successfully' }))
         .catch(err => console.log("errorr:: ", err));
     }
 })
+
+router.delete('/delete-trustee-request/:reqId', async (req, res) => {
+    let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
+
+    try {
+        const deletedRequest = await TrusteeRequest.findOneAndDelete({ 'id': idParam });
+        console.log("deletedRequest:: ", deletedRequest)
+
+        if (deletedRequest) {
+            res.status(200).json({ message: 'Trustee request deleted successfully', deletedRequest });
+        } else {
+            res.status(404).json({ error: 'Trustee request not found' });
+        }
+    } catch (err) {
+        console.error("Error: ", err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
 
 module.exports = router
