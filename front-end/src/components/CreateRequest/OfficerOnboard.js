@@ -181,7 +181,7 @@ export const OfficerOnboard = () => {
 
         } else if(officerOnboardInfo.rank === 3) {
     
-          const {txnHash} = await writeContract({
+          const { hash } = await writeContract({
             address: process.env.REACT_APP_LEDGER_CONTRACT,
             abi: LedgerABI,
             functionName: 'onboardCaptain',
@@ -200,11 +200,11 @@ export const OfficerOnboard = () => {
             account: address,
             chainId: 11155111
           })
-          console.log("hash :: ", txnHash)
+          console.log("hash :: ", hash)
 
           // wait for txn
           const result = await waitForTransaction({
-            hash: txnHash,
+            hash: hash,
           })
           console.log("Transaction result:", result);
 
