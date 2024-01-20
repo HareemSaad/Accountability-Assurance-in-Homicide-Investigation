@@ -1,4 +1,3 @@
-import { Bytes } from "@graphprotocol/graph-ts"
 import {
   BranchUpdate as BranchUpdateEvent,
   EIP712DomainChanged as EIP712DomainChangedEvent,
@@ -19,11 +18,7 @@ import {
   OfficerNameUpdated,
   OfficerTransferred,
   Onboard,
-  Promotion,
-  Case,
-  Officer,
-  Evidence,
-  Participant
+  Promotion
 } from "../generated/schema"
 
 export function handleBranchUpdate(event: BranchUpdateEvent): void {
@@ -70,25 +65,6 @@ export function handleOffboard(event: OffboardEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
-
-  // Core business logic
-  //  load officer
-  let officer = Officer.load(event.params.officer)
-  // if officer does not exist return
-  if(!officer) {
-    return
-  } else {
-    officer.employmentStatus = event.params.employmentStatus
-    officer.from = event.params.from
-
-    const zeroBytes = new Bytes(0)
-
-    officer.badge = zeroBytes
-    officer.branch = zeroBytes
-    officer.rank = 0
-  }
-
-  officer.save()
 }
 
 export function handleOfficerAddressUpdated(
@@ -108,18 +84,6 @@ export function handleOfficerAddressUpdated(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
-
-  // Core business logic
-  //  load officer
-  let officer = Officer.load(event.params.oldAddr)
-  // if officer does not exist return
-  if(!officer) {
-    return
-  } else {
-    officer.id = event.params.newAddr
-  }
-
-  officer.save()
 }
 
 export function handleOfficerBadgeUpdated(
@@ -139,18 +103,6 @@ export function handleOfficerBadgeUpdated(
   entity.transactionHash = event.transaction.hash
 
   entity.save()
-
-  // Core business logic
-  //  load officer
-  let officer = Officer.load(event.params.officerAddress)
-  // if officer does not exist return
-  if(!officer) {
-    return
-  } else {
-    officer.badge = event.params.badge
-  }
-
-  officer.save()
 }
 
 export function handleOfficerNameUpdated(event: OfficerNameUpdatedEvent): void {
@@ -158,7 +110,7 @@ export function handleOfficerNameUpdated(event: OfficerNameUpdatedEvent): void {
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.officerAddress = event.params.officerAddress
-  entity.name = event.params.name.toString()
+  entity.name = event.params.name
   entity.legalNumber = event.params.legalNumber
   entity.when = event.params.when
   entity.from = event.params.from
@@ -168,18 +120,6 @@ export function handleOfficerNameUpdated(event: OfficerNameUpdatedEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
-
-  // Core business logic
-  //  load officer
-  let officer = Officer.load(event.params.officerAddress)
-  // if officer does not exist return
-  if(!officer) {
-    return
-  } else {
-    officer.name = event.params.name.toString()
-  }
-
-  officer.save()
 }
 
 export function handleOfficerTransferred(event: OfficerTransferredEvent): void {
@@ -195,18 +135,6 @@ export function handleOfficerTransferred(event: OfficerTransferredEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
-
-  // Core business logic
-  //  load officer
-  let officer = Officer.load(event.params.officer)
-  // if officer does not exist return
-  if(!officer) {
-    return
-  } else {
-    officer.branch = event.params.toBranchId
-  }
-
-  officer.save()
 }
 
 export function handleOnboard(event: OnboardEvent): void {
@@ -227,27 +155,6 @@ export function handleOnboard(event: OnboardEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
-
-  // Core business logic
-  //  load officer
-  let officer = Officer.load(event.params.officer)
-  // if officer does not exist return
-  if(!officer) {
-    officer = new Officer(event.params.officer)
-  } 
-  
-  officer.name = event.params.name
-  officer.legalNumber = event.params.legalNumber
-  officer.badge = event.params.badge
-  officer.branch = event.params.branchId
-  officer.rank = event.params.rank
-  officer.employmentStatus = 1
-  officer.from = event.params.from
-  officer.blockNumber = event.block.number
-  officer.blockTimestamp = event.block.timestamp
-  officer.transactionHash = event.transaction.hash
-
-  officer.save()
 }
 
 export function handlePromotion(event: PromotionEvent): void {
@@ -263,15 +170,4 @@ export function handlePromotion(event: PromotionEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
-
-  // Core business logic
-  //  load officer
-  let officer = Officer.load(event.params.officer)
-  // if officer does not exist return
-  if(!officer) {
-    return
-  } 
-  officer.rank = event.params.newRank
-
-  officer.save()
 }
