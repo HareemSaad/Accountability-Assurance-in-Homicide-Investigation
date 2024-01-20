@@ -40,12 +40,13 @@ export const AddCase = () => {
         } 
         
         try {
+            console.log(caseNum.id, localStorage.getItem("branchid"));
             // call contract
             const { hash } = await writeContract({
                 address: process.env.REACT_APP_CASE_CONTRACT,
                 abi: CaseABI,
                 functionName: 'addCase',
-                args: [caseNum.id, localStorage.getItem("branchId")],
+                args: [caseNum.id, localStorage.getItem("branchid")],
                 chainId: 11155111
             })
             console.log("hash :: ", hash)
@@ -55,11 +56,11 @@ export const AddCase = () => {
                 hash: hash,
             })
             console.log("Transaction result:", result);
+            notify('success', "Added case successfully");
         } catch (error) {
             console.log(error);
             notify('error', "Failed to add case");
         }
-        notify('success', "Added case successfully");
     }
 
     return (
@@ -84,10 +85,10 @@ export const AddCase = () => {
                     </div>
                 </div>
 
-                <div className='d-flex justify-content-around mt-4 ms-5'>
+                {/* <div className='d-flex justify-content-around mt-4 ms-5'>
                     <button className='case-add-btn' name="add-evidence" onClick={(e) => handleNavigate(e)}>Add Evidence</button>
                     <button className='case-add-btn' name="add-participant" onClick={(e) => handleNavigate(e)}>Add Participant</button>
-                </div>
+                </div> */}
                 
                 <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
                     Save Case
