@@ -321,13 +321,6 @@ contract Ledger is EIP712 {
             _stateCode
         );
 
-        emit BranchUpdate(
-            id,
-            _precinctAddress,
-            _jurisdictionArea,
-            _stateCode
-        );
-
     }
     
     /// @notice Updates an existing branch after verification and authorization by moderators.
@@ -1017,6 +1010,13 @@ contract Ledger is EIP712 {
         _branch.precinctAddress = _precinctAddress;
         _branch.jurisdictionArea = _jurisdictionArea;
         _branch.stateCode = _stateCode;
+
+        emit BranchUpdate(
+            _id,
+            _precinctAddress,
+            _jurisdictionArea,
+            _stateCode
+        );
     }
 
     /// @dev Adds an officer to the ledger.
