@@ -3,8 +3,8 @@ import React, { useContext, useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Route, Routes } from "react-router-dom";
 import { NavbarComponent } from './components/Navbar/Navbar';
-import { CaseCard_Detective } from './components/CaseCard/CaseCard_Detective';
-import { CaseCard_Captain } from './components/CaseCard/CaseCard_Captain';
+import { CaseCardDetective } from './components/CaseCard/CaseCard_Detective';
+import { CaseCardCaptain } from './components/CaseCard/CaseCard_Captain';
 import { AddCase } from './components/AddCase/AddCase';
 import { AddOfficer } from './components/AddOfficer/AddOfficer';
 import { AddOfficerInCase } from './components/AddDropOfficer/AddOfficerInCase';
@@ -96,8 +96,8 @@ function App() {
         <NavbarComponent />
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/cases-detective" element={<CaseCard_Detective />} />
-          <Route path="/cases-captain" element={<CaseCard_Captain />} />
+          <Route path="/cases-detective" element={<CaseCardDetective />} />
+          <Route path="/cases-captain" element={<CaseCardCaptain />} />
           <Route path="/case-detail/:caseId" element={<CaseDetails />} />
           <Route path="/add-evidence/:caseId" element={<AddEvidence />} />
           <Route path="/add-participant/:caseId" element={<AddParticipant />} />

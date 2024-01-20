@@ -9,7 +9,7 @@ import { InputGroup } from "react-bootstrap";
 import { IoNavigateCircleOutline } from "react-icons/io5";
 import { client } from "../data/data";
 
-export const CaseCard_Captain = () => {
+export const CaseCardCaptain = () => {
   // const [CaptainCard, setCaptainCard] = useState([]);
   const casePageArray = [ "Add Case", "Archive Cases", "Employees"];
   const requestsPage = ["Create Trustee Request", "View Trustee Request", "View Transfer Case", "View Transfer Captain"];
