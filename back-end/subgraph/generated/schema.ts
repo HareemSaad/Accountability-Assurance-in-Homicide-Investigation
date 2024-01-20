@@ -2744,6 +2744,19 @@ export class Participant extends Entity {
     return new CaseLoader("Participant", this.get("id")!.toString(), "cases");
   }
 
+  get data(): Bytes {
+    let value = this.get("data");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set data(value: Bytes) {
+    this.set("data", Value.fromBytes(value));
+  }
+
   get category(): i32 {
     let value = this.get("category");
     if (!value || value.kind == ValueKind.NULL) {
@@ -2825,6 +2838,19 @@ export class Evidence extends Entity {
 
   get cases(): CaseLoader {
     return new CaseLoader("Evidence", this.get("id")!.toString(), "cases");
+  }
+
+  get data(): Bytes {
+    let value = this.get("data");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set data(value: Bytes) {
+    this.set("data", Value.fromBytes(value));
   }
 
   get category(): i32 {

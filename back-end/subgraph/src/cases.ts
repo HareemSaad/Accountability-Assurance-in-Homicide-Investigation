@@ -165,6 +165,7 @@ export function handleNewEvidenceInCase(event: NewEvidenceInCaseEvent): void {
   } 
 
   evidence.approve = false
+  evidence.data = event.params.data
   evidence.category = event.params.category
   evidence.from = event.params.initiator
 
@@ -210,6 +211,7 @@ export function handleNewParticipantInCase(
 
   participant.approve = false
   participant.category = event.params.category
+  participant.data = event.params.data
   participant.from = event.params.initiator
 
   participant.save()

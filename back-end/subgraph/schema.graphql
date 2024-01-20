@@ -221,6 +221,7 @@ type Participant @entity(immutable: false) {
   id: String! # suspectId
   from: Bytes!
   cases: [Case!] @derivedFrom (field:"participants") # array of cases they are a part of
+  data: Bytes!
   category: Int! # uint8
   approve: Boolean!
 }
@@ -229,6 +230,7 @@ type Evidence @entity(immutable: false) {
   id: String! # evidenceId
   from: Bytes!
   cases: [Case!] @derivedFrom (field:"evidences") # array of cases assigned
+  data: Bytes!
   category: Int! # uint8
   approve: Boolean!
 }
