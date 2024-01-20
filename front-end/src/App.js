@@ -44,6 +44,7 @@ import { ViewOfficerRequests } from './components/AddOfficer/ViewOfficerRequests
 import { ViewDetectiveRequests } from './components/AddOfficer/ViewDetectiveRequests.js';
 import { CaptainViewTranferRequest } from './components/CaptainTransferCaseCaptain/CaptainViewTranferRequest.js';
 import { ViewParticipant } from './components/ViewRequest/ViewParticipant.js';
+import { ViewEvidence } from './components/ViewRequest/ViewEvidence.js';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -103,6 +104,7 @@ function App() {
           <Route path="/add-evidence/:caseId" element={<AddEvidence />} />
           <Route path="/add-participant/:caseId" element={<AddParticipant />} />
           <Route path="/view-participant/:caseId/:participantId" element={<ViewParticipant />} />
+          <Route path="/view-evidence/:caseId/:evidenceId" element={<ViewEvidence />} />
           {/* Captain-only accessed */}
           <Route path="/add-case" element={<AddCase />} />
           <Route path="/add-officer" element={<AddOfficer />} />

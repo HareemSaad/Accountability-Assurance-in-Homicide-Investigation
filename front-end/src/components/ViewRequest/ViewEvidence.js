@@ -4,19 +4,19 @@ import { useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify.js";
 import "react-toastify/dist/ReactToastify.css";
 import { useAccount } from "wagmi";
-import { participantTypeMap } from "../data/data.js";
+import { evidenceTypeMap } from "../data/data.js";
 import { client } from "../data/data.js";
 import { decodeBytesString } from "../utils/decoders/bytesToString.js";
 import { waitForTransaction, writeContract } from '@wagmi/core'
-import CaseABI from "./../Cases.json";
+import CaseABI from "../Cases.json";
 
-export const ViewParticipant = () => {
-  const { caseId, participantId } = useParams();
+export const ViewEvidence = () => {
+  const { caseId, evidenceId } = useParams();
   const { address } = useAccount();
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [requestDetail, setRequestDetail] = useState({});
-  const [caseParticipant, setCaseParticipant] = useState({});
+  const [caseEvidence, setCaseEvidence] = useState({});
 
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export const ViewParticipant = () => {
     try {
       const query = `
       {
-        participant(id: "${participantId}") {
+        evidence(id: "${evidenceId}") {
           category
           approve
           data
@@ -37,7 +37,7 @@ export const ViewParticipant = () => {
       `
       const response = await client.query(query).toPromise();
       const { data } = response;
-      setCaseParticipant(data.participant)
+      setCaseEvidence(data.evidence)
     } catch (error) {
       console.log(error);
       notify("error", "Failed to get case details")
@@ -54,8 +54,8 @@ export const ViewParticipant = () => {
       const { hash } = await writeContract({
           address: process.env.REACT_APP_CASE_CONTRACT,
           abi: CaseABI,
-          functionName: 'approveParticipant',
-          args: [caseId, participantId],
+          functionName: 'approveEvidence',
+          args: [caseId, evidenceId],
           chainId: 11155111
       })
       console.log("hash :: ", hash)
@@ -79,8 +79,8 @@ export const ViewParticipant = () => {
       <div className="m-3 mt-5 mb-4 d-flex flex-row">
         {/* <h2 className="m-3 mt-5 mb-4">Officer Onboard Request #{reqId}</h2> */}
         <h2>Case #{caseId}</h2>
-        <h6 className={`statusTag${caseParticipant.approve === true ? "Open" : "Close"} ms-3`} >
-          #{caseParticipant.approve === true ? "APPROVED" : "NOT APPROVED"}
+        <h6 className={`statusTag${caseEvidence.approve === true ? "Open" : "Close"} ms-3`} >
+          #{caseEvidence.approve === true ? "APPROVED" : "NOT APPROVED"}
         </h6>
       </div>
       
@@ -106,12 +106,12 @@ export const ViewParticipant = () => {
           </div>
         </div>
 
-        {/* Participant Id */}
+        {/* Evidence Id */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
             <label htmlFor="name" className="col-form-label">
               <b>
-                <em>Participant Id:</em>
+                <em>Evidence Id:</em>
               </b>
             </label>
           </div>
@@ -121,7 +121,7 @@ export const ViewParticipant = () => {
               name="name"
               id="name"
               className="form-control"
-              value={participantId}
+              value={evidenceId}
               disabled
             ></input>
           </div>
@@ -142,7 +142,7 @@ export const ViewParticipant = () => {
               name="legalNumber"
               id="legalNumber"
               className="form-control"
-              value={participantTypeMap[caseParticipant.category]}
+              value={evidenceTypeMap[caseEvidence.category]}
               disabled
             ></input>
           </div>
@@ -163,17 +163,17 @@ export const ViewParticipant = () => {
               name="badge"
               id="badge"
               className="form-control"
-              value={caseParticipant.data ? decodeBytesString(caseParticipant.data) : "No data"}
+              value={caseEvidence.data ? decodeBytesString(caseEvidence.data) : "No data"}
               disabled
             ></textarea>
           </div>
         </div>
 
         {
-          localStorage.getItem("rank") === "Captain" && !caseParticipant.approve?
+          localStorage.getItem("rank") === "Captain" && !caseEvidence.approve?
           (
             <div className='div-btn'>
-              <button className='case-nav-btn' name="add-participant" onClick={(e) => handleSubmit(e)}>Approve Participant</button>
+              <button className='case-nav-btn' name="add-participant" onClick={(e) => handleSubmit(e)}>Approve Evidence</button>
             </div>
           ) :
           (

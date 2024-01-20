@@ -98,6 +98,10 @@ const CaseDetailsPage = () => {
     navigate(`/view-participant/${caseId}/${id}`);
   };
 
+  const toEvidence = async (id) => {
+    navigate(`/view-evidence/${caseId}/${id}`);
+  };
+
   return (
     <div className=''>
       {/* case Number and change status button */}
@@ -162,7 +166,7 @@ const CaseDetailsPage = () => {
           Evidence</h3>
         <div className='card-info-container'>
           {caseEvidence.length > 0 ? caseEvidence.map((evidence, index) => (
-            <Card style={{ width: '18rem', height: '5rem' }} className='case-info-card'>
+            <Card style={{ width: '18rem', height: '5rem' }} className='case-info-card' onClick={() => toEvidence(evidence.id)}>
               <Card.Body>
                 <Card.Title>{evidence.id}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">{evidenceTypeMap[evidence.category]}</Card.Subtitle>
