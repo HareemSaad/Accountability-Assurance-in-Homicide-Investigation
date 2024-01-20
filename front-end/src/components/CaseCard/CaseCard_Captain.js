@@ -28,7 +28,7 @@ export const CaseCardCaptain = () => {
     const query = `
       {
         officer(id: "${address}") {
-          cases {
+          cases (where: {status: 1}) {
             id
           }
         }
