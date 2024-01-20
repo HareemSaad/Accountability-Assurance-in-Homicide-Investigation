@@ -65,6 +65,14 @@ export const ViewDetectiveRequests = () => {
       console.log("Transaction result:", result);
 
       // amaim -- delete request from table
+
+      axios.delete(`http://localhost:3000/delete-detective-request/:${reqId}`)
+      .then(response => {
+        console.log(response.data); // Handle the response from the server
+      })
+      .catch(error => {
+        console.error(error); // Handle errors
+      });
       
     } catch (error) {
       console.log(error)
