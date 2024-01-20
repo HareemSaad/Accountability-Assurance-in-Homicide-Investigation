@@ -3,18 +3,37 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import './ArchiveCases.css';
 import Card from 'react-bootstrap/Card';
 import { useNavigate } from "react-router-dom";
+import { useAccount } from 'wagmi'
+import { client } from '../data/data';
 
 export const ArchiveCases = () => {
 
     const archiveCases = ["Select Status", "Closed", "Cold"];
     const [selectedValue, setSelectedValue] = useState(null);
+    const [cases, setCases] = useState([]);
     const [statusValue, setStatusValue] = useState(0);
+    const { address } = useAccount()
+    let navigate = useNavigate();  
+    
+    useEffect(() => {
+        fetchData();
+    }, [statusValue]);
 
-    const casesCardResponseCold = [{ id: 21, status: "Cold" }, { id: 212, status: "Cold" }, { id: 211, status: "Cold" }, { id: 2121, status: "Cold" }, { id: 2441, status: "Cold" }, { id: 21, status: "Cold" }, { id: 21, status: "Cold" }, { id: 21, status: "Cold" }, { id: 24321, status: "Cold" }, { id: 23241, status: "Cold" }, { id: 21, status: "Cold" }];
-
-    const casesCardResponseClosed = [{ id: 21675, status: "Closed" }, { id: 56721, status: "Closed" }, { id: 45621, status: "Closed" }, { id: 66421, status: "Closed" }, { id: 24312, status: "Closed" }, { id: 21, status: "Closed" }, { id: 21, status: "Closed" }, { id: 21, status: "Closed" }, { id: 21, status: "Closed" }, { id: 21, status: "Closed" }, { id: 21, status: "Closed" }];
-    let navigate = useNavigate();
-
+    async function fetchData() {
+        const query = `
+        {
+            officer(id: "${address}") {
+                cases (where: {status: ${statusValue + 1}}) {
+                id
+                }
+            }
+        }
+        `;
+        const response = await client.query(query).toPromise();
+        const { data } = response;
+        console.log(data.officer.cases);
+        setCases(data.officer.cases);
+    }
 
     // Function to handle dropdown item selection
     const handleDropdownSelect = (categoryValue) => {
@@ -47,7 +66,7 @@ export const ArchiveCases = () => {
 
             {/* According to index of status category choosen from the dropdown cases list is shown */}
             <div className='emp-card-container'>
-                {(statusValue === 2 ? casesCardResponseCold : casesCardResponseClosed).map((caseCard, index) => (
+                {cases.map((caseCard, index) => (
                     <Card key={index} style={{ width: '18rem' }} className='emp-case-card'>
                         <Card.Body>
                             <Card.Title>Case# {caseCard.id}</Card.Title>
