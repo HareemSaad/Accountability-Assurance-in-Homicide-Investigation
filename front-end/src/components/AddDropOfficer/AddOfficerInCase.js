@@ -24,25 +24,30 @@ export const AddOfficerInCase = () => {
     }, []);
 
     async function fetchData() {
-        const query = `
-        {
-            officers(where: {branch: "${localStorage.getItem("branchid")}"}) {
-              id
-              name
-              rank
+        try {
+            const query = `
+            {
+                officers(where: {branch: "${localStorage.getItem("branchid")}"}) {
+                id
+                name
+                rank
+                }
             }
+            `;
+            const response = await client.query(query).toPromise();
+            const { data, fetching, error } = response;
+            console.log(data.officers);
+            setOfficersInCase(data.officers);
+        } catch(error) {
+            console.log('Error', error);
+            notify("error", "Failed to load officer list");
         }
-        `;
-        const response = await client.query(query).toPromise();
-        const { data, fetching, error } = response;
-        console.log(data.officers);
-        setOfficersInCase(data.officers);
     }
 
     useEffect(() => {
         console.log("officersInCase: ", officersInCase);
     }, [officersInCase])
-    
+
     // Function to handle dropdown item selection
     const handleDropdownSelect = async (value) => {
         setOfficerAddress(value);
