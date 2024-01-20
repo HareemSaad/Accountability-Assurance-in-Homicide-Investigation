@@ -76,6 +76,7 @@ export const AddOfficerInCase = () => {
                     hash: hash,
                 })
                 console.log("Transaction result:", result);
+                notify('success', 'Transaction Success')
             } catch (error) {
                 console.log(error)
                 notify('error', 'Transaction Failed')
