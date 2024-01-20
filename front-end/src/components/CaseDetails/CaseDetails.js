@@ -72,6 +72,9 @@ const CaseDetailsPage = () => {
       case "transfer-captain":
         navigate(`/create-request/transfer-captain/${caseId}`);
         break;
+      case "add-officer-in-case":
+        navigate(`/add-officer-in-case/${caseId}`);
+        break;
       default:
         break;
     }
