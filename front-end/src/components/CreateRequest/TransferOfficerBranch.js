@@ -11,6 +11,7 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import { client } from "../data/data";
 
 export const TransferOfficerBranch = () => {
   let navigate = useNavigate();
@@ -21,21 +22,25 @@ export const TransferOfficerBranch = () => {
   // const [employeeStatus, setEmployeeStatus] = useState("");
 
   // Function to handle dropdown item selection
-  const [selectedStateCode, setSelectedStateCode] = useState(null);
+  // const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedToBranchId, setSelectedToBranchId] = useState(null);
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
 
   const [transferOfficerInfo, setTransferOfficerInfo] = useState({
     verifiedAddress: "",
+    nonce: Math.floor(Math.random() * 10000),
     name: "",
     legalNumber: "",
     badge: "",
-    stateCode: "",
+    fromCaptain: "",
+    toCaptain: "",
+    stateCode: localStorage.getItem("statecode"),
     branchId: "",
     toBranchId: "",
     rank: "",
     employmentStatus: "",
+    receiver: false,
     expiry: "",
     isOpen: true,
   });
@@ -57,6 +62,28 @@ export const TransferOfficerBranch = () => {
     console.log("value :: ", value);
   };
 
+  async function fetchStateCode() {
+    const query = `
+    {
+      officer(id: "${transferOfficerInfo.fromCaptain}") {
+        branch {
+          stateCode
+        }
+      }
+    }
+    `;
+    const response = await client.query(query).toPromise();
+    const { data, fetching, error } = response;
+    console.log("subgraph data: ", data);
+    if (data.officer === null) {
+      console.log("first")
+      return 90;
+    }
+    else {
+      return data.officer.branch.stateCode;
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (transferOfficerInfo.verifiedAddress === "") {
@@ -69,20 +96,16 @@ export const TransferOfficerBranch = () => {
       notify("error", `Badge is empty`);
     } else if (transferOfficerInfo.stateCode === "") {
       notify("error", `State Code is empty`);
-    } else if (transferOfficerInfo.branchId === ""
-    ) {
+    } else if (transferOfficerInfo.branchId === "") {
       notify("error", `Branch Id is empty`);
-    } else if (transferOfficerInfo.toBranchId === ""
-    ) {
+    } else if (transferOfficerInfo.toBranchId === "") {
       notify("error", `To Branch Id is empty`);
     } else if (
       transferOfficerInfo.rank === "" ||
       transferOfficerInfo.rank === 0
     ) {
       notify("error", `Select Officer Rank`);
-    } else if (
-      transferOfficerInfo.employmentStatus === ""
-    ) {
+    } else if (transferOfficerInfo.employmentStatus === "") {
       notify("error", `Select Employment Status`);
     } else if (transferOfficerInfo.expiry === "") {
       notify("error", `Select an Expiry Date`);
@@ -91,6 +114,10 @@ export const TransferOfficerBranch = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
+
+      const stateCodeFromCaptain = await fetchStateCode();
+      
+      if (transferOfficerInfo.stateCode === stateCodeFromCaptain) {
       axios
         .post(
           "http://localhost:3000/create-request/transfer-officer-branch",
@@ -106,16 +133,20 @@ export const TransferOfficerBranch = () => {
             `An Error Occured when Creating Transfer Officer Branch Request`
           );
         });
+      } else if (stateCodeFromCaptain === -1){
+        notify(
+          "error",
+          `From Captain doesn't exist.`
+        );
+      } else {
+        notify(
+          "error",
+          `Invalid From Captain address! Modarator and From Captain state code is Different.`
+        );
+      }
     }
   };
 
-  // Function to handle state code dropdown selection
-  const handleStateCodeDropdownSelect = (categoryValue) => {
-    setSelectedStateCode(categoryValue);
-    const name = "stateCode";
-    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
-  }
-  
   // Function to handle branch id dropdown selection
   const handleBranchIdDropdownSelect = (categoryValue) => {
     setSelectedBranchId(categoryValue);
@@ -259,29 +290,45 @@ export const TransferOfficerBranch = () => {
           </div>
         </div>
 
-        {/* State Code */}
+        {/* fromCaptain */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
-            <label htmlFor="stateCode" className="col-form-label">
+            <label htmlFor="fromCaptain" className="col-form-label">
               <b>
-                <em>State Code:</em>
+                <em>From Captain:</em>
               </b>
             </label>
           </div>
           <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
-                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
-              </Dropdown.Toggle>
+            <input
+              type="text"
+              name="fromCaptain"
+              id="fromCaptain"
+              placeholder="From Captain Address Here"
+              className="form-control"
+              onChange={handleChange}
+            ></input>
+          </div>
+        </div>
 
-              <Dropdown.Menu className="dropdown">
-                {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+        {/* toCaptain */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="toCaptain" className="col-form-label">
+              <b>
+                <em>To Captain:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="text"
+              name="toCaptain"
+              id="toCaptain"
+              placeholder="To Captain Address Here"
+              className="form-control"
+              onChange={handleChange}
+            ></input>
           </div>
         </div>
 

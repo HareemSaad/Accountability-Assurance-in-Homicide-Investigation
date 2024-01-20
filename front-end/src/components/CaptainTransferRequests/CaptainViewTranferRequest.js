@@ -22,7 +22,7 @@ export const CaptainViewTranferRequest = () => {
             "userStateCode": localStorage.getItem("statecode"), 
             "address": address
         }})
-        .then(result => {setAllRequests(result.data); console.log("result.data:: ", result.data)})
+        .then(result => {setAllRequests(result.data); console.log("result.data:: ", result.data.length)})
         .catch(err => console.log("error:: ", err))
 
         // console.log("stateCode: ", stateCode) 
@@ -35,6 +35,9 @@ export const CaptainViewTranferRequest = () => {
         } 
         else if (reqName === "view-transfer-case") {
             navigate(`/view-transfer-case/${cardId}`);
+        }
+        else if (reqName === "view-transfer-officer-branch") {
+            navigate(`/view-transfer-officer-branch/${cardId}`);
         }
     }
 
@@ -50,10 +53,12 @@ export const CaptainViewTranferRequest = () => {
             <div className="d-flex justify-content-between">
                 {reqName === "view-transfer-captain" ? <h1 className='m-4'>Transfer Captain Requests</h1>
                     : reqName === "view-transfer-case" ? <h1 className='m-4'>Transfer Case Requests</h1>
+                    : reqName === "view-transfer-officer-branch" ? <h1 className='m-4'>Transfer Officer Branch Requests</h1>
                     : <h1 className='m-4'>Requests</h1>}
             </div>
 
             {/* request cards */}
+            {allRequests.length > 0 ? (
             <div className='card-container'>
                 {allRequests.map((card, index) => (
                     <Card className='case-card'>
@@ -62,6 +67,9 @@ export const CaptainViewTranferRequest = () => {
                     </Card>
                 ))}
             </div>
+            ) : (
+                <h4 style={{ textAlign: 'center' }} className='mb-2 mt-4'><em>No Requests to Show.</em></h4>
+            )}
 
 
         </>

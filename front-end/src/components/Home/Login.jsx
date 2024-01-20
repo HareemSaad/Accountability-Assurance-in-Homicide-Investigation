@@ -153,7 +153,7 @@ export const Login = () => {
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(rankMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleDropdownSelect(key)} >
+                  <Dropdown.Item name="stateCode" className="page-dropdown-item-login" key={key} onClick={() => handleDropdownSelect(key)} >
                     {value}
                   </Dropdown.Item>
                 ))}
@@ -170,7 +170,7 @@ export const Login = () => {
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                  <Dropdown.Item name="stateCode" className="page-dropdown-item-login" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
                     {value}
                   </Dropdown.Item>
                 ))}
@@ -187,7 +187,7 @@ export const Login = () => {
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                  <Dropdown.Item name="branchId" className="page-dropdown-item-login" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
                     {value}
                   </Dropdown.Item>
                 ))}

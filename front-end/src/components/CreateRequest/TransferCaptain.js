@@ -48,7 +48,7 @@ export const TransferCaptain = () => {
   async function fetchStateCode() {
     const query = `
     {
-      officer(id: "${transferCaptainInfo.toCaptain}") {
+      officer(id: "${transferCaptainInfo.fromCaptain}") {
         branch {
           stateCode
         }
@@ -89,9 +89,9 @@ export const TransferCaptain = () => {
         setButtonDisabled(false);
       }, 5000);
 
-      const stateCodeToCaptain = await fetchStateCode();
+      const stateCodeFromCaptain = await fetchStateCode();
 
-      if (transferCaptainInfo.stateCode === stateCodeToCaptain) {
+      if (transferCaptainInfo.stateCode === stateCodeFromCaptain) {
         axios
           .post(
             "http://localhost:3000/create-request/transfer-captain/:caseId",
@@ -107,17 +107,17 @@ export const TransferCaptain = () => {
               `An Error Occured when Creating Transfer Captain Request`
             );
           });
-      } else if (stateCodeToCaptain === -1){
+      } else if (stateCodeFromCaptain === -1){
         notify(
           "error",
-          `To Captain doesn't exist.`
+          `From Captain doesn't exist.`
         );
       } else {
         notify(
           "error",
-          `Modarator and From Captain state code is Different.`
+          `Invalid From Captain address! Modarator and From Captain state code is Different.`
         );
-      }
+      } 
       // } catch (err) {
       //   console.log("Error:: ", err);
       // }

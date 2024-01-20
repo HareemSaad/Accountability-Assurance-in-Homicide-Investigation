@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ethers } from "ethers";
 import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
-import { useAccount } from 'wagmi';
+import { useAccount } from "wagmi";
 import { employmentStatusMap, rankMap } from "../data/data.js";
 import moment from "moment";
+import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+// hashes
+import { transferOfficerBranchHash } from "../utils/hashing/transferOfficerBranchHash.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { keccakInt, keccakString } from "../utils/hashing/keccak-hash.js";
 
 export const ViewTransferOfficerBranch = () => {
   const { reqId } = useParams();
-  const { address } = useAccount();
+  const { address, connector, isConnected, account } = useAccount();
 
   let navigate = useNavigate();
 
@@ -19,8 +25,15 @@ export const ViewTransferOfficerBranch = () => {
 
   useEffect(() => {
     axios
-      .get(`http://localhost:3000/view-transfer-officer-branch/:${reqId}`)
-      .then((result) => setRequestDetail(result.data[0]))
+      .get(`http://localhost:3000/view-transfer-officer-branch/:${reqId}`, {
+        params: {
+          userAddress: address,
+        },
+      })
+      .then((result) => {
+        setRequestDetail(result.data.document);
+        // console.log("result: ", result.data.document);
+      })
       .catch((err) => console.log("error:: ", err));
   }, []);
 
@@ -30,23 +43,77 @@ export const ViewTransferOfficerBranch = () => {
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
-    // axiospost - update the array of signers/signatures...
-    axios
-      .post(`http://localhost:3000/view-transfer-officer-branch/:${reqId}`, {
-        userAddress: address,
-      })
-      .then((res) => notify("success", "Signed successfully"))
-      .catch((err) => {
-        // console.log("error:: ", err);
-        notify("error", `An Error Occured when Signing`);
-      });
+
+    const client = await getWalletClient({ account, connector });
+
+    const legalNumber = keccakInt(requestDetail.legalNumber)
+    const badge = keccakString(requestDetail.badge)
+    const branchId = keccakString(requestDetail.branchId)
+    const toBranchId = keccakString(requestDetail.toBranchId)
+
+    try {
+      const hash = transferOfficerBranchHash(
+        requestDetail.verifiedAddress,
+        requestDetail.nonce,
+        requestDetail.name,
+        legalNumber,
+        badge,
+        branchId,
+        toBranchId,
+        requestDetail.employmentStatus,
+        requestDetail.rank,
+        requestDetail.receiver,
+        requestDetail.expiry
+      );
+      // console.log("hash", hash)
+
+      const message = toLedgerTypedDataHash(hash);
+
+      const signature = await client.request(
+        {
+          method: "eth_sign",
+          params: [address, message],
+        },
+        { retryCount: 0 }
+      );
+      console.log("signature:: ", signature);
+
+      // axiospost - update the array of signers/signatures...
+      axios
+        .post(`http://localhost:3000/view-transfer-officer-branch/:${reqId}`, {
+          userAddress: address,
+          signature: signature,
+        })
+        .then((res) => {
+          const message = res.data.message;
+          notify("success", message);
+        })
+        .catch((err) => {
+          // console.log("error:: ", err);
+          notify("error", `An Error Occured when Signing`);
+        });
+
+    } catch (err) {
+      console.log("Error:: ", err);
+    }
+  };
+
+  const handleSend = (e) => {
+    // Hareem todo - send by moderator
+    e.preventDefault();
+    setButtonDisabled(true);
+    setTimeout(() => {
+      setButtonDisabled(false);
+    }, 5000);
+    // after send
+    // setIsPassedMessage("Sent");
   };
 
   const getDate = (expiryDate) => {
     var date = new Date(expiryDate * 1000);
     return moment(date).format("MMMM Do YYYY");
   };
-  
+
   // Function to handle rank dropdown item selection
   //   const rankName = (officerRank) => {
   //     const name = "rank";
@@ -82,11 +149,14 @@ export const ViewTransferOfficerBranch = () => {
 
   return (
     <div className="container">
-      
       <div className="m-3 mt-5 mb-4 d-flex flex-row">
         {/* <h2 className="m-3 mt-5 mb-4"> Transfer Officer Branch Request #{reqId} </h2> */}
         <h2>Transfer Officer Branch Request #{reqId}</h2>
-        <h6 className={`statusTag${requestDetail.isOpen === true ? "Open" : "Close"} ms-3`} >
+        <h6
+          className={`statusTag${
+            requestDetail.isOpen === true ? "Open" : "Close"
+          } ms-3`}
+        >
           #{requestDetail.isOpen === true ? "OPEN" : "CLOSED"}
         </h6>
       </div>
@@ -127,7 +197,6 @@ export const ViewTransferOfficerBranch = () => {
               type="text"
               name="name"
               id="name"
-              placeholder="Enter Name Here"
               className="form-control"
               value={requestDetail.name}
               disabled
@@ -172,6 +241,48 @@ export const ViewTransferOfficerBranch = () => {
               id="badge"
               className="form-control"
               value={requestDetail.badge}
+              disabled
+            ></input>
+          </div>
+        </div>
+
+        {/* fromCaptain */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="fromCaptain" className="col-form-label">
+              <b>
+                <em>From Captain:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="text"
+              name="fromCaptain"
+              id="fromCaptain"
+              className="form-control"
+              value={requestDetail.fromCaptain}
+              disabled
+            ></input>
+          </div>
+        </div>
+
+        {/* toCaptain */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="toCaptain" className="col-form-label">
+              <b>
+                <em>To Captain:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input">
+            <input
+              type="text"
+              name="toCaptain"
+              id="toCaptain"
+              className="form-control"
+              value={requestDetail.toCaptain}
               disabled
             ></input>
           </div>
@@ -277,9 +388,43 @@ export const ViewTransferOfficerBranch = () => {
               name="employmentStatus"
               id="employmentStatus"
               className="form-control"
-              value={employmentStatusMap.get(`${requestDetail.employmentStatus}`)}
+              value={employmentStatusMap.get(
+                `${requestDetail.employmentStatus}`
+              )}
               disabled
             ></input>
+          </div>
+        </div>
+
+        {/* Signers */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="branchId" className="col-form-label">
+              <b>
+                <em>Signers:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input d-flex flex-wrap">
+            {(requestDetail.signers ?? []).length === 0 ? (
+              <input
+                type="text"
+                className="form-control mb-2"
+                value="No one has signed yet."
+                disabled
+              />
+            ) : (
+              requestDetail.signers.map((signer, index) => (
+                <input
+                  type="text"
+                  name={`signer-${index}`}
+                  id={`signer-${index}`}
+                  className="form-control signer mb-2"
+                  value={signer}
+                  disabled
+                />
+              ))
+            )}
           </div>
         </div>
 
@@ -304,15 +449,59 @@ export const ViewTransferOfficerBranch = () => {
           </div>
         </div>
 
-        {/* Submit button */}
-        <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-          type="submit"
-          onClick={async (e) => await handleSubmit(e)}
-          disabled={isButtonDisabled}
-        >
-          Sign
-        </button>
+        {/* sign button */}
+        {requestDetail && requestDetail.isOpen ? (
+          requestDetail.signers.length === 2 &&
+          localStorage.getItem("rank") == "Captain" ? (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSubmit(e)}
+              disabled="true"
+            >
+              Signed by Both Captains
+            </button>
+          ) : requestDetail.signers.length < 2 &&
+            localStorage.getItem("rank") == "Captain" ? (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSubmit(e)}
+              disabled={isButtonDisabled}
+            >
+              Sign
+            </button>
+          ) : requestDetail.signers.length === 2 &&
+            localStorage.getItem("rank") == "Moderator" ? (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSend(e)}
+              disabled={isButtonDisabled}
+            >
+              Send
+            </button>
+          ) : (
+            <button
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              type="submit"
+              onClick={async (e) => await handleSubmit(e)}
+              disabled="true"
+            >
+              Both Captains haven't Signed Yet.
+              {/* Send */}
+            </button>
+          )
+        ) : (
+          <button
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            type="submit"
+            disabled="true"
+          >
+            {/* {isPassedMessage} */}
+            Expiry Date has Passed.
+          </button>
+        )}
       </form>
     </div>
   );

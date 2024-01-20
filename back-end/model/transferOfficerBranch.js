@@ -25,6 +25,14 @@ const TransferOfficerBranchSchema = new mongoose.Schema ({
         type: String,
         required: true,
     },
+    fromCaptain: {
+        type: String,
+        required: true,
+    },
+    toCaptain: {
+        type: String,
+        required: true,
+    },
     stateCode: {
         type: Number,
         required: true,
@@ -45,14 +53,21 @@ const TransferOfficerBranchSchema = new mongoose.Schema ({
         type: Number,
         required: true,
     },
-    reciever: {
+    receiver: {
         type: Boolean,
+        default: false
     },
-    signature: {
-        type: Array
+    signatureFromCaptain: {
+        type: String,
+        default: ""
+    },
+    signatureToCaptain: {
+        type: String,
+        default: ""
     },
     signers: {
-        type: Array
+        type: Array,
+        default: []
     },
     expiry: {
         type: Number,

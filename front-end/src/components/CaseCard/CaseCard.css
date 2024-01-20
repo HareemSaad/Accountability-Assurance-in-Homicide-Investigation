@@ -66,6 +66,15 @@ body {
 }
 
 .page-dropdown-item {
-  border: 0.32rem solid black;
-  font-size: large;
+  /* border-bottom: 0.32rem solid black; */
+  /* border-bottom: 0.2rem solid #6600cc !important; */
+  /* font-size: large; */
+  font-size: 17px;
+  white-space: normal !important;
+  word-wrap: break-word !important;
+}
+
+.page-dropdown-item:active{
+  background-color:#e8d6fa !important;
+  color: black !important;
 }

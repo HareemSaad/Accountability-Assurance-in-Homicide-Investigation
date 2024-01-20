@@ -4,6 +4,7 @@ const router = express.Router()
 
 const TransferCaptain = require('../model/transferCaptain')
 const TransferCase = require('../model/transferCase')
+const TransferOfficerBranch = require('../model/transferOfficerBranch')
 
 // view all captain-transfer-captain requests - page
 router.get('/captain/view-transfer-captain', async (req, res) => {
@@ -32,6 +33,25 @@ router.get('/captain/view-transfer-case', async (req, res) => {
     const userAddress = req.query.address;
 
     await TransferCase.find({ stateCode: userStateCode, $or: [
+        { toCaptain: userAddress },
+        { fromCaptain: userAddress }
+    ]})
+    .then(requests => {
+        res.send(requests);
+    })
+    .catch(err => {
+        // console.error("Error: ", err);
+        res.status(400).json({ error: 'Error Occured' });
+    });
+})
+
+// view all captain-transfer-officer-branch requests - page
+router.get('/captain/view-transfer-officer-branch', async (req, res) => {
+    // console.log("req.query:: ", req.query.userStateCode)
+    const userStateCode = req.query.userStateCode;
+    const userAddress = req.query.address;
+
+    await TransferOfficerBranch.find({ stateCode: userStateCode, $or: [
         { toCaptain: userAddress },
         { fromCaptain: userAddress }
     ]})

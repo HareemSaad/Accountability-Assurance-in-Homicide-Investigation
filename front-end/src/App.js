@@ -42,7 +42,7 @@ import { ViewTransferCase } from './components/ViewRequest/ViewTransferCase.js';
 // View - captain approve officers and detectives
 import { ViewOfficerRequests } from './components/AddOfficer/ViewOfficerRequests.js';
 import { ViewDetectiveRequests } from './components/AddOfficer/ViewDetectiveRequests.js';
-import { CaptainViewTranferRequest } from './components/CaptainTransferCaseCaptain/CaptainViewTranferRequest.js';
+import { CaptainViewTranferRequest } from './components/CaptainTransferRequests/CaptainViewTranferRequest.js';
 import { ViewParticipant } from './components/ViewRequest/ViewParticipant.js';
 import { ViewEvidence } from './components/ViewRequest/ViewEvidence.js';
 
