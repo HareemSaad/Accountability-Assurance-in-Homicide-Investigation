@@ -5,6 +5,8 @@ import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
+import { waitForTransaction, writeContract } from '@wagmi/core'
+import CaseABI from "./../Cases.json";
 
 export const ChangeCaseStatus = () => {
     const { caseId } = useParams();
@@ -27,6 +29,27 @@ export const ChangeCaseStatus = () => {
             notify("error", `Select From Dropdown`);
         } else {
             console.log("caseStatus ::", caseStatus)
+        }
+        try {
+          const { hash } = await writeContract({
+              address: process.env.REACT_APP_CASE_CONTRACT,
+              abi: CaseABI,
+              functionName: 'updateCaseStatus',
+              args: [caseId, caseStatus],
+              chainId: 11155111
+          })
+          console.log("hash :: ", hash)
+    
+          // wait for txn
+          const result = await waitForTransaction({
+              hash: hash,
+          })
+          console.log("Transaction result:", result);
+          notify('success', 'Transaction Success')
+          
+        } catch (error) {
+          console.log(error);
+          notify("error", "Error in submitting the form")
         }
     }
 
