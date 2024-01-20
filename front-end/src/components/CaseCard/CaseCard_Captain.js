@@ -26,20 +26,18 @@ export const CaseCard_Captain = () => {
 
   async function fetchData() {
     const query = `
-        query {
-            cases(where: { captain: "0x86d5ca9d24ece1d8c35a45b83ba15b1b9e11bd50" }) {
-              id
-              officers {
-                id
-                rank
-              }
-              status
-            }
+      {
+        officer(id: "${address}") {
+          cases {
+            id
           }
-        `;
+        }
+      }
+    `;
     const response = await client.query(query).toPromise();
     const { data, fetching, error } = response;
-    setCardResponse(data.cases);
+    // console.log(data.officer.cases);
+    setCardResponse(data.officer.cases);
   }
 
   function print(cardId) {

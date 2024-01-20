@@ -30,6 +30,30 @@ updateTypeMap.set("0", "Address")
 updateTypeMap.set("1", "Name")
 updateTypeMap.set("2", "Badge")
 
+export const evidenceTypeMap = {
+  0: 'WEAPON',
+  1: 'PHYSICAL',
+  2: 'DRUG',
+  3: 'DOCUMENTARY',
+  4: 'DEMONSTRATIVE',
+  5: 'HEARSAY',
+  6: 'MURDER_WEAPON'
+}
+
+export const participantTypeMap = {
+  0: 'SUSPECT',
+  1: 'WITNESS',
+  2: 'PERPETRATOR',
+  3: 'VICTIM'
+}
+
+export const officerTypeMap = {
+  0: 'NULL',
+  1: 'OFFICER',
+  2: 'DETECTIVE',
+  3: 'CAPTAIN'
+}
+
 export const ONBOARD_REQUEST_TYPEHASH = "0xa65232949d0eaed8dfcb6f03cec2c2ac850c9b714568c8ddfe9a736d734b3c60";
 export const TRANSFER_CAPTAIN_REQUEST_TYPEHASH = "0xa01e84747a211707abd10789c15cecc80467764e7bec52855cb2cf7bf834894c";
 export const TRANSFER_CASE_REQUEST_TYPEHASH = "0xcce4632d65e5a879e32bfed8c2db9e7809fe02c694c1f1da86ee6d42cd1241d7";

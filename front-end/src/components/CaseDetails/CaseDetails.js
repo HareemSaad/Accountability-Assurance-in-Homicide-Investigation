@@ -3,14 +3,8 @@ import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import Card from 'react-bootstrap/Card';
 import "./CaseDetails.css"
-import { createClient, cacheExchange, fetchExchange } from 'urql';
-
-const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
-
-const client = createClient({
-  url: APIURL,
-  exchanges: [cacheExchange, fetchExchange]
-})
+import { client } from '../data/data';
+import { participantTypeMap, evidenceTypeMap, officerTypeMap } from '../data/data';
 
 const CaseDetailsPage = () => {
   const { caseId } = useParams();
@@ -20,29 +14,6 @@ const CaseDetailsPage = () => {
   const [caseEvidence, setCaseEvidence] = useState([]);
   const [caseParticipant, setCaseParticipant] = useState([]);
 
-  const evidenceList = {
-    '0': 'WEAPON',
-    '1': 'PHYSICAL',
-    '2': 'DRUG',
-    '3': 'DOCUMENTARY',
-    '4': 'DEMONSTRATIVE',
-    '5': 'HEARSAY',
-    '6': 'MURDER_WEAPON'
-  }
-
-  const participantList = {
-    '0': 'SUSPECT',
-    '1': 'WITNESS',
-    '2': 'PERPETRATOR',
-    '3': 'VICTIM'
-  }
-
-  const officerList = {
-    '0': 'NULL',
-    '1': 'OFFICER',
-    '2': 'DETECTIVE',
-    '3': 'CAPTAIN'
-  }
 
   useEffect(() => {
     fetchData();
@@ -62,6 +33,8 @@ const CaseDetailsPage = () => {
       cases(where: {id: "${caseId}"}) {
         officers {
           id
+          name
+          rank
         }
         participants {
           id
@@ -131,8 +104,8 @@ const CaseDetailsPage = () => {
           {caseOfficer.length > 0 ? caseOfficer.map((employee, index) => (
             <Card style={{ width: '18rem', height: '9rem' }} className='case-info-card'>
               <Card.Body>
-                <Card.Title>{employee.id}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">{officerList[employee.category]}</Card.Subtitle>
+                <Card.Title>{employee.name}</Card.Title>
+                <Card.Subtitle className="mb-2 text-muted">{officerTypeMap[employee.rank]}</Card.Subtitle>
               </Card.Body>
             </Card>
           )) :
@@ -155,7 +128,7 @@ const CaseDetailsPage = () => {
             <Card style={{ width: '18rem', height: '5rem' }} className='case-info-card'>
               <Card.Body>
                 <Card.Title>{participant.id}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">{participantList[participant.category]}</Card.Subtitle>
+                <Card.Subtitle className="mb-2 text-muted">{participantTypeMap[participant.category]}</Card.Subtitle>
               </Card.Body>
             </Card>
           )) :
@@ -177,7 +150,7 @@ const CaseDetailsPage = () => {
             <Card style={{ width: '18rem', height: '5rem' }} className='case-info-card'>
               <Card.Body>
                 <Card.Title>{evidence.id}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">{evidenceList[evidence.category]}</Card.Subtitle>
+                <Card.Subtitle className="mb-2 text-muted">{evidenceTypeMap[evidence.category]}</Card.Subtitle>
               </Card.Body>
             </Card>
           )) :
