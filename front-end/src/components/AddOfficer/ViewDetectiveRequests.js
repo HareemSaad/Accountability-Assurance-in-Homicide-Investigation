@@ -247,7 +247,7 @@ export const ViewDetectiveRequests = () => {
               name="employmentStatus"
               id="employmentStatus"
               className="form-control"
-              value={employmentStatusMap.get(requestDetail.employmentStatus)}
+              value={employmentStatusMap.get(`${requestDetail.employmentStatus}`)}
               disabled
             />
           </div>
