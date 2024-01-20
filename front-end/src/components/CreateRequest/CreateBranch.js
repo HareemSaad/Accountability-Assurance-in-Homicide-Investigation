@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
-import { useAccount } from 'wagmi'
+import { useAccount } from "wagmi";
 import axios from "axios";
 import "./createRequests.css";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
-import Dropdown from 'react-bootstrap/Dropdown';
+import Dropdown from "react-bootstrap/Dropdown";
 import { stateCodeMap, branchIdMap } from "../data/data.js";
+import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+// hashes
+import { createBranchHash } from "../utils/hashing/createBranch.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { keccakInt, keccakString } from "../utils/hashing/keccak-hash.js";
 
 export const CreateBranch = () => {
   let navigate = useNavigate();
@@ -23,6 +29,7 @@ export const CreateBranch = () => {
   const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [createBranchInfo, setCreateBranchInfo] = useState({
+    nonce: Math.floor(Math.random() * 10000),
     precinctAddress: "",
     jurisdictionArea: "",
     stateCode: "",
@@ -31,7 +38,7 @@ export const CreateBranch = () => {
     // signature: "",
     signers: address,
     isOpen: true,
-  });
+  });  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,18 +46,6 @@ export const CreateBranch = () => {
     console.log("params :: ", name);
     console.log("value :: ", value);
   };
-
-  const handleStateCodeDropdownSelect = (categoryValue) => {
-    setSelectedStateCode(categoryValue);
-    const name = "stateCode";
-    setCreateBranchInfo({ ...createBranchInfo, [name]: categoryValue });
-  }
-
-  const handleBranchIdDropdownSelect = (categoryValue) => {
-    setSelectedBranchId(categoryValue);
-    const name = "branchId";
-    setCreateBranchInfo({ ...createBranchInfo, [name]: categoryValue });
-  }
 
   const handleDateChange = (fullDateTime) => {
     let unixTimestamp = moment(fullDateTime).unix();
@@ -82,21 +77,57 @@ export const CreateBranch = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
-      axios
-        .post(
-          "http://localhost:3000/create-request/create-branch",
-          createBranchInfo
-        )
-        .then((res) =>
-          notify("success", "Create Branch Request Created successfully")
-        )
-        .catch((err) => {
-          // console.log("error:: ", err);
-          notify(
-            "error",
-            `An Error Occured when Creating Create Branch Request`
-          );
-        });
+
+      const client = await getWalletClient({ account, connector });
+
+      const branchId = keccakString(createBranchInfo.branchId);
+
+      try {
+        const hash = createBranchHash(
+          createBranchInfo.nonce,
+          createBranchInfo.precinctAddress,
+          createBranchInfo.jurisdictionArea,
+          createBranchInfo.stateCode,
+          branchId,
+          createBranchInfo.expiry
+        );
+        // console.log("hash", hash)
+
+        const message = toLedgerTypedDataHash(hash);
+
+        const signature = await client.request(
+          {
+            method: "eth_sign",
+            params: [address, message],
+          },
+          { retryCount: 0 }
+        );
+        console.log("signature:: ", signature);
+
+        axios
+          .post(
+            "http://localhost:3000/create-request/create-branch", {
+              createBranchInfo: createBranchInfo,
+              signature: signature
+            }
+          )
+          .then((res) =>
+            notify("success", "Create Branch Request Created successfully")
+          )
+          .catch((err) => {
+            // console.log("error:: ", err);
+            notify(
+              "error",
+              `An Error Occured when Creating Create Branch Request`
+            );
+          });
+      } catch (err) {
+        console.log("Error message:: ", err.message);
+        notify(
+          "error",
+          `An Error Occured when Creating Create Branch Request`
+        );
+      }
     }
   };
 
@@ -176,7 +207,7 @@ export const CreateBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-           <input
+            <input
               type="number"
               name="stateCode"
               id="stateCode"

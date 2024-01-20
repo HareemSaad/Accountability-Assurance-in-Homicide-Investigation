@@ -19,11 +19,11 @@ router.post('/create-request/update-branch', async (req, res) => {
         })
         .catch(err => console.log("errorr:: ", err))
         
-        req.body['id'] = lastId + 1;
-        req.body['nonce'] = Math.floor(Math.random() * 10000);
+        req.body['updateBranchInfo']['id'] = lastId + 1;
+        req.body['updateBranchInfo']['signature'] = req.body['signature'];
         
         // input req.body into schema
-        const UpdateBranchInfo = new UpdateBranch(req.body)
+        const UpdateBranchInfo = new UpdateBranch(req.body['updateBranchInfo'])
         console.log("UpdateBranchInfo:: ",UpdateBranchInfo)
         
         // saving the data in mongodb database
@@ -109,7 +109,12 @@ router.post('/view-update-branch/:reqId', async (req, res) => {
         // If userAddress doesn't exist, add it to the signers array
         await UpdateBranch.updateOne(
             { 'id': `${idParam}` },
-            { $addToSet: { signers: req.body.userAddress } }
+            { 
+                $addToSet: { 
+                    signers: req.body.userAddress,
+                    signature: req.body.signature
+                } 
+            }
         )
         .then(requests => res.status(200).json({ message: 'Signed successfully' }))
         .catch(err => console.log("errorr:: ", err));

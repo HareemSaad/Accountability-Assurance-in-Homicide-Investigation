@@ -15,15 +15,14 @@ router.post('/create-request/create-branch', async (req, res) => {
             lastId = 0;
         } else {
             lastId = requests[0].id;
-            console.log("lastId: ", lastId)
         }
         
         // Set id and nonce in req.body
-        req.body['id'] = lastId + 1;
-        req.body['nonce'] = Math.floor(Math.random() * 10000);
+        req.body['createBranchInfo']['id'] = lastId + 1;
+        req.body['createBranchInfo']['signature'] = req.body['signature'];
 
         // Create a new instance of CreateBranch schema
-        const createBranchInfo = new CreateBranch(req.body);
+        const createBranchInfo = new CreateBranch(req.body['createBranchInfo']);
         console.log("createBranchInfo:: ", createBranchInfo)
 
         // Save the data in the MongoDB database
@@ -110,7 +109,12 @@ router.post('/view-create-branch/:reqId', async (req, res) => {
         // If userAddress doesn't exist, add it to the signers array
         await CreateBranch.updateOne(
             { 'id': `${idParam}` },
-            { $addToSet: { signers: req.body.userAddress } }
+            { 
+                $addToSet: { 
+                    signers: req.body.userAddress,
+                    signature: req.body.signature
+                } 
+            }
         )
         .then(requests => res.status(200).json({ message: 'Signed successfully' }))
         .catch(err => console.log("errorr:: ", err));

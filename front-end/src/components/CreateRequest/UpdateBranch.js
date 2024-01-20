@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import Dropdown from "react-bootstrap/Dropdown";
 import "./createRequests.css";
-import { useAccount } from 'wagmi'
+import { useAccount } from "wagmi";
 import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import { stateCodeMap, branchIdMap } from "../data/data.js";
+import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+// hashes
+import { updateBranchHash } from "../utils/hashing/updateBranch.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { keccakInt, keccakString } from "../utils/hashing/keccak-hash.js";
 
 export const UpdateBranch = () => {
   let navigate = useNavigate();
@@ -22,6 +28,7 @@ export const UpdateBranch = () => {
   const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [updateBranchInfo, setUpdateBranchInfo] = useState({
+    nonce: Math.floor(Math.random() * 10000),
     precinctAddress: "",
     jurisdictionArea: "",
     stateCode: "",
@@ -56,21 +63,53 @@ export const UpdateBranch = () => {
         setButtonDisabled(false);
       }, 5000);
 
-      axios
-        .post(
-          "http://localhost:3000/create-request/update-branch",
-          updateBranchInfo
-        )
-        .then((res) =>
-          notify("success", "Create Branch Request Created successfully")
-        )
-        .catch((err) => {
-          // console.log("error:: ", err);
-          notify(
-            "error",
-            `An Error Occured when Creating Create Branch Request`
-          );
-        });
+      const client = await getWalletClient({ account, connector });
+
+      const branchId = keccakString(updateBranchInfo.branchId);
+
+      try {
+        const hash = updateBranchHash(
+          updateBranchInfo.nonce,
+          updateBranchInfo.precinctAddress,
+          updateBranchInfo.jurisdictionArea,
+          updateBranchInfo.stateCode,
+          branchId,
+          updateBranchInfo.expiry
+        );
+        // console.log("hash", hash)
+
+        const message = toLedgerTypedDataHash(hash);
+
+        const signature = await client.request(
+          {
+            method: "eth_sign",
+            params: [address, message],
+          },
+          { retryCount: 0 }
+        );
+        console.log("signature:: ", signature);
+
+        axios
+          .post(
+            "http://localhost:3000/create-request/update-branch", {
+              updateBranchInfo: updateBranchInfo,
+              signature: signature
+            }
+          )
+          .then((res) =>
+            notify("success", "Update Branch Request Created successfully")
+          )
+          .catch((err) => {
+            // console.log("error:: ", err);
+            notify(
+              "error",
+              `An Error Occured when Creating Update Branch Request`
+            );
+          });
+      } catch (err) {
+        console.log("Error message:: ", err.message);
+        notify("error", `An Error Occured when Creating Update Branch Request`);
+      }
     }
   };
 
@@ -79,14 +118,14 @@ export const UpdateBranch = () => {
     setSelectedStateCode(categoryValue);
     const name = "stateCode";
     setUpdateBranchInfo({ ...updateBranchInfo, [name]: categoryValue });
-  }
+  };
 
   // Function to handle branch id dropdown selection
   const handleBranchIdDropdownSelect = (categoryValue) => {
     setSelectedBranchId(categoryValue);
     const name = "branchId";
     setUpdateBranchInfo({ ...updateBranchInfo, [name]: categoryValue });
-  }
+  };
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
@@ -172,13 +211,23 @@ export const UpdateBranch = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
-                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              <Dropdown.Toggle
+                variant="secondary"
+                id="stateCode"
+                className="dropdown"
+              >
+                {selectedStateCode
+                  ? stateCodeMap.get(selectedStateCode)
+                  : "Select State Code"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="stateCode"
+                    key={key}
+                    onClick={() => handleStateCodeDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}
@@ -198,13 +247,23 @@ export const UpdateBranch = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
-                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              <Dropdown.Toggle
+                variant="secondary"
+                id="branchId"
+                className="dropdown"
+              >
+                {selectedBranchId
+                  ? branchIdMap.get(selectedBranchId)
+                  : "Select Branch Id"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="branchId"
+                    key={key}
+                    onClick={() => handleBranchIdDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}
