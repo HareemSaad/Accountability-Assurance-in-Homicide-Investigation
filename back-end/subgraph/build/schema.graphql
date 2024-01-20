@@ -192,7 +192,6 @@ type Trustee @entity(immutable: true) {
 
 type Case @entity(immutable: false) {
   id: String! # uint256
-  captain: [Officer!] # address
   status: Int! # uint8
   branch: BranchUpdate!
   officers: [Officer!] # array of addresses

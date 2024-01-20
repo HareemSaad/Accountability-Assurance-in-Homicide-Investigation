@@ -2389,23 +2389,6 @@ export class Case extends Entity {
     this.set("id", Value.fromString(value));
   }
 
-  get captain(): Array<Bytes> | null {
-    let value = this.get("captain");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBytesArray();
-    }
-  }
-
-  set captain(value: Array<Bytes> | null) {
-    if (!value) {
-      this.unset("captain");
-    } else {
-      this.set("captain", Value.fromBytesArray(<Array<Bytes>>value));
-    }
-  }
-
   get status(): i32 {
     let value = this.get("status");
     if (!value || value.kind == ValueKind.NULL) {
