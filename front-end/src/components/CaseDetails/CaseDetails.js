@@ -5,6 +5,7 @@ import Card from 'react-bootstrap/Card';
 import "./CaseDetails.css"
 import { client } from '../data/data';
 import { participantTypeMap, evidenceTypeMap, officerTypeMap } from '../data/data';
+import { notify } from '../utils/error-box/notify';
 
 const CaseDetailsPage = () => {
   const { caseId } = useParams();
@@ -27,38 +28,42 @@ const CaseDetailsPage = () => {
   // }, [caseOfficer, caseEvidence, caseParticipant]);
 
   async function fetchData() {
-
-    const query = `
-    query {
-      cases(where: {id: "${caseId}"}) {
-        officers {
-          id
-          name
-          rank
-        }
-        participants {
-          id
-          category
-        }
-        evidences {
-          id
-          category
+    try {
+      const query = `
+      query {
+        cases(where: {id: "${caseId}"}) {
+          officers {
+            id
+            name
+            rank
+          }
+          participants {
+            id
+            category
+          }
+          evidences {
+            id
+            category
+          }
         }
       }
-    }
-    `
-    const response = await client.query(query).toPromise();
-    const { data, fetching, error } = response;
-    console.log("data:: ", data)
-    // console.log("data evidence:: ", data.cases[0].evidences)
-    // console.log("data participant:: ", data.cases[0].participants)
-    if (data.cases.length > 0) {
-      console.log("first")
-      setCaseOfficer(data.cases[0].officers);
-      setCaseEvidence(data.cases[0].evidences);
-      setCaseParticipant(data.cases[0].participants);
-    } else {
-      console.log("No data received.")
+      `
+      const response = await client.query(query).toPromise();
+      const { data, fetching, error } = response;
+      console.log("data:: ", data)
+      // console.log("data evidence:: ", data.cases[0].evidences)
+      // console.log("data participant:: ", data.cases[0].participants)
+      if (data.cases.length > 0) {
+        console.log("first")
+        setCaseOfficer(data.cases[0].officers);
+        setCaseEvidence(data.cases[0].evidences);
+        setCaseParticipant(data.cases[0].participants);
+      } else {
+        console.log("No data received.")
+      }
+    } catch (error) {
+      console.log(error);
+      notify("error", "Failed to get case details")
     }
   }
 
@@ -75,6 +80,12 @@ const CaseDetailsPage = () => {
         break;
       case "drop-officer-from-case":
         navigate(`/drop-officer-from-case/${caseId}`);
+        break;
+      case "add-participant":
+        navigate(`/add-participant/${caseId}`);
+        break;
+      case "add-evidence":
+        navigate(`/add-evidence/${caseId}`);
         break;
       default:
         break;
