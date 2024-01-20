@@ -80,6 +80,8 @@ export const ViewCreateBranch = () => {
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
+    
+    // creating signature
     const client = await getWalletClient({ account, connector });
 
     const branchId = keccakString(requestDetail.branchId);

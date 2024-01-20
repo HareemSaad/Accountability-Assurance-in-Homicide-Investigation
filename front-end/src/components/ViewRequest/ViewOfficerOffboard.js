@@ -1,27 +1,80 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ethers } from "ethers";
 import { useNavigate, useParams } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { employmentStatusMap, rankMap } from "../data/data.js";
 import moment from "moment";
-import { useAccount } from 'wagmi'
+import { readContract } from "@wagmi/core";
+import { useAccount } from "wagmi";
+import LedgerABI from "./../Ledger.json";
+import {
+  writeContract,
+  waitForTransaction,
+  getWalletClient,
+} from "@wagmi/core";
+// hashes
+import { officerOffboardHash } from "../utils/hashing/officerOffboard.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { keccakInt, keccakString } from "../utils/hashing/keccak-hash.js";
 
 export const ViewOfficerOffboard = () => {
   const { reqId } = useParams();
-  const { address } = useAccount();
+  const { address, connector, isConnected, account } = useAccount();
 
   let navigate = useNavigate();
 
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   const [requestDetail, setRequestDetail] = useState({});
+  const [isPassedMessage, setIsPassedMessage] = useState("Sign");
+  const [isPassed, setIsPassed] = useState(false);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/view-officer-offboard/:${reqId}`)
-      .then((result) => setRequestDetail(result.data[0]))
-      .catch((err) => console.log("error:: ", err));
+    const fetchData = () => {
+      axios
+        .get(`http://localhost:3000/view-officer-offboard/:${reqId}`)
+        .then(async (result) => {
+          setRequestDetail(result.data.document);
+
+          if (result.data.document.isOpen) {
+            console.log("isopen:: ", result.data.document.isOpen);
+            // moderators count of the same state - contract call
+            const modCount = await readContract({
+              address: process.env.REACT_APP_LEDGER_CONTRACT,
+              abi: LedgerABI,
+              functionName: "moderatorCount",
+              args: [
+                result.data.document.stateCode, // uint _stateCode
+              ],
+              account: address,
+              chainId: 11155111,
+            });
+
+            if (modCount !== 0n) {
+              const signersCount = BigInt(result.data.document.signers.length);
+              const calculateModerator = (signersCount / modCount) * 100n;
+
+              if (calculateModerator >= 51n) {
+                // hareem todo - send request
+                setIsPassedMessage("Send! Request approved by over 51%.");
+                setIsPassed(true);
+              }
+              // console.log("modCount: ", modCount);
+              // console.log("calculateModerator: ", calculateModerator);
+            } else {
+              // Handle the case when modCount is 0
+              notify("error", "No moderator in the State Code");
+              setIsPassedMessage("No moderator in the State Code");
+            }
+          } else {
+            setIsPassedMessage("Request not approved. Less than 51% support.");
+          }
+        })
+        .catch((err) => console.log("error:: ", err));
+    };
+    fetchData();
   }, []);
 
   const handleSubmit = async (e) => {
@@ -30,16 +83,56 @@ export const ViewOfficerOffboard = () => {
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
-    // axiospost - update the array of signers/signatures...
-    axios
-      .post(`http://localhost:3000/view-officer-offboard/:${reqId}`, {
-        userAddress: address,
-      })
-      .then((res) => notify("success", "Signed successfully"))
-      .catch((err) => {
-        // console.log("error:: ", err);
-        notify("error", `An Error Occured when Signing`);
-      });
+
+    // creating signature
+    const client = await getWalletClient({ account, connector });
+
+    const branchId = keccakString(requestDetail.branchId);
+
+    const badge = keccakString(requestDetail.badge);
+
+    const legalNumber = keccakInt(requestDetail.legalNumber);
+
+    try {
+      const hash = officerOffboardHash(
+        requestDetail.verifiedAddress,
+        requestDetail.nonce,
+        requestDetail.name,
+        legalNumber,
+        badge,
+        branchId,
+        requestDetail.employmentStatus,
+        requestDetail.rank,
+        requestDetail.expiry
+      );
+      // console.log("hash", hash)
+
+      const message = toLedgerTypedDataHash(hash);
+
+      const signature = await client.request(
+        {
+          method: "eth_sign",
+          params: [address, message],
+        },
+        { retryCount: 0 }
+      );
+      console.log("signature:: ", signature);
+
+      // axiospost - update the array of signers/signatures...
+      axios
+        .post(`http://localhost:3000/view-officer-offboard/:${reqId}`, {
+          userAddress: address,
+          signature: signature,
+        })
+        .then((res) => notify("success", "Signed successfully"))
+        .catch((err) => {
+          // console.log("error:: ", err);
+          notify("error", `An Error Occured when Signing`);
+        });
+    } catch (err) {
+      console.log("Error message:: ", err.message);
+      notify("error", `An Error Occured when Signing the Request`);
+    }
   };
 
   const getDate = (expiryDate) => {
@@ -49,11 +142,14 @@ export const ViewOfficerOffboard = () => {
 
   return (
     <div className="container">
-      
       <div className="m-3 mt-5 mb-4 d-flex flex-row">
         {/* <h2 className="m-3 mt-5 mb-4">Officer Offboard Request #{reqId}</h2> */}
         <h2>Officer Offboard Request #{reqId}</h2>
-        <h6 className={`statusTag${ requestDetail.isOpen === true ? "Open" : "Close" } ms-3`}>
+        <h6
+          className={`statusTag${
+            requestDetail.isOpen === true ? "Open" : "Close"
+          } ms-3`}
+        >
           #{requestDetail.isOpen === true ? "OPEN" : "CLOSED"}
         </h6>
       </div>
@@ -221,9 +317,43 @@ export const ViewOfficerOffboard = () => {
               name="employmentStatus"
               id="employmentStatus"
               className="form-control"
-              value={employmentStatusMap.get(`${requestDetail.employmentStatus}`)}
+              value={employmentStatusMap.get(
+                `${requestDetail.employmentStatus}`
+              )}
               disabled
             />
+          </div>
+        </div>
+
+        {/* Signers */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+            <label htmlFor="signers" className="col-form-label">
+              <b>
+                <em>Signers:</em>
+              </b>
+            </label>
+          </div>
+          <div className="col-9 input d-flex flex-wrap">
+            {(requestDetail.signers ?? []).length === 0 ? (
+              <input
+                type="text"
+                className="form-control mb-2"
+                value="No one has signed yet."
+                disabled
+              />
+            ) : (
+              requestDetail.signers.map((signer, index) => (
+                <input
+                  type="text"
+                  name={`signer-${index}`}
+                  id={`signer-${index}`}
+                  className="form-control signer mb-2"
+                  value={signer}
+                  disabled
+                />
+              ))
+            )}
           </div>
         </div>
 
@@ -249,14 +379,24 @@ export const ViewOfficerOffboard = () => {
         </div>
 
         {/* sign button */}
-        <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-          type="submit"
-          onClick={async (e) => await handleSubmit(e)}
-          disabled={isButtonDisabled}
-        >
-          Sign
-        </button>
+        {requestDetail && requestDetail.isOpen ? (
+          <button
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            type="submit"
+            onClick={async (e) => await handleSubmit(e)}
+            disabled={isButtonDisabled}
+          >
+            {/* Sign */}
+            {isPassedMessage}
+          </button>
+        ) : (
+          <button
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            disabled="true"
+          >
+            {isPassedMessage}
+          </button>
+        )}
       </form>
     </div>
   );

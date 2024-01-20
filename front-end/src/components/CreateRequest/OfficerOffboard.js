@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import { ethers } from "ethers";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
+import { useAccount } from "wagmi";
 import axios from "axios";
 import { stateCodeMap, employmentStatusMap, rankMap, branchIdMap } from "../data/data.js";
 import "./createRequests.css";
@@ -11,9 +13,15 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
+import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+// hashes
+import { officerOffboardHash } from "../utils/hashing/officerOffboard.js";
+import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { keccakInt, keccakString } from "../utils/hashing/keccak-hash.js";
 
 export const OfficerOffboard = () => {
   let navigate = useNavigate();
+  const { address, connector, isConnected, account } = useAccount();
 
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
@@ -22,9 +30,10 @@ export const OfficerOffboard = () => {
   const [selectedRankValue, setSelectedRankValue] = useState(null);
   const [selectedStatusValue, setSelectedStatusValue] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
-  
+
   const [OfficerOffboardInfo, setOfficerOffboardInfo] = useState({
     verifiedAddress: "",
+    nonce: Math.floor(Math.random() * 10000),
     name: "",
     legalNumber: "",
     badge: "",
@@ -32,6 +41,7 @@ export const OfficerOffboard = () => {
     branchId: "",
     rank: "",
     employmentStatus: "",
+    signers: address,
     expiry: "",
     isOpen: true,
   });
@@ -80,21 +90,61 @@ export const OfficerOffboard = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
-      axios
-        .post(
-          "http://localhost:3000/create-request/officer-offboard",
-          OfficerOffboardInfo
+
+      const client = await getWalletClient({ account, connector });
+
+      const branchId = keccakString(OfficerOffboardInfo.branchId)
+
+      const badge = keccakString(OfficerOffboardInfo.badge)
+
+      const legalNumber = keccakInt(OfficerOffboardInfo.legalNumber)
+  
+      try {
+        const hash = officerOffboardHash (
+          OfficerOffboardInfo.verifiedAddress,
+          OfficerOffboardInfo.nonce,
+          OfficerOffboardInfo.name,
+          legalNumber,
+          badge,
+          branchId,
+          OfficerOffboardInfo.employmentStatus,
+          OfficerOffboardInfo.rank,
+          OfficerOffboardInfo.expiry
         )
-        .then((res) =>
-          notify("success", "Officer Onboard Request Created successfully")
-        )
-        .catch((err) => {
-          // console.log("error:: ", err);
-          notify(
-            "error",
-            `An Error Occured when Creating Officer Onboard Request`
-          );
-        });
+        // console.log("hash", hash)
+
+        const message = toLedgerTypedDataHash(hash);
+
+        const signature = await client.request(
+          {
+            method: "eth_sign",
+            params: [address, message],
+          },
+          { retryCount: 0 }
+        );
+        console.log("signature:: ", signature);
+
+        axios
+          .post(
+            "http://localhost:3000/create-request/officer-offboard", {
+              OfficerOffboardInfo: OfficerOffboardInfo,
+              signature: signature
+            }
+          )
+          .then((res) =>
+            notify("success", "Officer Offboard Request Created successfully")
+          )
+          .catch((err) => {
+            // console.log("error:: ", err);
+            notify(
+              "error",
+              `An Error Occured when Creating Officer Offboard Request1`
+            );
+          });
+      } catch (err) {
+        console.log("Error message:: ", err.message);
+        notify("error", `An Error Occured when Creating Officer Offboard Request`);
+      }
     }
   };
 
@@ -103,7 +153,7 @@ export const OfficerOffboard = () => {
     setSelectedStateCode(categoryValue);
     const name = "stateCode";
     setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
-  }
+  };
 
   // Function to handle dropdown item selection
   const handleRankDropdownSelect = (categoryValue) => {
@@ -121,19 +171,22 @@ export const OfficerOffboard = () => {
     console.log("params :: ", name);
     console.log("value :: ", categoryValue);
   };
-  
+
   // Function to handle branch id dropdown selection
   const handleBranchIdDropdownSelect = (categoryValue) => {
     setSelectedBranchId(categoryValue);
     const name = "branchId";
     setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
-  }
+  };
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
     let unixTimestamp = moment(fullDateTime).unix();
     console.log("unixTimestamp:: ", unixTimestamp);
-    setOfficerOffboardInfo({ ...OfficerOffboardInfo, ["expiry"]: unixTimestamp });
+    setOfficerOffboardInfo({
+      ...OfficerOffboardInfo,
+      ["expiry"]: unixTimestamp,
+    });
   };
 
   const CustomInput = ({ value, onClick }) => {
@@ -255,13 +308,23 @@ export const OfficerOffboard = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
-                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+              <Dropdown.Toggle
+                variant="secondary"
+                id="stateCode"
+                className="dropdown"
+              >
+                {selectedStateCode
+                  ? stateCodeMap.get(selectedStateCode)
+                  : "Select State Code"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="stateCode"
+                    key={key}
+                    onClick={() => handleStateCodeDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}
@@ -281,13 +344,23 @@ export const OfficerOffboard = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
-                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+              <Dropdown.Toggle
+                variant="secondary"
+                id="branchId"
+                className="dropdown"
+              >
+                {selectedBranchId
+                  ? branchIdMap.get(selectedBranchId)
+                  : "Select Branch Id"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                  <Dropdown.Item
+                    name="branchId"
+                    key={key}
+                    onClick={() => handleBranchIdDropdownSelect(key)}
+                  >
                     {value}
                   </Dropdown.Item>
                 ))}
