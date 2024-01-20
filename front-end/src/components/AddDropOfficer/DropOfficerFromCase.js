@@ -1,34 +1,51 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useParams } from 'react-router-dom';
-import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import '../AddCase/AddCase.css';
-import CaseABI from "./../CasesABI.json";
-import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
-import { createClient, cacheExchange, fetchExchange } from 'urql';
-
-const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
-
-const client = createClient({
-  url: APIURL,
-  exchanges: [cacheExchange, fetchExchange]
-})
-
+import CaseABI from "./../Cases.json";
+import { waitForTransaction, writeContract } from '@wagmi/core'
+import { client } from '../data/data';
+import Dropdown from 'react-bootstrap/Dropdown';
+import { rankMap } from '../data/data';
 
 export const DropOfficerFromCase = () => {
   const { caseId } = useParams();
-  let navigate = useNavigate();
 
   const [officerAddress, setOfficerAddress] = useState("");
-  const caseContractAddress = process.env.REACT_APP_CASE_CONTRACT;
+  const [officersInCase, setOfficersInCase] = useState([]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setOfficerAddress(value);
-    // console.log("params :: ", name)
-    // console.log("value :: ", value)
+  useEffect(() => {
+      fetchData();
+  }, []);
+
+  async function fetchData() {
+    try {
+      const query = `
+      {
+        case(id: "${caseId}") {
+          officers {
+            id
+            rank
+            name
+          }
+        }
+      }
+      `;
+      const response = await client.query(query).toPromise();
+      const { data } = response;
+      console.log(data.case.officers);
+      setOfficersInCase(data.case.officers);
+    } catch(error) {
+      console.log('Error', error);
+      notify("error", "Failed to load officer list");
+    }
+  }
+
+  // Function to handle dropdown item selection
+  const handleDropdownSelect = async (value) => {
+      setOfficerAddress(value);
   };
 
   const handleSubmit = async (e) => {
@@ -36,27 +53,14 @@ export const DropOfficerFromCase = () => {
     if (officerAddress === '') {
       notify("error", `Officer Address is empty`);
     } else {
-      console.log("Submit")
       try {
-
-          const query = `
-          query {
-            updateOfficerInCases(where: {caseId: "${caseId}", officer: "${officerAddress}"}) {
-              caseSpecificOfficerId
-            }
-          }
-          `
-          const response = await client.query(query).toPromise();
-          const { data, fetching, error } = response;
-          const caseSpecificOfficerId = data.updateOfficerInCases[0].caseSpecificOfficerId;
-          console.log("data:: ", data.updateOfficerInCases[0].caseSpecificOfficerId)
-          // console.log(caseContractAddress, officerAddress)
+        console.log(caseId ,officerAddress, process.env.REACT_APP_CASE_CONTRACT);
           // call contract
           const { hash } = await writeContract({
-              address: caseContractAddress,
-              abi: CaseABI.abi,
+              address: process.env.REACT_APP_CASE_CONTRACT,
+              abi: CaseABI,
               functionName: 'removeOfficerInCase',
-              args: [caseId, caseSpecificOfficerId ,officerAddress],
+              args: [caseId ,officerAddress],
               chainId: 11155111
           })
           console.log("hash :: ", hash)
@@ -66,6 +70,7 @@ export const DropOfficerFromCase = () => {
               hash: hash,
           })
           console.log("Transaction result:", result);
+          notify('success', 'Transaction Success')
       } catch (error) {
           console.log(error)
           notify('error', 'Transaction Failed')
@@ -89,12 +94,31 @@ export const DropOfficerFromCase = () => {
 
         {/* Officer address */}
         <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="officerAddress" className="col-form-label"><b><em>Officer Address:</em></b></label>
-          </div>
-          <div className="col-9 input">
-            <input type="text" name='address' id="officerAddress" placeholder='Enter officer Address Here' className="form-control" onChange={handleChange}></input>
-          </div>
+            <div className="col-2">
+                <label htmlFor="officerAddress" className="col-form-label"><b><em>Officer Address:</em></b></label>
+            </div>
+            <div className="col-9 input">
+                <Dropdown>
+                <Dropdown.Toggle variant="light" id="rank" className="dropdown">
+                    {/* {selectedValue ? rankMap.get(selectedValue) : "Select Rank"} */}
+                    {officerAddress ? (officerAddress) : "Select Officer"}
+                </Dropdown.Toggle>
+
+                <Dropdown.Menu className="dropdown">
+                {officersInCase.length > 0 ? (
+                    officersInCase.map(element => (
+                        <Dropdown.Item key={element.id} name="rank" onClick={() => handleDropdownSelect(element.id)}>
+                            {`${element.name} (${rankMap.get(element.rank)})`}
+                        </Dropdown.Item>
+                    ))
+                ) : (
+                    <Dropdown.Item disabled>Loading officers...</Dropdown.Item>
+                )}
+                </Dropdown.Menu>
+                </Dropdown>
+                
+                {/* <input type="text" name='address' id="officerAddress" placeholder='Enter officer Address Here' className="form-control" onChange={handleChange}></input> */}
+            </div>
         </div>
 
 
@@ -105,6 +129,4 @@ export const DropOfficerFromCase = () => {
       </form>
     </div>
   );
-
 }
-

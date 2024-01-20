@@ -75,6 +75,9 @@ const CaseDetailsPage = () => {
       case "add-officer-in-case":
         navigate(`/add-officer-in-case/${caseId}`);
         break;
+      case "drop-officer-from-case":
+        navigate(`/drop-officer-from-case/${caseId}`);
+        break;
       default:
         break;
     }
