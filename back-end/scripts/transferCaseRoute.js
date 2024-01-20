@@ -9,7 +9,9 @@ router.post("/create-request/transfer-case/:caseId", async (req, res) => {
   // console.log("req.body:: ", req.body)
   try {
     let lastId;
-    await TransferCase.find().sort({ _id: -1 }).limit(1)
+    await TransferCase.find()
+      .sort({ _id: -1 })
+      .limit(1)
       .then((requests) => {
         if (requests.length === 0) {
           lastId = 0;
@@ -19,13 +21,10 @@ router.post("/create-request/transfer-case/:caseId", async (req, res) => {
       })
       .catch((err) => console.log("errorr:: ", err));
 
-    req.body["transferCaseInfo"]["id"] = lastId + 1;
-    // req.body['nonce'] = Math.floor(Math.random() * 10000);
-    req.body["transferCaseInfo"]["signature"] =
-      req.body["signatureTransferCase"];
+    req.body["id"] = lastId + 1;
 
     // input req.body into schema
-    const TransferCaseInfo = new TransferCase(req.body["transferCaseInfo"]);
+    const TransferCaseInfo = new TransferCase(req.body);
     console.log("TransferCaseInfo:: ", TransferCaseInfo);
 
     // saving the data in mongodb database
@@ -83,7 +82,7 @@ router.get("/view-transfer-case/:reqId", async (req, res) => {
       // update isOpen - false if request has expired
       // Convert Unix timestamp to JavaScript Date object
       const expiryDate = new Date(result.expiry * 1000);
-    //   console.log("expiryDate: ", expiryDate);
+      //   console.log("expiryDate: ", expiryDate);
 
       // Get the current date
       const currentDate = new Date();
@@ -98,10 +97,12 @@ router.get("/view-transfer-case/:reqId", async (req, res) => {
       }
 
       const request = await TransferCase.findOne({ id: idParam });
-    //   console.log("request:: ", request);
+      //   console.log("request:: ", request);
 
       // Send the updated or original document to the frontend
-      res.status(200).json({ message: "Request retrieved successfully", document: request });
+      res
+        .status(200)
+        .json({ message: "Request retrieved successfully", document: request });
     } else {
       // No matching document found
       res.status(404).json({ error: "Document not found" });
@@ -130,14 +131,26 @@ router.post("/view-transfer-case/:reqId", async (req, res) => {
     // If the userAddress already exists, send a message to the frontend
     res.status(200).json({ message: "Already signed" });
   } else {
+    // Retrieve the TransferCaptain document to get the value of toCaptain
+    const transferCaseDocument = await TransferCase.findOne({
+      id: `${idParam}`,
+    });
+
+    const updateSignature = {};
+    if (req.body.userAddress === transferCaseDocument.toCaptain) {
+      updateSignature.signatureToCaptain = req.body.signature;
+    } else {
+      updateSignature.signatureFromCaptain = req.body.signature;
+    }
+
     // If userAddress/signer doesn't exist, add it to the signers array and add signature into signature's array
     await TransferCase.updateOne(
       { id: `${idParam}` },
       {
         $addToSet: {
           signers: req.body.userAddress,
-          signature: req.body.signature,
         },
+        $set: updateSignature,
       }
     )
       .then((requests) =>

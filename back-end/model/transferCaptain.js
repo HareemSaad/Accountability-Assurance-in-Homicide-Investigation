@@ -36,11 +36,15 @@ const TransferCaptainSchema = new mongoose.Schema ({
     receiver: {
         type: Boolean,
     },
-    signature: {
-        type: Array
+    signatureToCaptain: {
+        type: String
+    },
+    signatureFromCaptain: {
+        type: String
     },
     signers: {
-        type: Array
+        type: Array,
+        default: []
     },
     expiry: {
         type: Number,

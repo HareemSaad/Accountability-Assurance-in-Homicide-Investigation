@@ -12,14 +12,10 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import { stateCodeMap, branchIdMap } from "../data/data.js";
-import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
 import { useAccount } from "wagmi";
-// hashes
-import { transferCaseHash } from "../utils/hashing/transferCaseHash.js";
-import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { client } from "../data/data";
 
 export const TransferCase = () => {
-  const { caseId } = useParams();
   let navigate = useNavigate();
   const { address, connector, isConnected, account } = useAccount();
 
@@ -33,19 +29,40 @@ export const TransferCase = () => {
     fromCaptain: "",
     toCaptain: "",
     nonce: Math.floor(Math.random() * 10000),
-    caseId: caseId,
-    stateCode: "",
+    caseId: "",
+    stateCode: localStorage.getItem("statecode"),
     fromBranchId: "",
     toBranchId: "",
-    signers: address,
     receiver: false,
     expiry: "",
     isOpen: true,
   });
 
-  useEffect(() => {
-    console.log("transferCaseInfo: ", transferCaseInfo);
-  }, [transferCaseInfo]);
+  async function fetchStateCode() {
+    const query = `
+    {
+      officer(id: "${transferCaseInfo.toCaptain}") {
+        branch {
+          stateCode
+        }
+      }
+    }
+    `;
+    const response = await client.query(query).toPromise();
+    const { data, fetching, error } = response;
+    console.log("subgraph data: ", data);
+    if (data.officer === null) {
+      console.log("first")
+      return -1;
+    }
+    else {
+      return data.officer.branch.stateCode;
+    }
+  }
+
+  // useEffect(() => {
+  //   console.log("transferCaseInfo: ", transferCaseInfo);
+  // }, [transferCaseInfo]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -60,8 +77,8 @@ export const TransferCase = () => {
       notify("error", `From Captain is empty`);
     } else if (transferCaseInfo.toCaptain === "") {
       notify("error", `To Captain is empty`);
-      // } else if (transferCaseInfo.caseId === "") {
-      // notify("error", `Case Id is empty`);
+    } else if (transferCaseInfo.caseId === "") {
+      notify("error", `Case Id is empty`);
     } else if (transferCaseInfo.stateCode === "") {
       notify("error", `State Code is empty`);
     } else if (transferCaseInfo.toBranchId === "") {
@@ -75,48 +92,14 @@ export const TransferCase = () => {
       setTimeout(() => {
         setButtonDisabled(false);
       }, 5000);
-
-      const client = await getWalletClient({ account, connector });
-
-      const fromBranchId = ethers.utils.hexlify(
-        ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [transferCaseInfo.fromBranchId])
-      ));
       
-      const toBranchId = ethers.utils.hexlify(
-        ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [transferCaseInfo.toBranchId])
-      ));
-
-      try {
-        const hash = transferCaseHash (
-          transferCaseInfo.fromCaptain,
-          transferCaseInfo.toCaptain,
-          transferCaseInfo.nonce,
-          transferCaseInfo.caseId,
-          fromBranchId,
-          toBranchId,
-          transferCaseInfo.receiver,
-          transferCaseInfo.expiry
-        );
-        // console.log("hash", hash)
-
-        const message = toLedgerTypedDataHash(hash);
-
-        const signature = await client.request(
-          {
-            method: "eth_sign",
-            params: [address, message],
-          },
-          { retryCount: 0 }
-        );
-        console.log("signature:: ", signature)
-
+      const stateCodeToCaptain = await fetchStateCode();
+      
+      if (transferCaseInfo.stateCode === stateCodeToCaptain) {
         axios
           .post(
             "http://localhost:3000/create-request/transfer-case/:caseId",
-            {
-              transferCaseInfo : transferCaseInfo,
-              signatureTransferCase : signature
-            }
+            transferCaseInfo
           )
           .then((res) =>
             notify("success", "Transfer Case Request Created successfully")
@@ -128,8 +111,16 @@ export const TransferCase = () => {
               `An Error Occured when Creating Transfer Case Request`
             );
           });
-      } catch (err) {
-        console.log("Error:: ", err);
+      } else if (stateCodeToCaptain === -1){
+        notify(
+          "error",
+          `To Captain doesn't exist.`
+        );
+      } else {
+        notify(
+          "error",
+          `Invalid From Captain address! Modarator and From Captain state code is Different.`
+        );
       }
     }
   };
@@ -243,45 +234,9 @@ export const TransferCase = () => {
               name="caseId"
               id="caseId"
               className="form-control"
-              value={caseId}
-              disabled="true"
+              placeholder="Case Id Here"
+              onChange={handleChange}
             ></input>
-          </div>
-        </div>
-
-        {/* State Code */}
-        <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="stateCode" className="col-form-label">
-              <b>
-                <em>State Code:</em>
-              </b>
-            </label>
-          </div>
-          <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle
-                variant="secondary"
-                id="stateCode"
-                className="dropdown"
-              >
-                {selectedStateCode
-                  ? stateCodeMap.get(selectedStateCode)
-                  : "Select State Code"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown">
-                {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item
-                    name="stateCode"
-                    key={key}
-                    onClick={() => handleStateCodeDropdownSelect(key)}
-                  >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
           </div>
         </div>
 

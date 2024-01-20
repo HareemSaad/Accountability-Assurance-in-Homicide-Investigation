@@ -12,14 +12,11 @@ import moment from "moment";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
-import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
 import { useAccount } from "wagmi";
-// hashes
-import { transferCaptainHash } from "../utils/hashing/transferCaptainHash.js";
-import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { client } from "../data/data";
 
 export const TransferCaptain = () => {
-  const { caseId } = useParams();
+  // const { caseId } = useParams();
   let navigate = useNavigate();
   const { address, connector, isConnected, account } = useAccount();
 
@@ -29,14 +26,13 @@ export const TransferCaptain = () => {
   const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [transferCaptainInfo, setTransferCaptainInfo] = useState({
-    moderator: "",
+    moderator: address,
     fromCaptain: "",
     toCaptain: "",
-    stateCode: "",
+    stateCode: localStorage.getItem("statecode"),
     branchId: "",
     nonce: Math.floor(Math.random() * 10000),
-    caseId: caseId,
-    signers: address,
+    caseId: "",
     receiver: false,
     expiry: "",
     isOpen: true,
@@ -48,6 +44,28 @@ export const TransferCaptain = () => {
     console.log("params :: ", name);
     console.log("value :: ", value);
   };
+
+  async function fetchStateCode() {
+    const query = `
+    {
+      officer(id: "${transferCaptainInfo.toCaptain}") {
+        branch {
+          stateCode
+        }
+      }
+    }
+    `;
+    const response = await client.query(query).toPromise();
+    const { data, fetching, error } = response;
+    console.log("subgraph data: ", data);
+    if (data.officer === null) {
+      console.log("first")
+      return -1;
+    }
+    else {
+      return data.officer.branch.stateCode;
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,44 +89,13 @@ export const TransferCaptain = () => {
         setButtonDisabled(false);
       }, 5000);
 
-      const client = await getWalletClient({ account, connector });
+      const stateCodeToCaptain = await fetchStateCode();
 
-      const branchId = ethers.utils.hexlify(
-        ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [transferCaptainInfo.branchId])
-      ));
-
-      try {
-        const hash = transferCaptainHash(
-          transferCaptainInfo.moderator,
-          transferCaptainInfo.fromCaptain,
-          transferCaptainInfo.toCaptain,
-          branchId,
-          transferCaptainInfo.nonce,
-          transferCaptainInfo.caseId,
-          transferCaptainInfo.receiver,
-          transferCaptainInfo.expiry
-        );
-
-        // console.log("hash", hash)
-
-        const message = toLedgerTypedDataHash(hash);
-
-        const signature = await client.request(
-          {
-            method: "eth_sign",
-            params: [address, message],
-          },
-          { retryCount: 0 }
-        );
-        // console.log("signature:: ", signature)
-
+      if (transferCaptainInfo.stateCode === stateCodeToCaptain) {
         axios
           .post(
             "http://localhost:3000/create-request/transfer-captain/:caseId",
-            {
-              transferCaptainInfo: transferCaptainInfo,
-              signatureTransferCaptain: signature,
-            }
+            transferCaptainInfo,
           )
           .then((res) =>
             notify("success", "Transfer Captain Request Created successfully")
@@ -120,9 +107,20 @@ export const TransferCaptain = () => {
               `An Error Occured when Creating Transfer Captain Request`
             );
           });
-      } catch (err) {
-        console.log("Error:: ", err);
+      } else if (stateCodeToCaptain === -1){
+        notify(
+          "error",
+          `To Captain doesn't exist.`
+        );
+      } else {
+        notify(
+          "error",
+          `Modarator and From Captain state code is Different.`
+        );
       }
+      // } catch (err) {
+      //   console.log("Error:: ", err);
+      // }
     }
   };
 
@@ -144,7 +142,10 @@ export const TransferCaptain = () => {
   const handleDateChange = (fullDateTime) => {
     let unixTimestamp = moment(fullDateTime).unix();
     console.log("unixTimestamp:: ", unixTimestamp);
-    setTransferCaptainInfo({ ...transferCaptainInfo, ["expiry"]: unixTimestamp });
+    setTransferCaptainInfo({
+      ...transferCaptainInfo,
+      ["expiry"]: unixTimestamp,
+    });
   };
 
   const CustomInput = ({ value, onClick }) => {
@@ -185,9 +186,9 @@ export const TransferCaptain = () => {
               type="text"
               name="moderator"
               id="moderator"
-              placeholder="Moderator Address Here"
+              value={address}
+              disabled="true"
               className="form-control"
-              onChange={handleChange}
             ></input>
           </div>
         </div>
@@ -235,7 +236,7 @@ export const TransferCaptain = () => {
         </div>
 
         {/* State Code */}
-        <div className="row g-3 align-items-center m-3">
+        {/* <div className="row g-3 align-items-center m-3">
           <div className="col-2">
             <label htmlFor="stateCode" className="col-form-label">
               <b>
@@ -268,7 +269,7 @@ export const TransferCaptain = () => {
               </Dropdown.Menu>
             </Dropdown>
           </div>
-        </div>
+        </div> */}
 
         {/* Branch Id */}
         <div className="row g-3 align-items-center m-3">
@@ -321,8 +322,8 @@ export const TransferCaptain = () => {
               name="caseId"
               id="caseId"
               className="form-control"
-              value={caseId}
-              disabled="true"
+              placeholder="Case Id Here"
+              onChange={handleChange}
             ></input>
           </div>
         </div>

@@ -126,8 +126,8 @@ function App() {
           <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
           <Route path="/create-request/update-branch" element={<UpdateBranch />} />
           <Route path="/create-request/update-officer" element={<UpdateOfficer />} />
-          <Route path="/create-request/transfer-captain/:caseId" element={<TransferCaptain />} />
-          <Route path="/create-request/transfer-case/:caseId" element={<TransferCase />} />
+          <Route path="/create-request/transfer-captain" element={<TransferCaptain />} />
+          <Route path="/create-request/transfer-case" element={<TransferCase />} />
           {/* Moderator-only view requests */}
           <Route path="/:reqName" element={<ViewRequests />} />
           <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />

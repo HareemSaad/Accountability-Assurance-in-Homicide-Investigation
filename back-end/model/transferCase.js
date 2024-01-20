@@ -36,11 +36,15 @@ const TransferCaseSchema = new mongoose.Schema ({
     receiver: {
         type: Boolean,
     },
-    signature: {
-        type: Array
+    signatureFromCaptain: {
+        type: String
+    },
+    signatureToCaptain: {
+        type: String
     },
     signers: {
-        type: Array
+        type: Array,
+        default: []
     },
     expiry: {
         type: Number,
