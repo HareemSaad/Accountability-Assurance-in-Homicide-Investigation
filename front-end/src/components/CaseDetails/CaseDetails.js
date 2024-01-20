@@ -40,17 +40,19 @@ const CaseDetailsPage = () => {
           participants {
             id
             category
+            approve
           }
           evidences {
             id
             category
+            approve
           }
         }
       }
       `
       const response = await client.query(query).toPromise();
       const { data, fetching, error } = response;
-      console.log("data:: ", data)
+      // console.log("data:: ", query)
       // console.log("data evidence:: ", data.cases[0].evidences)
       // console.log("data participant:: ", data.cases[0].participants)
       if (data.cases.length > 0) {
@@ -91,6 +93,10 @@ const CaseDetailsPage = () => {
         break;
     }
   }
+
+  const toParticipant = async (id) => {
+    navigate(`/view-participant/${caseId}/${id}`);
+  };
 
   return (
     <div className=''>
@@ -133,7 +139,7 @@ const CaseDetailsPage = () => {
         <h3 style={{ textAlign: 'center' }} className='mb-4 mt-4'>Participants</h3>
         <div className='card-info-container'>
           {caseParticipant.length > 0 ? caseParticipant.map((participant, index) => (
-            <Card style={{ width: '18rem', height: '5rem' }} className='case-info-card'>
+            <Card style={{ width: '18rem', height: 'auto' }} className='case-info-card' onClick={() => toParticipant(participant.id)}>
               <Card.Body>
                 <Card.Title>{participant.id}</Card.Title>
                 <Card.Subtitle className="mb-2 text-muted">{participantTypeMap[participant.category]}</Card.Subtitle>
@@ -149,6 +155,7 @@ const CaseDetailsPage = () => {
           <button className='case-nav-btn' name="add-participant" onClick={(e) => goto(e)}>Add Participant</button>
         </div>
       </div>
+
       {/* list of evidence */}
       <div className='backgound-div'>
         <h3 style={{ textAlign: 'center' }} className='mb-4 mt-4'>
