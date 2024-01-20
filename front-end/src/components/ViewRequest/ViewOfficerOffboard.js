@@ -124,14 +124,17 @@ export const ViewOfficerOffboard = () => {
           userAddress: address,
           signature: signature,
         })
-        .then((res) => notify("success", "Signed successfully"))
+        .then((res) => {
+          const message = res.data.message;
+          notify("success", message);
+        })
         .catch((err) => {
           // console.log("error:: ", err);
           notify("error", `An Error Occured when Signing`);
         });
     } catch (err) {
       console.log("Error message:: ", err.message);
-      notify("error", `An Error Occured when Signing the Request`);
+      notify("error", err.message);
     }
   };
 
