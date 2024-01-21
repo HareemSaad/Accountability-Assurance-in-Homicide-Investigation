@@ -13,7 +13,7 @@ import { keccakString } from "../utils/hashing/keccak-hash.js";
 import CaseABI from "./../Cases.json";
 // hashes
 import { transferCaptainHash } from "../utils/hashing/transferCaptainHash.js";
-import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { toCaseTypedDataHash } from "../utils/hashing/casesDomainHash.js";
 
 export const ViewTransferCaptain = () => {
   const { reqId } = useParams();
@@ -79,7 +79,7 @@ export const ViewTransferCaptain = () => {
 
       console.log("hash", hash)
 
-      const message = toLedgerTypedDataHash(hash);
+      const message = toCaseTypedDataHash(hash);
 
       const signature = await client.request(
         {
