@@ -160,4 +160,22 @@ router.post("/view-transfer-case/:reqId", async (req, res) => {
   }
 });
 
+router.delete('/delete-transfer-case/:reqId', async (req, res) => {
+  let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
+
+  try {
+      const deletedRequest = await TransferCase.findOneAndDelete({ 'id': idParam });
+      console.log("deletedRequest:: ", deletedRequest)
+
+      if (deletedRequest) {
+          res.status(200).json({ message: 'Transfer Case request deleted successfully', deletedRequest });
+      } else {
+          res.status(404).json({ error: 'Transfer Case request not found' });
+      }
+  } catch (err) {
+      console.error("Error: ", err);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 module.exports = router;

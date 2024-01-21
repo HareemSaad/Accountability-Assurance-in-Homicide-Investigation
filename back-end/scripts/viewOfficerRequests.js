@@ -25,6 +25,24 @@ router.get('/view-officer-requests/:reqId', async (req, res) => {
     .catch(err => console.log("errorr:: ", err))
 })
 
+router.delete('/delete-officer-request/:reqId', async (req, res) => {
+    let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
+
+    try {
+        const deletedDetectiveRequest = await OfficerOnboard.findOneAndDelete({ 'id': idParam });
+        console.log("deletedDetectiveRequest:: ", deletedDetectiveRequest)
+
+        if (deletedDetectiveRequest) {
+            res.status(200).json({ message: 'Officer request deleted successfully', deletedDetectiveRequest });
+        } else {
+            res.status(404).json({ error: 'Officer request not found' });
+        }
+    } catch (err) {
+        console.error("Error: ", err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 // // sign officer onboard request - push signer address in signers array (if not already exists)
 // router.post('/view-officer-onboard/:reqId', async (req, res) => {
 //     // console.log("req.params:: ", req.params)

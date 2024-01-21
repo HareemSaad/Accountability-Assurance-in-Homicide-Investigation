@@ -79,4 +79,22 @@ router.post('/view-officer-onboard/:reqId', async (req, res) => {
     .catch(err => console.log("errorr:: ", err))
 })
 
+router.delete('/delete-officer-onboard/:reqId', async (req, res) => {
+    let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
+
+    try {
+        const deletedRequest = await OfficerOnboard.findOneAndDelete({ 'id': idParam });
+        console.log("deletedRequest:: ", deletedRequest)
+
+        if (deletedRequest) {
+            res.status(200).json({ message: 'Officer Onboard request deleted successfully', deletedRequest });
+        } else {
+            res.status(404).json({ error: 'Officer Onboard request not found' });
+        }
+    } catch (err) {
+        console.error("Error: ", err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
 module.exports = router

@@ -160,4 +160,23 @@ router.post("/view-transfer-officer-branch/:reqId", async (req, res) => {
   }
 });
 
+router.delete('/delete-transfer-officer-branch/:reqId', async (req, res) => {
+  let idParam = req.params['reqId'].replace(/[^0-9]/g, "");
+
+  try {
+      const deletedRequest = await TransferOfficerBranch.findOneAndDelete({ 'id': idParam });
+      console.log("deletedRequest:: ", deletedRequest)
+
+      if (deletedRequest) {
+          res.status(200).json({ message: 'Transfer Officer Branch request deleted successfully', deletedRequest });
+      } else {
+          res.status(404).json({ error: 'Transfer Officer Branch request not found' });
+      }
+  } catch (err) {
+      console.error("Error: ", err);
+      res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
 module.exports = router;
