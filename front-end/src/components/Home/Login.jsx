@@ -157,7 +157,7 @@ export const Login = () => {
                 {selectedValue ? (selectedValue) : "Select Your Rank"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(rankMap).map(([key, value]) => (
                   <Dropdown.Item name="stateCode" className="page-dropdown-item-login" key={key} onClick={() => handleDropdownSelect(key)} >
                     {value}
@@ -174,7 +174,7 @@ export const Login = () => {
                 {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(stateCodeMap).map(([key, value]) => (
                   <Dropdown.Item name="stateCode" className="page-dropdown-item-login" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
                     {value}
@@ -191,7 +191,7 @@ export const Login = () => {
                 {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
                   <Dropdown.Item name="branchId" className="page-dropdown-item-login" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
                     {value}

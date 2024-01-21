@@ -15,9 +15,9 @@ employmentStatusMap.set("3", "Fired")
 
 export const caseStatusMap = new Map();
 // caseStatusMap.set("0", "NULL") 
-caseStatusMap.set("1", "Open")
-caseStatusMap.set("2", "Closed")
-caseStatusMap.set("3", "Cold")
+caseStatusMap.set(1, "Open")
+caseStatusMap.set(2, "Closed")
+caseStatusMap.set(3, "Cold")
 
 export const rankMap = new Map();
 rankMap.set(1, "Officer")

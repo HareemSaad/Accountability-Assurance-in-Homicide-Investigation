@@ -7,3 +7,23 @@
   border: none;
 }
 
+.selectDropdown {
+    border-bottom: 0.2rem solid #6600cc !important;
+}
+.dropdown-item {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+}
+
+.dropdown-item:active {
+  background-color: #e8d6fa !important;
+  color: black !important;
+}
+
+.noData {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+}
