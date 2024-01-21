@@ -9,6 +9,8 @@ import axios from "axios";
 import { useAccount } from "wagmi";
 import moment from "moment";
 import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+import { keccakString } from "../utils/hashing/keccak-hash.js";
+import CaseABI from "./../Cases.json";
 // hashes
 import { transferCaptainHash } from "../utils/hashing/transferCaptainHash.js";
 import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
@@ -35,7 +37,7 @@ export const ViewTransferCaptain = () => {
         })
         .then((result) => {
           setRequestDetail(result.data.document);
-          // console.log("result: ", result.data.document);
+          console.log("result: ", result.data.document);
         })
         .catch((err) => console.log("error:: ", err));
     };
@@ -51,11 +53,19 @@ export const ViewTransferCaptain = () => {
     // axiospost - update the array of signers/signatures...
     const client = await getWalletClient({ account, connector });
 
-    const branchId = ethers.utils.hexlify(
-      ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [requestDetail.branchId])
-    ));
+    const branchId = keccakString(requestDetail.branchId)
 
     try {
+      console.log(
+        requestDetail.moderator,
+        requestDetail.fromCaptain,
+        requestDetail.toCaptain,
+        branchId,
+        requestDetail.nonce,
+        requestDetail.caseId,
+        requestDetail.receiver,
+        requestDetail.expiry
+      );
       const hash = transferCaptainHash(
         requestDetail.moderator,
         requestDetail.fromCaptain,
@@ -67,7 +77,7 @@ export const ViewTransferCaptain = () => {
         requestDetail.expiry
       );
 
-      // console.log("hash", hash)
+      console.log("hash", hash)
 
       const message = toLedgerTypedDataHash(hash);
 
@@ -100,15 +110,71 @@ export const ViewTransferCaptain = () => {
     }
   };
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     // Hareem todo - send by moderator
     e.preventDefault();
     setButtonDisabled(true);
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
-    // after send
-    // setIsPassedMessage("Sent")
+    try {
+      console.log(
+        {
+          moderator: requestDetail.moderator,
+          fromCaptain: requestDetail.fromCaptain,
+          toCaptain: requestDetail.toCaptain,
+          branchId: keccakString(requestDetail.branchId),
+          nonce: requestDetail.nonce,
+          caseId: requestDetail.caseId,
+          reciever: false,
+          expiry: requestDetail.expiry
+        },
+        [requestDetail.signatureFromCaptain, requestDetail.signatureToCaptain],
+        [requestDetail.fromCaptain, requestDetail.toCaptain]
+      );
+      const { hash } = await writeContract({
+        address: process.env.REACT_APP_CASE_CONTRACT,
+        abi: CaseABI,
+        functionName: "transferCaseCaptain",
+        args: [
+          {
+            moderator: requestDetail.moderator,
+            fromCaptain: requestDetail.fromCaptain,
+            toCaptain: requestDetail.toCaptain,
+            branchId: keccakString(requestDetail.branchId),
+            nonce: requestDetail.nonce,
+            caseId: requestDetail.caseId,
+            reciever: false,
+            expiry: requestDetail.expiry
+          },
+          [requestDetail.signatureFromCaptain, requestDetail.signatureToCaptain],
+          [requestDetail.fromCaptain, requestDetail.toCaptain]
+        ],
+        chainId: 11155111,
+      });
+
+      // wait for txn
+      const result = await waitForTransaction({
+        hash: hash,
+      });
+      console.log("Transaction result:", result);
+
+      axios
+      .delete(`http://localhost:3000/delete-transfer-captain/:${reqId}`)
+      .then((response) => {
+        console.log(response.data); // Handle the response from the server
+      })
+      .catch((error) => {
+        console.error(error); // Handle errors
+      });
+      console.log("hash :: ", hash);
+
+      notify("success", "Transaction Success");
+      setIsPassedMessage("Sent")
+    } catch (error) {
+      console.log(error);
+      notify("error", "Error in Transfering");
+    }
   }
 
   const getDate = (expiryDate) => {

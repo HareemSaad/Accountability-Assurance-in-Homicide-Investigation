@@ -40,7 +40,7 @@ export const NavbarComponent = () => {
   
   return (
     <Navbar className="nav">
-      {console.log("rank", localStorage.getItem("rank").toLowerCase())}
+      {console.log("rank", localStorage.getItem("rank")?.toLowerCase())}
       <Container>
         <img className='navLogo' src="/logo.png" alt="Logo" width="50" height="50" />
         <Navbar.Brand className='text-light' onClick={logoNavigation} style={{ cursor: 'pointer' }}>Police Department</Navbar.Brand>
