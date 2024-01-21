@@ -6,6 +6,9 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { employmentStatusMap, rankMap } from "../data/data.js";
 import moment from "moment";
+import { waitForTransaction, writeContract } from '@wagmi/core';
+import LedgerABI from "./../Ledger.json"
+import { keccakString, keccakInt } from "../utils/hashing/keccak-hash.js";
 
 export const ViewOfficerRequests = () => {
   const { reqId } = useParams();
@@ -27,16 +30,54 @@ export const ViewOfficerRequests = () => {
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
-    // axiospost - update the array of signers/signatures...
-    // axios
-    //   .post(`http://localhost:3000/view-officer-requests/:${reqId}`, {
-    //     userAddress: userAddress,
-    //   })
-    //   .then((res) => notify("success", "Signed successfully"))
-    //   .catch((err) => {
-    //     // console.log("error:: ", err);
-    //     notify("error", `An Error Occured when Signing`);
-    //   });
+    try {
+
+      console.log("output:: ", requestDetail);
+      console.log(requestDetail.legalNumber, keccakInt(requestDetail.legalNumber));
+      
+      // call contract
+      const { hash } = await writeContract({
+        address: process.env.REACT_APP_LEDGER_CONTRACT,
+        abi: LedgerABI,
+        functionName: 'onboard',
+        args: [
+          requestDetail.nonce,
+          localStorage.getItem("statecode"),
+          requestDetail.verifiedAddress,
+          requestDetail.name,
+          keccakInt(requestDetail.legalNumber),
+          keccakString(requestDetail.badge),
+          keccakString(requestDetail.branchId),
+          requestDetail.rank,
+          requestDetail.expiry,
+          requestDetail.signature,
+          requestDetail.signers
+        ],
+        chainId: 11155111
+      })
+      console.log("hash :: ", hash)
+
+      // wait for txn
+      const result = await waitForTransaction({
+          hash: hash,
+      })
+      console.log("Transaction result:", result);
+
+      // amaim -- delete request from table
+
+      axios.delete(`http://localhost:3000/delete-officer-request/:${reqId}`)
+      .then(response => {
+        console.log(response.data); // Handle the response from the server
+      })
+      .catch(error => {
+        console.error(error); // Handle errors
+      });
+      notify("success", "Onboarding Successful");
+      
+    } catch (error) {
+      console.log(error)
+      notify("error", "Error sending transaction");
+    }
   };
 
   const getDate = (expiryDate) => {
@@ -197,7 +238,7 @@ export const ViewOfficerRequests = () => {
               name="employmentStatus"
               id="employmentStatus"
               className="form-control"
-              value={employmentStatusMap.get(requestDetail.employmentStatus)}
+              value={employmentStatusMap.get(`${requestDetail.employmentStatus}`)}
               disabled
             />
           </div>

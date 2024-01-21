@@ -73,6 +73,7 @@ export const ViewDetectiveRequests = () => {
       .catch(error => {
         console.error(error); // Handle errors
       });
+      notify("success", "Onboarding Successful");
       
     } catch (error) {
       console.log(error)
