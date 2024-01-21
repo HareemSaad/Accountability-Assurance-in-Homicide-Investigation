@@ -11,7 +11,9 @@ import moment from "moment";
 import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
 // hashes
 import { transferCaseHash } from "../utils/hashing/transferCaseHash.js";
-import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
+import { toCaseTypedDataHash } from "../utils/hashing/caseDomainHash.js";
+import { keccakString } from "../utils/hashing/keccak-hash.js";
+import CaseABI from "./../Cases.json";
 
 export const ViewTransferCase = () => {
   const { reqId } = useParams();
@@ -46,13 +48,11 @@ export const ViewTransferCase = () => {
     // axiospost - update the array of signers/signatures...
     const client = await getWalletClient({ account, connector });
 
-    const fromBranchId = ethers.utils.hexlify(
-      ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [requestDetail.fromBranchId])
-    ));
+    const fromBranchId = keccakString(requestDetail.fromBranchId)
     
-    const toBranchId = ethers.utils.hexlify(
-      ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode( ["string"], [requestDetail.toBranchId])
-    ));
+    const toBranchId = keccakString(requestDetail.toBranchId)
+
+    console.log("detail: ", requestDetail);
 
     try {
       const hash = transferCaseHash (
@@ -67,7 +67,7 @@ export const ViewTransferCase = () => {
       );
       // console.log("hash", hash)
 
-      const message = toLedgerTypedDataHash(hash);
+      const message = toCaseTypedDataHash(hash);
 
       const signature = await client.request(
         {
@@ -98,15 +98,58 @@ export const ViewTransferCase = () => {
     }
   };
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     // Hareem todo - send by moderator
     e.preventDefault();
     setButtonDisabled(true);
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
-    // after send
-    // setIsPassedMessage("Sent")
+    try {
+      console.log(requestDetail);
+      const { hash } = await writeContract({
+        address: process.env.REACT_APP_CASE_CONTRACT,
+        abi: CaseABI,
+        functionName: "transferCase",
+        args: [
+          {
+            fromCaptain: requestDetail.fromCaptain,
+            toCaptain: requestDetail.toCaptain,
+            nonce: requestDetail.nonce,
+            caseId: requestDetail.caseId,
+            fromBranchId: keccakString(requestDetail.fromBranchId),
+            toBranchId: keccakString(requestDetail.toBranchId),
+            reciever: false,
+            expiry: requestDetail.expiry
+          },
+          [requestDetail.signatureFromCaptain, requestDetail.signatureToCaptain],
+          [requestDetail.fromCaptain, requestDetail.toCaptain]
+        ],
+        chainId: 11155111,
+      });
+
+      // wait for txn
+      const result = await waitForTransaction({
+        hash: hash,
+      });
+      console.log("Transaction result:", result);
+
+      axios
+      .delete(`http://localhost:3000/delete-transfer-case/:${reqId}`)
+      .then((response) => {
+        console.log(response.data); // Handle the response from the server
+      })
+      .catch((error) => {
+        console.error(error); // Handle errors
+      });
+      console.log("hash :: ", hash);
+
+      notify("success", "Transaction Success");
+      setIsPassedMessage("Sent")
+    } catch (error) {
+      console.log(error);
+      notify("error", "Error in Transfering");
+    }
   };
 
   const getDate = (expiryDate) => {
