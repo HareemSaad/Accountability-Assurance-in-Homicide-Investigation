@@ -10,7 +10,7 @@ import { client } from "../data/data";
 export const CaseCardCaptain = () => {
   // const [CaptainCard, setCaptainCard] = useState([]);
   const casePageArray = [ "Add Case", "Archive Cases", "Employees"];
-  const requestsPage = ["Create Trustee Request", "View Trustee Request", "View Transfer Case", "View Transfer Captain", "View Transfer Officer Branch"];
+  const requestsPage = ["Create Trustee Request", "View Trustee Request", "Trustee Access", "View Transfer Case", "View Transfer Captain", "View Transfer Officer Branch"];
 //   const employeesPage = [ "Employees", "Archive Cases"];
   const [cardResponse, setCardResponse] = useState([]);
   const { address } = useAccount();
@@ -60,6 +60,9 @@ export const CaseCardCaptain = () => {
         break;
       case "Create Trustee Request":
         navigate("/create-request/trustee-request");
+        break;
+      case "Trustee Access":
+        navigate("/trustee-access");
         break;
       case "View Transfer Captain":
         navigate("/captain/view-transfer-captain");

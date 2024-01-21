@@ -45,6 +45,7 @@ import { ViewDetectiveRequests } from './components/AddOfficer/ViewDetectiveRequ
 import { CaptainViewTranferRequest } from './components/CaptainTransferRequests/CaptainViewTranferRequest.js';
 import { ViewParticipant } from './components/ViewRequest/ViewParticipant.js';
 import { ViewEvidence } from './components/ViewRequest/ViewEvidence.js';
+import { CaptainTrusteeAccess } from './components/CaptainTrusteeAccess/CaptainTrusteeAccess.js';
 
 import { Home } from './components/Home/Home.js';
 import { AddInfo } from './components/AddCaseDetail/AddInfo';
@@ -111,6 +112,7 @@ function App() {
           <Route path="/view-officer-requests/:reqId" element={<ViewOfficerRequests />} /> {/**/}
           <Route path="/view-detective-requests/:reqId" element={<ViewDetectiveRequests />} /> {/**/}
           <Route path="/captain/:reqName" element={<CaptainViewTranferRequest />} /> {/**/}
+          <Route path="/trustee-access" element={<CaptainTrusteeAccess />} /> {/**/}
           <Route path="/add-officer-in-case/:caseId" element={<AddOfficerInCase />} />
           <Route path="/drop-officer-from-case/:caseId" element={<DropOfficerFromCase />} />
           <Route path="/change-case-status/:caseId" element={<ChangeCaseStatus />} />
