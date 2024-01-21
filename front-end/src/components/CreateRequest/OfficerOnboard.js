@@ -29,12 +29,13 @@ export const OfficerOnboard = () => {
   const [selectedStateCode, setSelectedStateCode] = useState(null);
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedRankValue, setSelectedRankValue] = useState(null);
+  const [toCaptainStateCode, setToCaptainStateCode] = useState(null);
   const [officerOnboardInfo, setOfficerOnboardInfo] = useState({
     verifiedAddress: "",
     name: "",
     legalNumber: "",
     badge: "",
-    stateCode: "",
+    stateCode: localStorage.getItem("statecode"),
     branchId: "",
     rank: "",
     employmentStatus: 1,
@@ -44,8 +45,6 @@ export const OfficerOnboard = () => {
     isOpen: true,
     nonce: 0
   });
-
-  // const rankArray = ["Null", "Officer", "Detective", "Captain"];
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -187,6 +186,51 @@ export const OfficerOnboard = () => {
             functionName: 'onboardCaptain',
             args: [
               officerOnboardInfo.nonce,
+              localStorage.getItem("statecode"),
+              officerOnboardInfo.verifiedAddress,
+              officerOnboardInfo.name,
+              legalNumber,
+              badge,
+              branchId,
+              officerOnboardInfo.expiry,
+              signature,
+              address
+            ],
+            account: address,
+            chainId: 11155111
+          })
+          console.log("hash :: ", hash)
+
+          // wait for txn
+          const result = await waitForTransaction({
+            hash: hash,
+          })
+          console.log("Transaction result:", result);
+          notify("success", "Onboard Successful")
+
+        } else if(officerOnboardInfo.rank === 4) {
+
+          console.log(
+            officerOnboardInfo.nonce,
+            officerOnboardInfo.stateCode,
+            localStorage.getItem("statecode"),
+            officerOnboardInfo.verifiedAddress,
+            officerOnboardInfo.name,
+            legalNumber,
+            badge,
+            branchId,
+            officerOnboardInfo.expiry,
+            signature,
+            address
+          );
+    
+          const { hash } = await writeContract({
+            address: process.env.REACT_APP_LEDGER_CONTRACT,
+            abi: LedgerABI,
+            functionName: 'addModerator',
+            args: [
+              officerOnboardInfo.nonce,
+              officerOnboardInfo.stateCode,
               localStorage.getItem("statecode"),
               officerOnboardInfo.verifiedAddress,
               officerOnboardInfo.name,
@@ -364,21 +408,34 @@ export const OfficerOnboard = () => {
               </b>
             </label>
           </div>
-          <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
-                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
-              </Dropdown.Toggle>
+          {
+            officerOnboardInfo.rank === 4 ? 
+            <div className="col-9 input">
+              <input
+                type="number"
+                name="stateCode"
+                id="stateCode"
+                placeholder="Enter State Code Here"
+                className="form-control"
+                onChange={handleChange}
+              ></input>
+            </div> :
+            <div className="col-9 input">
+              <Dropdown>
+                <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
+                  {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
+                </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
-                {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
+                <Dropdown.Menu className="dropdown">
+                  {Array.from(stateCodeMap).map(([key, value]) => (
+                    <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
+                      {value}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
+          }
         </div>
 
         {/* Branch Id */}
@@ -390,7 +447,19 @@ export const OfficerOnboard = () => {
               </b>
             </label>
           </div>
-          <div className="col-9 input">
+          {
+            officerOnboardInfo.rank === 4 ? 
+            <div className="col-9 input">
+              <input
+                type="text"
+                name="branchId"
+                id="branchId"
+                placeholder="Enter BranchId Here"
+                className="form-control"
+                onChange={handleChange}
+              ></input>
+            </div> :
+            <div className="col-9 input">
             <Dropdown>
               <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
                 {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
@@ -405,6 +474,8 @@ export const OfficerOnboard = () => {
               </Dropdown.Menu>
             </Dropdown>
           </div>
+          }
+          
         </div>
 
         {/* Officer Rank dropdown */}
