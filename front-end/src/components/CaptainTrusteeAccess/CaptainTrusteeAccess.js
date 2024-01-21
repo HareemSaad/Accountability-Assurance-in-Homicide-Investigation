@@ -31,7 +31,7 @@ export const CaptainTrusteeAccess = () => {
   async function fetchData() {
     const query = `
             {
-                trustees(where: {branchId: "${localStorage.getItem("branchid")}", approved: true}) {
+              trusteeTables(where: {branchId: "${localStorage.getItem("branchid")}", approved: true}) {
                     caseId
                     trustree
                 }
