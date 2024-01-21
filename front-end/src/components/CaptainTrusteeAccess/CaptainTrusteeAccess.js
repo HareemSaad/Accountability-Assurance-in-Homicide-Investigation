@@ -4,6 +4,9 @@ import Dropdown from "react-bootstrap/Dropdown";
 import Card from "react-bootstrap/Card";
 import { useNavigate } from "react-router-dom";
 import { client } from "../data/data";
+import { notify } from "../utils/error-box/notify";
+import CaseABI from "./../Cases.json";
+import { waitForTransaction, writeContract } from '@wagmi/core'
 
 export const CaptainTrusteeAccess = () => {
   const requestCategory = [
@@ -44,10 +47,29 @@ export const CaptainTrusteeAccess = () => {
       }
   }
 
-  function handleRevoke(cardCaseId, cardTrustree) {
+  async function handleRevoke(cardCaseId, cardTrustree) {
     console.log("case: ", cardCaseId)
     console.log("cardTrustree: ", cardTrustree)
-    // Hareem TODO - Revoke
+    try {
+      const { hash } = await writeContract({
+        address: process.env.REACT_APP_CASE_CONTRACT,
+        abi: CaseABI,
+        functionName: 'revokeTrusteeAccess',
+        args: [cardTrustree, cardCaseId, localStorage.getItem("branchid")],
+        chainId: 11155111
+      })
+      console.log("hash :: ", hash)
+
+      // wait for txn
+      const result = await waitForTransaction({
+          hash: hash,
+      })
+      console.log("Transaction result:", result);
+      notify('success', 'Transaction Success')
+    } catch(error) {
+      console.log(error);
+      notify("error", "Error in revoking")
+    }
   }
 
   return (

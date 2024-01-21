@@ -149,15 +149,17 @@ export const ViewTrusteeRequest = () => {
         hash: hash,
       });
       console.log("Transaction result:", result);
-      notify("success", "Transaction Success");
+
       axios
-        .delete(`http://localhost:3000/delete-trustee-request/:${reqId}`)
-        .then((response) => {
-          console.log(response.data); // Handle the response from the server
-        })
-        .catch((error) => {
-          console.error(error); // Handle errors
-        });
+      .delete(`http://localhost:3000/delete-trustee-request/:${reqId}`)
+      .then((response) => {
+        console.log(response.data); // Handle the response from the server
+      })
+      .catch((error) => {
+        console.error(error); // Handle errors
+      });
+      
+      notify("success", "Transaction Success");
     } catch (error) {
       console.log(error);
       notify("error", "Transaction Failed");
