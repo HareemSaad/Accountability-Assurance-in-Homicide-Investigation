@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import { waitForTransaction, writeContract } from '@wagmi/core'
 import CaseABI from "./../Cases.json";
+import { caseStatusMap } from '../data/data';
 
 export const ChangeCaseStatus = () => {
     const { caseId } = useParams();
@@ -15,11 +16,16 @@ export const ChangeCaseStatus = () => {
     const [caseStatus, setcaseStatus] = useState("");
 
     // Function to handle dropdown item selection
-    const [selectedValue, setSelectedValue] = useState(null);
-    const statusArray = ['Select a Status', 'Open', 'Cold', 'Closed'];
+    const [selectedStatusValue, setSelectedStatusValue] = useState(null);
+
+    // useEffect(() => {
+    //     console.log("caseStatus: ", caseStatus)
+    //     console.log("selectedStatusValue: ", selectedStatusValue)
+    // }, [selectedStatusValue])
+      
 
     const handleDropdownSelect = (statusValue) => {
-        setSelectedValue(statusValue);
+        setSelectedStatusValue(statusValue);
         setcaseStatus(statusValue);
     };
 
@@ -77,11 +83,11 @@ export const ChangeCaseStatus = () => {
 
                     <div className="col-9">
                         <Dropdown>
-                            <Dropdown.Toggle variant="secondary" id="category-type" className='dropdown'> {selectedValue ? statusArray[selectedValue] : 'Select Status'} </Dropdown.Toggle>
+                            <Dropdown.Toggle variant="secondary" id="category-type" className='dropdown'> {selectedStatusValue ? caseStatusMap.get(selectedStatusValue) : "Select Case Status"} </Dropdown.Toggle>
 
                             <Dropdown.Menu className='dropdown'>
-                                {statusArray.map((status, index) => (
-                                    <Dropdown.Item name='category' key={index} onClick={() => handleDropdownSelect(index)}> {status} </Dropdown.Item>
+                                {Array.from(caseStatusMap).map(([key, value]) => (
+                                    <Dropdown.Item name='category' key={key} onClick={() => handleDropdownSelect(key)}> {value} </Dropdown.Item>
                                 ))}
                             </Dropdown.Menu>
                         </Dropdown>

@@ -34,10 +34,14 @@ export const CaseCardDetective = ({ currentUser }) => {
         }
       }
     `;
-    const response = await client.query(query).toPromise();
-    const { data, fetching, error } = response;
-    // console.log(data.officer.cases);
-    setDetectiveCard(data.officer.cases);
+    try {
+      const response = await client.query(query).toPromise();
+      const { data, fetching, error  } = response;
+      // console.log(data.officer.cases);
+      setDetectiveCard(data.officer.cases);
+    } catch (error) {
+      console.log("error", error);
+    }
   }
 
   function print(cardId) {

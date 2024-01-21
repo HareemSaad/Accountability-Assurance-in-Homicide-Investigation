@@ -55,13 +55,23 @@ export const EmployeeDetails = () => {
             {/* case Number and change status button */}
             <div className="d-flex justify-content-between">
                 <div className='m-3 mt-5 d-flex flex-row'>
-                    <h2>Employee Address: {employeeId}</h2>
+                    <h2>Employee: {employeeDetail.name}</h2>
+                    {/* <h2>Employee Address: {employeeId}</h2> */}
                     {/* case status */}
-                    {/* <h6 className='statusTagOpen ms-4'>#ACTIVE</h6> */}
-                    <h6 className={`statusTag${employeeDetail.employmentStatus} ms-4`}>#{employmentStatusMap.get(employeeDetail.employmentStatus.toString())}</h6>
+                    <h6 className={`statusTag${employeeDetail.employmentStatus} ms-4`}>#{employmentStatusMap.get(`${employeeDetail.employmentStatus}`)}</h6>
                 </div>
 
                 <button className='case-nav-btn m-4' name="change-employee-status" onClick={(e) => goto(e)}>Change Status</button>
+            </div>
+
+            {/* Employee Address */}
+            <div className="row g-3 align-items-center m-4 ms-5">
+                <div className="col-2">
+                    <label htmlFor="employeeAddress" className="col-form-label"><b><em>Employee Address</em></b></label>
+                </div>
+                <div className="col-9 input">
+                    <input type="text" name='branchId' id="employeeAddress" className="form-control" value={employeeId} disabled />
+                </div>
             </div>
 
             <form>
@@ -85,15 +95,6 @@ export const EmployeeDetails = () => {
                 </div>
             </div>
 
-            {/* Employee Branch Id
-            <div className="row g-3 align-items-center m-4 ms-5">
-                <div className="col-2">
-                    <label htmlFor="employeeBranchId" className="col-form-label"><b><em>Employee Branch Id</em></b></label>
-                </div>
-                <div className="col-9 input">
-                    <input type="text" name='branchId' id="employeeBranchId" className="form-control" value={employeeDetail.branch} disabled />
-                </div>
-            </div> */}
             </form>
 
         </div>

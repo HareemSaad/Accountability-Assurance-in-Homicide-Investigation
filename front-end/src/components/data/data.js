@@ -1,6 +1,6 @@
 import { createClient, cacheExchange, fetchExchange } from "urql";
 
-const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/8";
+const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/7";
 
 export const client = createClient({
   url: APIURL,
@@ -12,6 +12,12 @@ employmentStatusMap.set("0", "Inactive")
 employmentStatusMap.set("1", "Active")
 employmentStatusMap.set("2", "Retired")
 employmentStatusMap.set("3", "Fired")
+
+export const caseStatusMap = new Map();
+// caseStatusMap.set("0", "NULL") 
+caseStatusMap.set("1", "Open")
+caseStatusMap.set("2", "Closed")
+caseStatusMap.set("3", "Cold")
 
 export const rankMap = new Map();
 rankMap.set(1, "Officer")
