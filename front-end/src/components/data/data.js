@@ -1,6 +1,6 @@
 import { createClient, cacheExchange, fetchExchange } from "urql";
 
-const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/version/latest";
+const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/7";
 
 export const client = createClient({
   url: APIURL,

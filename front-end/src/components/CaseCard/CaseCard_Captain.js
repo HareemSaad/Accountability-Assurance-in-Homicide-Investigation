@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "./CaseCard.css";
-import CaseDetailsPage from "../CaseDetails/CaseDetails";
 import Card from "react-bootstrap/Card";
 import { useNavigate } from "react-router-dom";
 import { useAccount } from "wagmi";
 import Dropdown from "react-bootstrap/Dropdown";
-import { InputGroup } from "react-bootstrap";
 import { IoNavigateCircleOutline } from "react-icons/io5";
 import { client } from "../data/data";
 
@@ -15,7 +13,7 @@ export const CaseCardCaptain = () => {
   const requestsPage = ["Create Trustee Request", "View Trustee Request", "View Transfer Case", "View Transfer Captain", "View Transfer Officer Branch"];
 //   const employeesPage = [ "Employees", "Archive Cases"];
   const [cardResponse, setCardResponse] = useState([]);
-  const { address, connector, isConnected } = useAccount();
+  const { address } = useAccount();
   let navigate = useNavigate();
 
   useEffect(() => {
@@ -34,10 +32,14 @@ export const CaseCardCaptain = () => {
         }
       }
     `;
-    const response = await client.query(query).toPromise();
-    const { data, fetching, error } = response;
-    // console.log(data.officer.cases);
-    setCardResponse(data.officer.cases);
+    try {
+      const response = await client.query(query).toPromise();
+      const { data } = response;
+      // console.log("data", data, address);
+      setCardResponse(data.officer.cases);
+    } catch (error) {
+      console.log("error", error);
+    }
   }
 
   function print(cardId) {
