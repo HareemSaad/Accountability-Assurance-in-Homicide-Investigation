@@ -67,47 +67,53 @@ export const Login = () => {
   // Function to handle successful login
   const handleLoginSuccess = async () => {
 
-    if (isConnected) {
-
-      const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
-        ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.branchId])
-      ));
-      const badge = ethers.utils.hexlify(ethers.utils.keccak256(
-          ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.badge])
-      ));
-      // const badge = ethers.utils.formatBytes32String(officerInfo.badge);
-
-      // console.log("branchid ::", branchId)
-      // console.log("stateCode ::", officerInfo.stateCode)
-      // console.log("badge ::", badge)
-      // console.log("rank ::", officerInfo.rank)
+    try {
+      if (isConnected) {
+  
+        const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
+          ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.branchId])
+        ));
+        const badge = ethers.utils.hexlify(ethers.utils.keccak256(
+            ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.badge])
+        ));
+        // const badge = ethers.utils.formatBytes32String(officerInfo.badge);
+  
+        // console.log("branchid ::", branchId)
+        // console.log("stateCode ::", officerInfo.stateCode)
+        // console.log("badge ::", badge)
+        // console.log("rank ::", officerInfo.rank)
+        
+        const validity = await readContract({
+          address: process.env.REACT_APP_LEDGER_CONTRACT,
+          abi: LedgerABI,
+          functionName: 'isValidEmployment',
+          args: [
+            branchId, // bytes32 _branchId,
+            officerInfo.stateCode, // uint _stateCode
+            badge, // bytes32 _badge
+            officerInfo.rank //Rank _rank
+          ],
+          account: address,
+          chainId: 11155111
+        })
+        console.log("validity ::", validity)
+  
+        if (validity) {
+        // if (validityRank) {
+          if (selectedValue === 'Captain') { navigate('/cases-captain'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
+          else if (selectedValue === 'Detective') { navigate('/cases-detective'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
+          else if (selectedValue === 'Officer') { navigate('/cases-officer'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
+          else if (selectedValue === 'Moderator') { navigate('/moderator-home'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
+          else { handleValidationFail(); }
+        } else {
+          handleValidationFail();
+        }
+      };
       
-      const validity = await readContract({
-        address: process.env.REACT_APP_LEDGER_CONTRACT,
-        abi: LedgerABI,
-        functionName: 'isValidEmployment',
-        args: [
-          branchId, // bytes32 _branchId,
-          officerInfo.stateCode, // uint _stateCode
-          badge, // bytes32 _badge
-          officerInfo.rank //Rank _rank
-        ],
-        account: address,
-        chainId: 11155111
-      })
-      console.log("validity ::", validity)
-
-      if (validity) {
-      // if (validityRank) {
-        if (selectedValue === 'Captain') { navigate('/cases-captain'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
-        else if (selectedValue === 'Detective') { navigate('/cases-detective'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
-        else if (selectedValue === 'Officer') { navigate('/cases-officer'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
-        else if (selectedValue === 'Moderator') { navigate('/moderator-home'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
-        else { handleValidationFail(); }
-      } else {
-        handleValidationFail();
-      }
-    };
+    } catch (error) {
+      console.log(error);
+      notify("error", "Failed Authentication")
+    }
   }  
   
   const handleLogin = (connector) => {
