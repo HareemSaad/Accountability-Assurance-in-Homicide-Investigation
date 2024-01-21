@@ -30,16 +30,10 @@ export const TransferOfficerBranch = () => {
   const [transferOfficerInfo, setTransferOfficerInfo] = useState({
     verifiedAddress: "",
     nonce: Math.floor(Math.random() * 10000),
-    name: "",
-    legalNumber: "",
-    badge: "",
     fromCaptain: "",
     toCaptain: "",
     stateCode: localStorage.getItem("statecode"),
-    branchId: "",
     toBranchId: "",
-    rank: "",
-    employmentStatus: "",
     receiver: false,
     expiry: "",
     isOpen: true,
@@ -227,69 +221,6 @@ export const TransferOfficerBranch = () => {
           </div>
         </div>
 
-        {/* Name */}
-        <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="name" className="col-form-label">
-              <b>
-                <em>Name:</em>
-              </b>
-            </label>
-          </div>
-          <div className="col-9 input">
-            <input
-              type="text"
-              name="name"
-              id="name"
-              placeholder="Enter Name Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
-          </div>
-        </div>
-
-        {/* legal Number */}
-        <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="legalNumber" className="col-form-label">
-              <b>
-                <em>Legal Number:</em>
-              </b>
-            </label>
-          </div>
-          <div className="col-9 input">
-            <input
-              type="number"
-              name="legalNumber"
-              id="legalNumber"
-              placeholder="Enter Legal Number Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
-          </div>
-        </div>
-
-        {/* badge */}
-        <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="badge" className="col-form-label">
-              <b>
-                <em>Badge:</em>
-              </b>
-            </label>
-          </div>
-          <div className="col-9 input">
-            <input
-              type="text"
-              name="badge"
-              id="badge"
-              placeholder="Enter Badge Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
-          </div>
-        </div>
-
         {/* fromCaptain */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -332,32 +263,6 @@ export const TransferOfficerBranch = () => {
           </div>
         </div>
 
-        {/* Branch Id */}
-        <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="branchId" className="col-form-label">
-              <b>
-                <em>Branch Id:</em>
-              </b>
-            </label>
-          </div>
-          <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
-                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown">
-                {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-        </div>
-
         {/* To Branch Id */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -383,84 +288,7 @@ export const TransferOfficerBranch = () => {
             </Dropdown>
           </div>
         </div>
-
-        {/* Officer Rank dropdown */}
-        <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="officerRank" className="col-form-label">
-              <b>
-                <em>Officer Rank:</em>
-              </b>
-            </label>
-          </div>
-
-          <div className="col-9">
-            <Dropdown>
-              <Dropdown.Toggle
-                variant="secondary"
-                id="officerRank"
-                className="dropdown"
-              >
-                {" "}
-                {selectedRankValue
-                  ? rankMap.get(selectedRankValue)
-                  : "Select a Rank"}{" "}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown">
-                {Array.from(rankMap).map(([key, value]) => (
-                  <Dropdown.Item
-                    name="rank"
-                    key={key}
-                    onClick={() => handleRankDropdownSelect(key)}
-                  >
-                    {" "}
-                    {value}{" "}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-        </div>
-
-        {/* Employment Status */}
-        <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="employmentStatus" className="col-form-label">
-              <b>
-                <em>Employment Status:</em>
-              </b>
-            </label>
-          </div>
-          <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle
-                variant="secondary"
-                id="employmentStatus"
-                className="dropdown"
-              >
-                {" "}
-                {selectedStatusValue
-                  ? employmentStatusMap.get(selectedStatusValue)
-                  : "Select Status"}{" "}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown">
-                {statusArray.map(([key, value]) => (
-                  <Dropdown.Item
-                    name="category"
-                    key={key}
-                    onClick={() => handleStatusDropdownSelect(key)}
-                  >
-                    {" "}
-                    {value}{" "}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-        </div>
-
+        
         {/* Expiry */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
