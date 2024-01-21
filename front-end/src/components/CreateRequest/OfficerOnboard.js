@@ -207,7 +207,7 @@ export const OfficerOnboard = () => {
             hash: hash,
           })
           console.log("Transaction result:", result);
-
+          notify("success", "Onboard Successful")
         }
       } catch(error) {
         console.log(error)
