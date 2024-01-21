@@ -2350,6 +2350,89 @@ export class Trustee extends Entity {
   }
 }
 
+export class TrusteeTable extends Entity {
+  constructor(id: Bytes) {
+    super();
+    this.set("id", Value.fromBytes(id));
+  }
+
+  save(): void {
+    let id = this.get("id");
+    assert(id != null, "Cannot save TrusteeTable entity without an ID");
+    if (id) {
+      assert(
+        id.kind == ValueKind.BYTES,
+        `Entities of type TrusteeTable must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`,
+      );
+      store.set("TrusteeTable", id.toBytes().toHexString(), this);
+    }
+  }
+
+  static loadInBlock(id: Bytes): TrusteeTable | null {
+    return changetype<TrusteeTable | null>(
+      store.get_in_block("TrusteeTable", id.toHexString()),
+    );
+  }
+
+  static load(id: Bytes): TrusteeTable | null {
+    return changetype<TrusteeTable | null>(
+      store.get("TrusteeTable", id.toHexString()),
+    );
+  }
+
+  get id(): Bytes {
+    let value = this.get("id");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set id(value: Bytes) {
+    this.set("id", Value.fromBytes(value));
+  }
+
+  get caseId(): BigInt {
+    let value = this.get("caseId");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigInt();
+    }
+  }
+
+  set caseId(value: BigInt) {
+    this.set("caseId", Value.fromBigInt(value));
+  }
+
+  get branchId(): Bytes {
+    let value = this.get("branchId");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBytes();
+    }
+  }
+
+  set branchId(value: Bytes) {
+    this.set("branchId", Value.fromBytes(value));
+  }
+
+  get approved(): boolean {
+    let value = this.get("approved");
+    if (!value || value.kind == ValueKind.NULL) {
+      return false;
+    } else {
+      return value.toBoolean();
+    }
+  }
+
+  set approved(value: boolean) {
+    this.set("approved", Value.fromBoolean(value));
+  }
+}
+
 export class Case extends Entity {
   constructor(id: string) {
     super();

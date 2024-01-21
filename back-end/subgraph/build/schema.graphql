@@ -190,6 +190,13 @@ type Trustee @entity(immutable: true) {
   transactionHash: Bytes!
 }
 
+type TrusteeTable @entity(immutable: false) {
+  id: Bytes! # address
+  caseId: BigInt! # uint256
+  branchId: Bytes! # bytes32
+  approved: Boolean! # bool
+}
+
 type Case @entity(immutable: false) {
   id: String! # uint256
   status: Int! # uint8

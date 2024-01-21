@@ -23,7 +23,8 @@ import {
   Case,
   Officer,
   Evidence,
-  Participant
+  Participant,
+  TrusteeTable
 } from "../generated/schema"
 
 export function handleAddOfficerInCase(event: AddOfficerInCaseEvent): void {
@@ -293,4 +294,14 @@ export function handleTrustee(event: TrusteeEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  let trustee = TrusteeTable.load(event.params.trustree)
+  if(!trustee) {
+    trustee = new TrusteeTable(event.params.trustree);
+  } 
+  trustee.caseId = event.params.caseId
+  trustee.branchId = event.params.branchId
+  trustee.approved = event.params.approved
+
+  trustee.save()
 }
