@@ -9,6 +9,16 @@ This is the code for our project "Accountability Assurance in Homicide Investiga
 | Hareem Saad  | B19103019   | [![portfolio](https://img.shields.io/badge/GITHUB-000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/HareemSaad) |[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/hareem-saad/) |
 | Amaim Shaikh | B19103008   | [![portfolio](https://img.shields.io/badge/GITHUB-000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AmaimShaikh)|[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/amaim-shaikh/)|
 
+## System Versions
+```
+linux: 23
+node: v21.4.0
+npm: 10.2.4
+forge: 0.2.0 (2335dea 2024-01-19T00:18:45.919964404Z)
+anvil: 0.2.0 (2335dea 2024-01-19T00:18:45.906048625Z)
+cast: 0.2.0 (2335dea 2024-01-19T00:18:45.910635745Z)
+```
+
 ## Deploy & Verify Contracts
 
 ```bash
@@ -56,7 +66,7 @@ UpdateOfficer: 0x86089da9793f3ba732d44a7f6beb122aea4fa8b0
 graph init --studio <SLUG> # use interactive console to add first contract
 cd <SUBGRAPH_FOLDER>
 graph add <CONTRACT_ADDRESS --abi <PATH_TO_ABI> --contract-name <NAME>
-
-
-
+graph auth --studio <DEPLOY_KEY>
+graph codegen && graph build
+graph deploy --studio <SLUG>
 ```
