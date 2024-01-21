@@ -5,6 +5,8 @@ import { useParams } from 'react-router-dom';
 // import { useUserContext } from '../Context/userContext.tsx';
 import axios from 'axios';
 import { useAccount } from "wagmi";
+// import './ArchiveEmployees.css';
+import './../ArchiveEmployees/ArchiveEmployees.css';
 
 export const CaptainViewTranferRequest = () => {
     const { reqName } = useParams();
@@ -68,10 +70,10 @@ export const CaptainViewTranferRequest = () => {
                 ))}
             </div>
             ) : (
-                <h4 style={{ textAlign: 'center' }} className='mb-2 mt-4'><em>No Requests to Show.</em></h4>
+                <div className='noData'>
+                    <h4 style={{ textAlign: 'center' }}><em>No Requests to Show</em></h4>
+                </div>
             )}
-
-
         </>
     )
 }

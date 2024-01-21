@@ -18,14 +18,24 @@ export const TransferOfficerBranch = () => {
 
   const [expiryDate, setExpiryDate] = useState("");
   const [isButtonDisabled, setButtonDisabled] = useState(false);
-  const [selectedRankValue, setSelectedRankValue] = useState(null);
+  // const [selectedRankValue, setSelectedRankValue] = useState(null);
   // const [employeeStatus, setEmployeeStatus] = useState("");
 
   // Function to handle dropdown item selection
   // const [selectedStateCode, setSelectedStateCode] = useState(null);
-  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [selectedVerifiedAddress, setSelectedVerifiedAddress] = useState(null);
+  const [selectedName, setSelectedName] = useState(null);
+
+  const [selectedToCaptain, setSelectedToCaptain] = useState(null)
+  const [selectedToCaptainName, setSelectedToCaptainName] = useState(null)
+  
+  const [selectedFromCaptain, setSelectedFromCaptain] = useState(null)
+  const [selectedFromCaptainName, setSelectedFromCaptainName] = useState(null)
+  
+  // const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [selectedPrecinctAddress, setSelectedPrecinctAddress] = useState(null)
   const [selectedToBranchId, setSelectedToBranchId] = useState(null);
-  const [selectedStatusValue, setSelectedStatusValue] = useState(null);
+  // const [selectedStatusValue, setSelectedStatusValue] = useState(null);
 
   const [transferOfficerInfo, setTransferOfficerInfo] = useState({
     verifiedAddress: "",
@@ -39,15 +49,68 @@ export const TransferOfficerBranch = () => {
     isOpen: true,
   });
 
-  // const rankArray = ["Null", "Officer", "Detective", "Captain"];
-  // const statusArray = [
-  //   "Select a Status",
-  //   "Active",
-  //   "Inactive",
-  //   "Fired",
-  //   "Retired",
-  // ];
   const statusArray = Array.from(employmentStatusMap).slice(0, 2);
+
+  const [officers, setOfficers] = useState([]);
+  const [Captains, setCaptains] = useState([]);
+  const [Branches, setBranches] = useState([]);
+
+  useEffect(() => {
+    // console.log("officers:: ", officers);
+    // console.log("Captains:: ", Captains);
+    console.log("transferOfficerInfo:: ", transferOfficerInfo);
+    fetchData();
+    fetchCaptain();
+    fetchBranch();
+  }, [officers, transferOfficerInfo]);
+
+  async function fetchData() {
+    const query = `
+      {
+        officers(where: {branch_: {stateCode: "${transferOfficerInfo.stateCode}"}, employmentStatus: 1, rank_lt: 3}) {
+          name
+          id
+          rank
+        }
+      }
+    `;
+    const response = await client.query(query).toPromise();
+    const { data } = response;
+    // console.log("data:: ", data.officers);
+    setOfficers(data.officers);
+  }
+  
+  async function fetchCaptain() {
+    const query = `
+      {
+        officers(where: {branch_: {stateCode: "${transferOfficerInfo.stateCode}"}, employmentStatus: 1, rank: 3}) {
+          name
+          id
+          rank
+        }
+      }
+    `;
+    const response = await client.query(query).toPromise();
+    const { data } = response;
+    // console.log("dataCaptain:: ", data.officers);
+    setCaptains(data.officers);
+  }
+  
+  async function fetchBranch() {
+    const query = `
+    {
+      branchUpdates(where: {stateCode: "${transferOfficerInfo.stateCode}"}) {
+        id
+        precinctAddress
+        jurisdictionArea
+      }
+    }
+    `;
+    const response = await client.query(query).toPromise();
+    const { data } = response;
+    console.log("dataBranch:: ", data.branchUpdates);
+    setBranches(data.branchUpdates);
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -141,33 +204,35 @@ export const TransferOfficerBranch = () => {
     }
   };
 
-  // Function to handle branch id dropdown selection
-  const handleBranchIdDropdownSelect = (categoryValue) => {
-    setSelectedBranchId(categoryValue);
-    const name = "branchId";
-    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
-  }
+  const handleVerifiedAddressSelect = (userVerifiedAddress, userName, userRank) => {
+    setSelectedVerifiedAddress(userVerifiedAddress);
+    setSelectedName(userName);
+    const name = "verifiedAddress";
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: userVerifiedAddress});
+  };
+
+  // Function to handle from captain dropdown selection
+  const handleFromCaptainSelect = (userFromCaptain, fromCaptainName) => {
+    setSelectedFromCaptain(userFromCaptain);
+    setSelectedFromCaptainName(fromCaptainName);
+    const name = "fromCaptain";
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: userFromCaptain});
+  };
+  // Function to handle to captain dropdown selection
+  const handleToCaptainSelect = (userToCaptain, toCaptainName) => {
+    setSelectedToCaptain(userToCaptain);
+    setSelectedToCaptainName(toCaptainName);
+    const name = "toCaptain";
+    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: userToCaptain});
+  };
 
   // Function to handle to branch id dropdown selection
-  const handleToBranchIdDropdownSelect = (categoryValue) => {
+  const handleToBranchIdDropdownSelect = (categoryValue, userPrecinctAddress) => {
     setSelectedToBranchId(categoryValue);
+    setSelectedPrecinctAddress(userPrecinctAddress);
     const name = "toBranchId";
     setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
   }
-
-  // Function to handle rank dropdown item selection
-  const handleRankDropdownSelect = (categoryValue) => {
-    setSelectedRankValue(categoryValue);
-    const name = "rank";
-    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
-  };
-
-  // Function to handle employment status dropdown selection
-  const handleStatusDropdownSelect = (categoryValue) => {
-    setSelectedStatusValue(categoryValue);
-    const name = "employmentStatus";
-    setTransferOfficerInfo({ ...transferOfficerInfo, [name]: categoryValue });
-  };
 
   // handle date field only
   const handleDateChange = (fullDateTime) => {
@@ -210,14 +275,27 @@ export const TransferOfficerBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="text"
-              name="verifiedAddress"
-              id="verifiedAddress"
-              placeholder="Enter Verified Address Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+          <Dropdown>
+              <Dropdown.Toggle
+                variant="secondary"
+                id="verifiedAddress"
+                className="dropdown"
+              >
+                {selectedName ? selectedName : "Select Verified Address"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown selectDropdown">
+                {officers.map((officer, index) => (
+                  <Dropdown.Item
+                    name="verifiedAddress"
+                    key={index}
+                    onClick={() => handleVerifiedAddressSelect(officer.id, officer.name)}
+                  >
+                    {`${officer.name} (${rankMap.get(officer.rank)}) - ${officer.id}`}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
@@ -231,14 +309,29 @@ export const TransferOfficerBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="text"
-              name="fromCaptain"
-              id="fromCaptain"
-              placeholder="From Captain Address Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+          <Dropdown>
+              <Dropdown.Toggle
+                variant="secondary"
+                id="fromCaptain"
+                className="dropdown"
+              >
+                {selectedFromCaptainName ? selectedFromCaptainName : "Select From Captain Address"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown selectDropdown">
+                {Captains
+                .filter(captain => captain.id !== selectedToCaptain)
+                .map((captain, index) => (
+                  <Dropdown.Item
+                    name="fromCaptain"
+                    key={index}
+                    onClick={() => handleFromCaptainSelect(captain.id, captain.name)}
+                  >
+                    {`${captain.name} (${rankMap.get(captain.rank)}) - ${captain.id}`}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
@@ -252,14 +345,29 @@ export const TransferOfficerBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="text"
-              name="toCaptain"
-              id="toCaptain"
-              placeholder="To Captain Address Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+          <Dropdown>
+              <Dropdown.Toggle
+                variant="secondary"
+                id="toCaptain"
+                className="dropdown"
+              >
+                {selectedToCaptainName ? selectedToCaptainName : "Select To Captain Address"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown selectDropdown">
+                {Captains
+                .filter(captain => captain.id !== selectedFromCaptain)
+                .map((captain, index) => (
+                  <Dropdown.Item
+                    name="toCaptain"
+                    key={index}
+                    onClick={() => handleToCaptainSelect(captain.id, captain.name)}
+                  >
+                    {`${captain.name} (${rankMap.get(captain.rank)}) - ${captain.id}`}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
@@ -273,15 +381,25 @@ export const TransferOfficerBranch = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="toBranchId" className="dropdown">
-                {selectedToBranchId ? branchIdMap.get(selectedToBranchId) : "Select To Branch Id"}
+          <Dropdown>
+              <Dropdown.Toggle
+                variant="secondary"
+                id="toBranchId"
+                className="dropdown"
+              >
+                {selectedPrecinctAddress
+                  ? selectedPrecinctAddress
+                  : "Select To Branch Id"}
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown">
-                {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="toBranchId" key={key} onClick={() => handleToBranchIdDropdownSelect(key)} >
-                    {value}
+                {Branches.map((branch, index) => (
+                  <Dropdown.Item
+                    name="toBranchId"
+                    key={index}
+                    onClick={() => handleToBranchIdDropdownSelect(branch.id, branch.precinctAddress)}
+                  >
+                    {`${branch.precinctAddress} - ${branch.id}`}
                   </Dropdown.Item>
                 ))}
               </Dropdown.Menu>
