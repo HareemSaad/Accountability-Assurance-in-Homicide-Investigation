@@ -454,7 +454,7 @@ export const ViewTransferOfficerBranch = () => {
           requestDetail.signers.length === 2 &&
           localStorage.getItem("rank") == "Captain" ? (
             <button
-              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
               type="submit"
               onClick={async (e) => await handleSubmit(e)}
               disabled="true"
@@ -464,7 +464,7 @@ export const ViewTransferOfficerBranch = () => {
           ) : requestDetail.signers.length < 2 &&
             localStorage.getItem("rank") == "Captain" ? (
             <button
-              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
               type="submit"
               onClick={async (e) => await handleSubmit(e)}
               disabled={isButtonDisabled}
@@ -474,7 +474,7 @@ export const ViewTransferOfficerBranch = () => {
           ) : requestDetail.signers.length === 2 &&
             localStorage.getItem("rank") == "Moderator" ? (
             <button
-              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
               type="submit"
               onClick={async (e) => await handleSend(e)}
               disabled={isButtonDisabled}
@@ -483,7 +483,7 @@ export const ViewTransferOfficerBranch = () => {
             </button>
           ) : (
             <button
-              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+              className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
               type="submit"
               onClick={async (e) => await handleSubmit(e)}
               disabled="true"
@@ -494,7 +494,7 @@ export const ViewTransferOfficerBranch = () => {
           )
         ) : (
           <button
-            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
             type="submit"
             disabled="true"
           >

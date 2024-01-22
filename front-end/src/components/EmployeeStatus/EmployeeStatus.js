@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import { employmentStatusMap } from "../data/data.js";
+import './../AddCase/AddCase.css'
 
 export const EmployeeStatus = () => {
     const { employeeId } = useParams();
@@ -60,9 +61,9 @@ export const EmployeeStatus = () => {
                     </div>
                     <div className="col-9">
                         <Dropdown>
-                            <Dropdown.Toggle variant="secondary" id="category-type" className='dropdown'> {selectedStatusValue ? employmentStatusMap.get(selectedStatusValue) : "Select Employment Status"} </Dropdown.Toggle>
+                            <Dropdown.Toggle id="category-type" className='dropdown customBackground'> {selectedStatusValue ? employmentStatusMap.get(selectedStatusValue) : "Select Employment Status"} </Dropdown.Toggle>
 
-                            <Dropdown.Menu className='dropdown'>
+                            <Dropdown.Menu className='dropdown selectDropdown'>
                                 {Array.from(employmentStatusMap).map(([key, value]) => (
                                     <Dropdown.Item name='category' key={key} onClick={() => handleDropdownSelect(key)}> {value} </Dropdown.Item>
                                 ))}
@@ -71,7 +72,7 @@ export const EmployeeStatus = () => {
                     </div>
                 </div>
 
-                <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
+                <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2 btn-background' type="submit" onClick={async (e) => await handleSubmit(e)}>
                     Save Employee Status
                 </button>
 

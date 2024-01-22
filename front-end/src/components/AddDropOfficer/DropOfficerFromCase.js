@@ -122,7 +122,7 @@ export const DropOfficerFromCase = () => {
         </div>
 
 
-        <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
+        <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2 btn-background' type="submit" onClick={async (e) => await handleSubmit(e)}>
           Drop Officer from Case
         </button>
 

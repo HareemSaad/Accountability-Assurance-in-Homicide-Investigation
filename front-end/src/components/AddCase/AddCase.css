@@ -8,6 +8,17 @@ input[type=number]:focus {
     border: 3px solid #555;
 }
 
+.btn-background {
+    /* background-color: #251d46 !important; */
+    background-color: #170852 !important;
+    border: none;
+}
+
+.btn-background:hover {
+    background-color: #0D003F !important;
+    border: none;
+}
+
 .case-add-btn {
     /* align-self: flex-end; */
     /* display: block; */

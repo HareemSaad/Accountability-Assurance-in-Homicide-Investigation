@@ -448,7 +448,7 @@ export const UpdateOfficer = () => {
 
         {/* Submit button */}
         <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
           type="submit"
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}
