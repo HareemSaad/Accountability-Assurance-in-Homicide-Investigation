@@ -94,9 +94,8 @@ export const CaseCardCaptain = () => {
           <div className="col-5">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="stateCode"
-                className="dropdown page-dropdown-toggle"
+                className="dropdown page-dropdown-toggle customBackground"
               >
                 Case or Employees <IoNavigateCircleOutline />
               </Dropdown.Toggle>
@@ -119,9 +118,8 @@ export const CaseCardCaptain = () => {
           <div className="col-5">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="requestsPage"
-                className="dropdown page-dropdown-toggle"
+                className="dropdown page-dropdown-toggle customBackground"
               >
                 Requests <IoNavigateCircleOutline />
               </Dropdown.Toggle>

@@ -1,9 +1,10 @@
-/*---------------cases card css------------------*/
+/* Background color for the entire page */
 body {
   /* background-color: rgba(217, 217, 217, 1); */
   background-color: rgba(250, 250, 250, 1);
 }
 
+/* Styling for the heading of the cases */
 .case-heading {
   max-width: 1200px;
   margin: 20px 6rem 2rem;
@@ -11,6 +12,7 @@ body {
   font-size: 1.8rem;
 }
 
+/* Styling for the container of case cards */
 .card-container {
   /*border: 0.2rem solid red;*/
   display: grid;
@@ -18,6 +20,7 @@ body {
   gap: 25px 25px;
 }
 
+/* Styling for each individual case card */
 .case-card {
   margin: 0 3rem;
   padding: 0 1rem 1rem 1rem;
@@ -29,6 +32,7 @@ body {
   border-bottom: 0.2rem solid #6600cc !important;
 }
 
+/* Styling for the buttons inside the case card */
 .card-btn {
   align-self: flex-end;
   display: block;
@@ -44,6 +48,7 @@ body {
   font-weight: bold;
 }
 
+/* Styling for the add button inside the case card */
 .card-add-btn {
   align-self: flex-end;
   display: block;
@@ -61,10 +66,12 @@ body {
   font-weight: bold;
 }
 
+/* Styling for the dropdown used in pagination */
 .page-dropdown {
-  margin: 1.6rem 3rem 1.2rem 0rem;
+  margin: 1.6rem 3rem 1.2rem 0rem !important;
 }
 
+/* Styling for each item in the dropdown */
 .page-dropdown-item {
   /* border-bottom: 0.32rem solid black; */
   /* border-bottom: 0.2rem solid #6600cc !important; */
@@ -74,7 +81,63 @@ body {
   word-wrap: break-word !important;
 }
 
-.page-dropdown-item:active{
-  background-color:#e8d6fa !important;
+/* Styling for the active state of dropdown items */
+.page-dropdown-item:active {
+  background-color: #e8d6fa !important;
   color: black !important;
+}
+
+/* Styling for the toggle button of the dropdown */
+.page-dropdown-toggle {
+  white-space: normal !important;
+  word-wrap: break-word !important;
+  min-height: 6.8vh !important;
+}
+
+/* Media query for tablets and smaller screens */
+@media (max-width: 1200px) {
+  /* Adjust styles for tablets and smaller screens here */
+  .case-heading {
+    margin: 20px 2rem 2rem;
+  }
+
+  .card-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .case-card {
+    margin: 0 1.5rem;
+  }
+}
+
+/* Media query for mobile screens */
+@media (max-width: 760px) {
+  /* Adjust styles for mobile screens here */
+  .case-heading {
+    margin: 20px 1rem 2rem;
+  }
+
+  .card-container {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .case-card {
+    margin: 0 1rem;
+    padding: 0 0.5rem 1rem 0.5rem;
+  }
+
+  .card-btn,
+  .card-add-btn {
+    width: 100%;
+    margin: 0.5rem 0;
+  }
+
+  .page-dropdown {
+    margin: 1.6rem 1rem 1.2rem 0rem !important;
+  }
+
+  .page-dropdown-toggle {
+    min-height: auto !important;
+  }
 }

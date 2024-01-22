@@ -59,7 +59,7 @@ export const ArchiveCases = () => {
                     {/* status dropdown */}
                     <div className='emp-status-dropdown'>
                         <Dropdown className='emp-status'>
-                            <Dropdown.Toggle variant="secondary" id="category-type" className='dropdown'> {selectedStatusValue ? caseStatusMap.get(selectedStatusValue) : "Select Case Status"} </Dropdown.Toggle>
+                            <Dropdown.Toggle id="category-type" className='dropdown customBackground'> {selectedStatusValue ? caseStatusMap.get(selectedStatusValue) : "Select Case Status"} </Dropdown.Toggle>
 
                             <Dropdown.Menu className='dropdown selectDropdown'>
                                 {statusArray.map(([key, value]) => (

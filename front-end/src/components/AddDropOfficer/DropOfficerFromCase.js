@@ -99,12 +99,12 @@ export const DropOfficerFromCase = () => {
             </div>
             <div className="col-9 input">
                 <Dropdown>
-                <Dropdown.Toggle variant="light" id="rank" className="dropdown">
+                <Dropdown.Toggle id="rank" className="dropdown customBackground">
                     {/* {selectedValue ? rankMap.get(selectedValue) : "Select Rank"} */}
                     {officerAddress ? (officerAddress) : "Select Officer"}
                 </Dropdown.Toggle>
 
-                <Dropdown.Menu className="dropdown">
+                <Dropdown.Menu className="dropdown selectDropdown">
                 {officersInCase.length > 0 ? (
                     officersInCase.map(element => (
                         <Dropdown.Item key={element.id} name="rank" onClick={() => handleDropdownSelect(element.id)}>

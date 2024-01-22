@@ -1,0 +1,11 @@
+.customBackground {
+    background-color: #e6d8ff !important;
+    /* background-color: #E9ECEF !important; */
+    border: none;
+    color: black !important;
+}
+
+.customBackground:hover {
+    background-color: #d8c5ff !important;
+    /* background-color: #e2d3ff !important; */
+}

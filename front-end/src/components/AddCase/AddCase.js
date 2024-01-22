@@ -37,29 +37,29 @@ export const AddCase = () => {
         if (caseNum.id === '') {
             // console.log("null");
             notify("error", `Case Number is empty`);
-        } 
-        
-        try {
-            console.log(caseNum.id, localStorage.getItem("branchid"));
-            // call contract
-            const { hash } = await writeContract({
-                address: process.env.REACT_APP_CASE_CONTRACT,
-                abi: CaseABI,
-                functionName: 'addCase',
-                args: [caseNum.id, localStorage.getItem("branchid")],
-                chainId: 11155111
-            })
-            console.log("hash :: ", hash)
+        } else {
+            try {
+                console.log(caseNum.id, localStorage.getItem("branchid"));
+                // call contract
+                const { hash } = await writeContract({
+                    address: process.env.REACT_APP_CASE_CONTRACT,
+                    abi: CaseABI,
+                    functionName: 'addCase',
+                    args: [caseNum.id, localStorage.getItem("branchid")],
+                    chainId: 11155111
+                })
+                console.log("hash :: ", hash)
 
-            // wait for txn
-            const result = await waitForTransaction({
-                hash: hash,
-            })
-            console.log("Transaction result:", result);
-            notify('success', "Added case successfully");
-        } catch (error) {
-            console.log(error);
-            notify('error', "Failed to add case");
+                // wait for txn
+                const result = await waitForTransaction({
+                    hash: hash,
+                })
+                console.log("Transaction result:", result);
+                notify('success', "Added case successfully");
+            } catch (error) {
+                console.log(error);
+                notify('error', "Failed to add case");
+            }
         }
     }
 

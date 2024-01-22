@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useNavigate } from "react-router-dom";
 import { notify } from "../utils/error-box/notify";
+import './../AddDropOfficer/officer.css';
 import "react-toastify/dist/ReactToastify.css";
 import Dropdown from "react-bootstrap/Dropdown";
 import axios from "axios";
@@ -277,9 +278,9 @@ export const TransferOfficerBranch = () => {
           <div className="col-9 input">
           <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
+                // variant="secondary"
                 id="verifiedAddress"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedName ? selectedName : "Select Verified Address"}
               </Dropdown.Toggle>
@@ -311,9 +312,9 @@ export const TransferOfficerBranch = () => {
           <div className="col-9 input">
           <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
+                // variant="secondary"
                 id="fromCaptain"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedFromCaptainName ? selectedFromCaptainName : "Select From Captain Address"}
               </Dropdown.Toggle>
@@ -347,9 +348,9 @@ export const TransferOfficerBranch = () => {
           <div className="col-9 input">
           <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
+                // variant="secondary"
                 id="toCaptain"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedToCaptainName ? selectedToCaptainName : "Select To Captain Address"}
               </Dropdown.Toggle>
@@ -383,9 +384,9 @@ export const TransferOfficerBranch = () => {
           <div className="col-9 input">
           <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
+                // variant="secondary"
                 id="toBranchId"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedPrecinctAddress
                   ? selectedPrecinctAddress

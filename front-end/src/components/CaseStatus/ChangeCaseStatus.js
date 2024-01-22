@@ -35,27 +35,27 @@ export const ChangeCaseStatus = () => {
             notify("error", `Select From Dropdown`);
         } else {
             console.log("caseStatus ::", caseStatus)
-        }
-        try {
-          const { hash } = await writeContract({
-              address: process.env.REACT_APP_CASE_CONTRACT,
-              abi: CaseABI,
-              functionName: 'updateCaseStatus',
-              args: [caseId, caseStatus],
-              chainId: 11155111
-          })
-          console.log("hash :: ", hash)
-    
-          // wait for txn
-          const result = await waitForTransaction({
-              hash: hash,
-          })
-          console.log("Transaction result:", result);
-          notify('success', 'Transaction Success')
-          
-        } catch (error) {
-          console.log(error);
-          notify("error", "Error in submitting the form")
+            try {
+                const { hash } = await writeContract({
+                    address: process.env.REACT_APP_CASE_CONTRACT,
+                    abi: CaseABI,
+                    functionName: 'updateCaseStatus',
+                    args: [caseId, caseStatus],
+                    chainId: 11155111
+                })
+                console.log("hash :: ", hash)
+            
+                // wait for txn
+                const result = await waitForTransaction({
+                    hash: hash,
+                })
+                console.log("Transaction result:", result);
+                notify('success', 'Transaction Success')
+            
+            } catch (error) {
+                console.log(error);
+                notify("error", "Error in submitting the form")
+            }
         }
     }
 
@@ -83,9 +83,9 @@ export const ChangeCaseStatus = () => {
 
                     <div className="col-9">
                         <Dropdown>
-                            <Dropdown.Toggle variant="secondary" id="category-type" className='dropdown'> {selectedStatusValue ? caseStatusMap.get(selectedStatusValue) : "Select Case Status"} </Dropdown.Toggle>
+                            <Dropdown.Toggle id="category-type" className='dropdown customBackground'> {selectedStatusValue ? caseStatusMap.get(selectedStatusValue) : "Select Case Status"} </Dropdown.Toggle>
 
-                            <Dropdown.Menu className='dropdown'>
+                            <Dropdown.Menu className='dropdown selectDropdown'>
                                 {Array.from(caseStatusMap).map(([key, value]) => (
                                     <Dropdown.Item name='category' key={key} onClick={() => handleDropdownSelect(key)}> {value} </Dropdown.Item>
                                 ))}

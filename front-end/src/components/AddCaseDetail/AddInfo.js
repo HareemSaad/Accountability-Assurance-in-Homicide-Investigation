@@ -122,7 +122,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
 
   return (
     <div className='container'>
-      <h2 className='m-3'>{heading}</h2>
+      <h2 className='m-3 mt-5 mb-4'>{heading}</h2>
       <form>
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -150,9 +150,9 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
 
           <div className="col-9">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="category-type" className='dropdown'> {selectedValue ? categoryArray[selectedValue] : 'Select a Category'} </Dropdown.Toggle>
+              <Dropdown.Toggle id="category-type" className='dropdown customBackground'> {selectedValue ? categoryArray[selectedValue] : 'Select a Category'} </Dropdown.Toggle>
 
-              <Dropdown.Menu className='dropdown'>
+              <Dropdown.Menu className='dropdown selectDropdown'>
                 {categoryArray.map((category, index) => (
                   <Dropdown.Item name='category' key={index} onClick={() => handleDropdownSelect(index)}> {category} </Dropdown.Item>
                 ))}

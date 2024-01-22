@@ -64,7 +64,7 @@ export const ArchiveEmployees = () => {
                     <div className='emp-status-dropdown'>
 
                         <Dropdown className='emp-status'>
-                            <Dropdown.Toggle variant="secondary" id="category-type" className='dropdown'> {selectedValue ? employmentStatusMap.get(`${selectedValue}`) : 'Select Status'} </Dropdown.Toggle>
+                            <Dropdown.Toggle id="category-type" className='dropdown customBackground'> {selectedValue ? employmentStatusMap.get(`${selectedValue}`) : 'Select Status'} </Dropdown.Toggle>
 
                             <Dropdown.Menu className='dropdown selectDropdown'>
                                 {archiveEmployee.map(({key, value}) => (
