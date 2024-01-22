@@ -28,7 +28,7 @@ router.post('/create-request/officer-offboard', async (req, res) => {
         console.log("OfficerOffboardInfo:: ",OfficerOffboardInfo)
         
         // saving the data in mongodb database
-        OfficerOffboardInfo.save()
+        await OfficerOffboardInfo.save()
 
         // Send a 200 status if data is saved successfully
         res.status(200).json({ message: 'Data saved successfully' });

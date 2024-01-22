@@ -7,7 +7,7 @@ const TransferOfficerBranch = require("../model/transferOfficerBranch");
 // create Update Officer Request - page
 router.post("/create-request/transfer-officer-branch", async (req, res) => {
   // console.log("req.body:: ", req.body)
-  try {
+  try { 
     let lastId;
     await TransferOfficerBranch.find()
       .sort({ _id: -1 })
@@ -28,8 +28,8 @@ router.post("/create-request/transfer-officer-branch", async (req, res) => {
     console.log("TransferOfficerBranchInfo:: ", TransferOfficerBranchInfo);
 
     // saving the data in mongodb database
-    TransferOfficerBranchInfo.save();
-
+    await TransferOfficerBranchInfo.save();
+    
     // Send a 200 status if data is saved successfully
     res.status(200).json({ message: "Data saved successfully" });
   } catch (err) {

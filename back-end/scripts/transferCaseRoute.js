@@ -28,7 +28,7 @@ router.post("/create-request/transfer-case/:caseId", async (req, res) => {
     console.log("TransferCaseInfo:: ", TransferCaseInfo);
 
     // saving the data in mongodb database
-    TransferCaseInfo.save();
+    await TransferCaseInfo.save();
 
     // Send a 200 status if data is saved successfully
     res.status(200).json({ message: "Data saved successfully" });

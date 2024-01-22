@@ -28,7 +28,7 @@ router.post('/create-request/trustee-request', async (req, res) => {
         console.log("TrusteeRequestInfo:: ",TrusteeRequestInfo)
         
         // saving the data in mongodb database
-        TrusteeRequestInfo.save()
+        await TrusteeRequestInfo.save()
 
         // Send a 200 status if data is saved successfully
         res.status(200).json({ message: 'Data saved successfully' });

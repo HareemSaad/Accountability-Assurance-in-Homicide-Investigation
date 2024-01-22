@@ -27,7 +27,7 @@ router.post('/create-request/update-officer', async (req, res) => {
         console.log("UpdateOfficerInfo:: ",UpdateOfficerInfo)
         
         // saving the data in mongodb database
-        UpdateOfficerInfo.save()
+        await UpdateOfficerInfo.save()
 
         // Send a 200 status if data is saved successfully
         res.status(200).json({ message: 'Data saved successfully' });

@@ -28,7 +28,7 @@ router.post("/create-request/transfer-captain/:caseId", async (req, res) => {
     console.log("TransferCaptainInfo:: ", TransferCaptainInfo);
 
     // saving the data in mongodb database
-    TransferCaptainInfo.save();
+    await TransferCaptainInfo.save();
 
     // Send a 200 status if data is saved successfully
     res.status(200).json({ message: "Data saved successfully" });

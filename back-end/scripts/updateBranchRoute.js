@@ -27,7 +27,7 @@ router.post('/create-request/update-branch', async (req, res) => {
         console.log("UpdateBranchInfo:: ",UpdateBranchInfo)
         
         // saving the data in mongodb database
-        UpdateBranchInfo.save()
+        await UpdateBranchInfo.save()
 
         // Send a 200 status if data is saved successfully
         res.status(200).json({ message: 'Data saved successfully' });
