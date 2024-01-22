@@ -100,7 +100,7 @@ export const CaseCardCaptain = () => {
                 Case or Employees <IoNavigateCircleOutline />
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {casePageArray.map((page, index) => (
                   <Dropdown.Item
                     name="stateCode"
@@ -124,7 +124,7 @@ export const CaseCardCaptain = () => {
                 Requests <IoNavigateCircleOutline />
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {requestsPage.map((page, index) => (
                   <Dropdown.Item
                     name="requestsPage"

@@ -252,16 +252,15 @@ export const TransferCase = () => {
           <div className="col-9 input">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="toBranchId"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedToBranchId
                   ? branchIdMap.get(selectedToBranchId)
                   : "Select To Branch Id"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="toBranchId"
@@ -288,16 +287,15 @@ export const TransferCase = () => {
           <div className="col-9 input">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="branchId"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedFromBranchId
                   ? branchIdMap.get(selectedFromBranchId)
                   : "Select From Branch Id"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="fromBranchId"
@@ -341,7 +339,7 @@ export const TransferCase = () => {
 
         {/* Submit button */}
         <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
           type="submit"
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}

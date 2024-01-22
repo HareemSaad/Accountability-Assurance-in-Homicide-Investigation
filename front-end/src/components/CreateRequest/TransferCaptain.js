@@ -283,16 +283,15 @@ export const TransferCaptain = () => {
           <div className="col-9 input">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="branchId"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedBranchId
                   ? branchIdMap.get(selectedBranchId)
                   : "Select Branch Id"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="branchId"
@@ -357,7 +356,7 @@ export const TransferCaptain = () => {
 
         {/* Submit button */}
         <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
           type="submit"
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}

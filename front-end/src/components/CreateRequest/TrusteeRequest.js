@@ -161,12 +161,12 @@ export const TrusteeRequest = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-            <Dropdown.Toggle variant="light" id="rank" className="dropdown">
+            <Dropdown.Toggle id="rank" className="dropdown customBackground">
                 {/* {selectedValue ? rankMap.get(selectedValue) : "Select Rank"} */}
                 {caseId ? (caseId) : "Select a Case"}
             </Dropdown.Toggle>
 
-            <Dropdown.Menu className="dropdown">
+            <Dropdown.Menu className="dropdown selectDropdown">
             {cases.length > 0 ? (
                 cases.map(element => (
                     <Dropdown.Item key={element.id} name="rank" onClick={() => handleDropdownSelect(element.id)}>
@@ -234,11 +234,11 @@ export const TrusteeRequest = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="stateCode" className="dropdown">
+              <Dropdown.Toggle id="stateCode" className="dropdown customBackground">
                 {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(stateCodeMap).map(([key, value]) => (
                   <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
                     {value}
@@ -260,11 +260,11 @@ export const TrusteeRequest = () => {
           </div>
           <div className="col-9 input">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="branchId" className="dropdown">
+              <Dropdown.Toggle id="branchId" className="dropdown customBackground">
                 {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
                   <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
                     {value}
@@ -304,7 +304,7 @@ export const TrusteeRequest = () => {
         
         {/* submit button */}
         <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
           type="submit"
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}

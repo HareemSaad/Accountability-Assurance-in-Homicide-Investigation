@@ -309,16 +309,15 @@ export const OfficerOffboard = () => {
           <div className="col-9 input">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="stateCode"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedStateCode
                   ? stateCodeMap.get(selectedStateCode)
                   : "Select State Code"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(stateCodeMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="stateCode"
@@ -345,16 +344,15 @@ export const OfficerOffboard = () => {
           <div className="col-9 input">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="branchId"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {selectedBranchId
                   ? branchIdMap.get(selectedBranchId)
                   : "Select Branch Id"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(branchIdMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="branchId"
@@ -382,9 +380,8 @@ export const OfficerOffboard = () => {
           <div className="col-9">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="rank"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {" "}
                 {selectedRankValue
@@ -392,7 +389,7 @@ export const OfficerOffboard = () => {
                   : "Select a Rank"}{" "}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {Array.from(rankMap).map(([key, value]) => (
                   <Dropdown.Item
                     name="rank"
@@ -420,9 +417,8 @@ export const OfficerOffboard = () => {
           <div className="col-9 input">
             <Dropdown>
               <Dropdown.Toggle
-                variant="secondary"
                 id="employmentStatus"
-                className="dropdown"
+                className="dropdown customBackground"
               >
                 {" "}
                 {selectedStatusValue
@@ -430,7 +426,7 @@ export const OfficerOffboard = () => {
                   : "Select Status"}{" "}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
+              <Dropdown.Menu className="dropdown selectDropdown">
                 {statusArray.map(([key, value]) => (
                   <Dropdown.Item
                     name="category"
@@ -475,7 +471,7 @@ export const OfficerOffboard = () => {
 
         {/* Submit button */}
         <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
           type="submit"
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}
