@@ -416,7 +416,7 @@ export const TransferOfficerBranch = () => {
                   </Dropdown.Item>
                 ))
                 ) : (
-                  <Dropdown.Item disabled>Loading Captains...</Dropdown.Item>
+                  <Dropdown.Item disabled>Loading Branches...</Dropdown.Item>
                 )}
               </Dropdown.Menu>
             </Dropdown>

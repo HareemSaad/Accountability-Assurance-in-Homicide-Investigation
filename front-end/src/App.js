@@ -131,7 +131,7 @@ function App() {
           <Route path="/create-request/transfer-officer-branch" element={<TransferOfficerBranch />} />
           <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
           <Route path="/create-request/update-branch" element={<UpdateBranch />} />
-          <Route path="/create-request/update-officer" element={<UpdateOfficer />} />
+          {/* <Route path="/create-request/update-officer" element={<UpdateOfficer />} /> */}
           <Route path="/create-request/transfer-captain" element={<TransferCaptain />} />
           <Route path="/create-request/transfer-case" element={<TransferCase />} />
           {/* Moderator-only view requests */}
@@ -142,7 +142,7 @@ function App() {
           <Route path="/view-transfer-officer-branch/:reqId" element={<ViewTransferOfficerBranch />} />
           <Route path="/view-trustee-request/:reqId" element={<ViewTrusteeRequest />} />
           <Route path="/view-update-branch/:reqId" element={<ViewUpdateBranch />} />
-          <Route path="/view-update-officer/:reqId" element={<ViewUpdateOfficer />} />
+          {/* <Route path="/view-update-officer/:reqId" element={<ViewUpdateOfficer />} /> */}
           <Route path="/view-transfer-captain/:reqId" element={<ViewTransferCaptain />} />
           <Route path="/view-transfer-case/:reqId" element={<ViewTransferCase />} />
         </Routes>
