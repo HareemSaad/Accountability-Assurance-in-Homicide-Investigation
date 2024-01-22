@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import Card from 'react-bootstrap/Card';
 import "./CaseDetails.css"
 import { client } from '../data/data';
-import { participantTypeMap, evidenceTypeMap, officerTypeMap } from '../data/data';
+import { participantTypeMap, evidenceTypeMap, officerTypeMap, caseStatusMap } from '../data/data';
 import { notify } from '../utils/error-box/notify';
 
 const CaseDetailsPage = () => {
@@ -14,6 +14,7 @@ const CaseDetailsPage = () => {
   const [caseOfficer, setCaseOfficer] = useState([]);
   const [caseEvidence, setCaseEvidence] = useState([]);
   const [caseParticipant, setCaseParticipant] = useState([]);
+  const [caseStatus, setCaseStatus] = useState(null);
 
 
   useEffect(() => {
@@ -32,6 +33,7 @@ const CaseDetailsPage = () => {
       const query = `
       query {
         cases(where: {id: "${caseId}"}) {
+          status
           officers {
             id
             name
@@ -52,7 +54,7 @@ const CaseDetailsPage = () => {
       `
       const response = await client.query(query).toPromise();
       const { data, fetching, error } = response;
-      // console.log("data:: ", query)
+      // console.log("data:: ", data.cases[0].status)
       // console.log("data evidence:: ", data.cases[0].evidences)
       // console.log("data participant:: ", data.cases[0].participants)
       if (data.cases.length > 0) {
@@ -60,6 +62,7 @@ const CaseDetailsPage = () => {
         setCaseOfficer(data.cases[0].officers);
         setCaseEvidence(data.cases[0].evidences);
         setCaseParticipant(data.cases[0].participants);
+        setCaseStatus(data.cases[0].status);
       } else {
         console.log("No data received.")
       }
@@ -106,10 +109,9 @@ const CaseDetailsPage = () => {
     <div className=''>
       {/* case Number and change status button */}
       <div className="d-flex justify-content-between">
-        <div className='m-4 d-flex flex-row'>
-          <h2>Case Number: {caseId}</h2>
-          {/* case status */}
-          <h6 className='statusTagOpen ms-4'>#OPEN</h6>
+        <div className='m-4 d-flex flex-row'> 
+          {/* heading and case status */}
+          <h2 className='headingCase'>Case Number: {caseId} <span className={`statusTag${caseStatusMap.get(caseStatus)} ms-4`}>#{(caseStatusMap.get(caseStatus))}</span> </h2>
         </div>
         {localStorage.getItem("rank") && (<button className='case-nav-btn m-4' name="change-case-status" onClick={(e) => goto(e)}>Change Status</button>)}
       </div>

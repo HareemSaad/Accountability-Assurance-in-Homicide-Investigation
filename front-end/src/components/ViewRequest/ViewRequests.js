@@ -85,14 +85,20 @@ export const ViewRequests = () => {
             </div>
 
             {/* request cards */}
-            <div className='card-container'>
-                {allRequests.map((card, index) => (
-                    <Card className='case-card'>
-                        <h2 className='mb-3 mt-3 pb-5'>Request #{card.id}</h2>
-                        <button className='card-btn' onClick={() => print(card.id, card.status)}>View</button>
-                    </Card>
-                ))}
-            </div>
+            {allRequests.length > 0 ?
+                (<div className='card-container'>
+                    {allRequests.map((card, index) => (
+                        <Card className='case-card'>
+                            <h2 className='mb-3 mt-3 pb-5'>Request #{card.id}</h2>
+                            <button className='card-btn' onClick={() => print(card.id, card.status)}>View</button>
+                        </Card>
+                    ))}
+                </div>
+            ) : (
+                <div className='noData'>
+                    <h4 style={{ textAlign: 'center' }}><em>No Requests to Show</em></h4>
+                </div>
+            )}
 
 
         </>

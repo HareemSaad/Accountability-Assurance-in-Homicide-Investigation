@@ -43,6 +43,7 @@
   justify-content: center;
   align-items: center;
 }
+
 .statusTagOpen {
   align-self: center;
   padding: 0.1rem 0.7rem 0.1rem 0.7rem;
@@ -50,23 +51,27 @@
   border: 0.2rem solid #039e65;
   border-radius: 0.3rem;
   color: white;
+  font-size: 19px;
 }
 
-.statusTagClose {
+.statusTagClosed {
   align-self: flex-end;
   padding: 0.1rem 0.7rem 0.1rem 0.7rem;
   background-color: #D2122E;
   border: 0.2rem solid #aa041d;
   border-radius: 0.3rem;
   color: white;
+  font-size: 19px;
 }
-.statusTagCold {
+
+.statusTagCold{
   align-self: flex-end;
   padding: 0.1rem 0.7rem 0.1rem 0.7rem;
   background-color: #2d88c9;
-  border: 0.2rem solid #034d81;
+  border: 0.2rem solid #287ebb;
   border-radius: 0.3rem;
   color: white;
+  font-size: 19px;
 }
 
 .card-info-container {

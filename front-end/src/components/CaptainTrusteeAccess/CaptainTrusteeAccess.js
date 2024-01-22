@@ -79,7 +79,8 @@ export const CaptainTrusteeAccess = () => {
       </div>
 
       {/* According to index of status category choosen from the dropdown trustee list is shown */}
-      <div className="emp-card-container">
+      {trusteesReq.length > 0 ?
+        (<div className="emp-card-container">
         {trusteesReq.map((card, index) => (
           <Card
             key={index}
@@ -99,6 +100,11 @@ export const CaptainTrusteeAccess = () => {
           </Card>
         ))}
       </div>
+      ) : (
+        <div className='noData'>
+            <h4 style={{ textAlign: 'center' }}><em>No Requests to Show</em></h4>
+        </div>
+      )}
     </>
   );
 };

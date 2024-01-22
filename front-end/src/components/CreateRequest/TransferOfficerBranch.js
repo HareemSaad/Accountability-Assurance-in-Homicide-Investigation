@@ -278,7 +278,6 @@ export const TransferOfficerBranch = () => {
           <div className="col-9 input">
           <Dropdown>
               <Dropdown.Toggle
-                // variant="secondary"
                 id="verifiedAddress"
                 className="dropdown customBackground"
               >
@@ -286,7 +285,8 @@ export const TransferOfficerBranch = () => {
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown selectDropdown">
-                {officers.map((officer, index) => (
+                {officers.length > 0 ?
+                (officers.map((officer, index) => (
                   <Dropdown.Item
                     name="verifiedAddress"
                     key={index}
@@ -294,7 +294,10 @@ export const TransferOfficerBranch = () => {
                   >
                     {`${officer.name} (${rankMap.get(officer.rank)}) - ${officer.id}`}
                   </Dropdown.Item>
-                ))}
+                ))
+                ) : (
+                  <Dropdown.Item disabled>Loading officers...</Dropdown.Item>
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </div>
@@ -320,7 +323,8 @@ export const TransferOfficerBranch = () => {
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown selectDropdown">
-                {Captains
+                {Captains.length > 0 ?
+                (Captains
                 .filter(captain => captain.id !== selectedToCaptain)
                 .map((captain, index) => (
                   <Dropdown.Item
@@ -330,7 +334,10 @@ export const TransferOfficerBranch = () => {
                   >
                     {`${captain.name} (${rankMap.get(captain.rank)}) - ${captain.id}`}
                   </Dropdown.Item>
-                ))}
+                ))
+                ) : (
+                  <Dropdown.Item disabled>Loading Captains...</Dropdown.Item>
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </div>
@@ -356,7 +363,8 @@ export const TransferOfficerBranch = () => {
               </Dropdown.Toggle>
 
               <Dropdown.Menu className="dropdown selectDropdown">
-                {Captains
+                {Captains.length > 0 ?
+                (Captains
                 .filter(captain => captain.id !== selectedFromCaptain)
                 .map((captain, index) => (
                   <Dropdown.Item
@@ -366,7 +374,10 @@ export const TransferOfficerBranch = () => {
                   >
                     {`${captain.name} (${rankMap.get(captain.rank)}) - ${captain.id}`}
                   </Dropdown.Item>
-                ))}
+                ))
+                ) : (
+                  <Dropdown.Item disabled>Loading Captains...</Dropdown.Item>
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </div>
@@ -393,8 +404,9 @@ export const TransferOfficerBranch = () => {
                   : "Select To Branch Id"}
               </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown">
-                {Branches.map((branch, index) => (
+              <Dropdown.Menu className="dropdown selectDropdown">
+                {Branches.length > 0 ?
+                (Branches.map((branch, index) => (
                   <Dropdown.Item
                     name="toBranchId"
                     key={index}
@@ -402,7 +414,10 @@ export const TransferOfficerBranch = () => {
                   >
                     {`${branch.precinctAddress} - ${branch.id}`}
                   </Dropdown.Item>
-                ))}
+                ))
+                ) : (
+                  <Dropdown.Item disabled>Loading Captains...</Dropdown.Item>
+                )}
               </Dropdown.Menu>
             </Dropdown>
           </div>
@@ -437,7 +452,7 @@ export const TransferOfficerBranch = () => {
 
         {/* Submit button */}
         <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
+          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
           type="submit"
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}
