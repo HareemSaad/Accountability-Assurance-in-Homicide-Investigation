@@ -61,6 +61,7 @@ import { alchemyProvider } from 'wagmi/providers/alchemy'
 import { publicProvider } from 'wagmi/providers/public'
 import { MetaMaskConnector } from 'wagmi/connectors/metaMask'
 import { ToastContainer } from "react-toastify";
+import { ProtectedRoutes } from './ProtectedRoutes.js';
 
 // Configure chains & providers with the Alchemy provider.
 // Two popular providers are Alchemy (alchemy.com) and Infura (infura.io)
@@ -99,6 +100,7 @@ function App() {
         <NavbarComponent />
         <Routes>
           <Route path="/" element={<Home />} />
+          
           <Route path="/cases-detective" element={<CaseCardDetective />} />
           <Route path="/cases-captain" element={<CaseCardCaptain />} />
           <Route path="/case-detail/:caseId" element={<CaseDetails />} />
@@ -122,29 +124,33 @@ function App() {
           <Route path="/employee-detail/:employeeId" element={<EmployeeDetails />} />
           <Route path="/change-employee-status/:employeeId" element={<EmployeeStatus />} />
           {/* Moderator-only accessed */}
-          {/* Moderator-only create request */}
-          <Route path="/moderator-home" element={<ModeratorHome />} />
-          <Route path="/create-request" element={<CreateRequest />} />
-          <Route path="/create-request/create-branch" element={<CreateBranch />} />
-          <Route path="/create-request/officer-onboard" element={<OfficerOnboard />} />
-          <Route path="/create-request/officer-offboard" element={<OfficerOffboard />} />
-          <Route path="/create-request/transfer-officer-branch" element={<TransferOfficerBranch />} />
-          <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
-          <Route path="/create-request/update-branch" element={<UpdateBranch />} />
-          {/* <Route path="/create-request/update-officer" element={<UpdateOfficer />} /> */}
-          <Route path="/create-request/transfer-captain" element={<TransferCaptain />} />
-          <Route path="/create-request/transfer-case" element={<TransferCase />} />
+          <Route element={<ProtectedRoutes />}>
+            {/* Moderator-only create request */}
+            <Route path="/moderator-home" element={<ModeratorHome />} />
+            <Route path="/create-request" element={<CreateRequest />} />
+            <Route path="/create-request/create-branch" element={<CreateBranch />} />
+            <Route path="/create-request/officer-onboard" element={<OfficerOnboard />} />
+            <Route path="/create-request/officer-offboard" element={<OfficerOffboard />} />
+            <Route path="/create-request/transfer-officer-branch" element={<TransferOfficerBranch />} />
+            <Route path="/create-request/trustee-request" element={<TrusteeRequest />} />
+            <Route path="/create-request/update-branch" element={<UpdateBranch />} />
+            {/* <Route path="/create-request/update-officer" element={<UpdateOfficer />} /> */}
+            <Route path="/create-request/transfer-captain" element={<TransferCaptain />} />
+            <Route path="/create-request/transfer-case" element={<TransferCase />} />
+          
           {/* Moderator-only view requests */}
-          <Route path="/:reqName" element={<ViewRequests />} />
-          <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />
-          <Route path="/view-officer-onboard/:reqId" element={<ViewOfficerOnboard />} />
-          <Route path="/view-officer-offboard/:reqId" element={<ViewOfficerOffboard />} />
-          <Route path="/view-transfer-officer-branch/:reqId" element={<ViewTransferOfficerBranch />} />
-          <Route path="/view-trustee-request/:reqId" element={<ViewTrusteeRequest />} />
-          <Route path="/view-update-branch/:reqId" element={<ViewUpdateBranch />} />
-          {/* <Route path="/view-update-officer/:reqId" element={<ViewUpdateOfficer />} /> */}
-          <Route path="/view-transfer-captain/:reqId" element={<ViewTransferCaptain />} />
-          <Route path="/view-transfer-case/:reqId" element={<ViewTransferCase />} />
+            <Route path="/:reqName" element={<ViewRequests />} />
+            <Route path="/view-create-branch/:reqId" element={<ViewCreateBranch />} />
+            <Route path="/view-officer-onboard/:reqId" element={<ViewOfficerOnboard />} />
+            <Route path="/view-officer-offboard/:reqId" element={<ViewOfficerOffboard />} />
+            <Route path="/view-transfer-officer-branch/:reqId" element={<ViewTransferOfficerBranch />} />
+            <Route path="/view-trustee-request/:reqId" element={<ViewTrusteeRequest />} />
+            <Route path="/view-update-branch/:reqId" element={<ViewUpdateBranch />} />
+            {/* <Route path="/view-update-officer/:reqId" element={<ViewUpdateOfficer />} /> */}
+            <Route path="/view-transfer-captain/:reqId" element={<ViewTransferCaptain />} />
+            <Route path="/view-transfer-case/:reqId" element={<ViewTransferCase />} />
+          </Route>
+
         </Routes>
       </WagmiConfig>
     </>
