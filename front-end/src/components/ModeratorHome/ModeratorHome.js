@@ -6,17 +6,16 @@ import { useNavigate } from "react-router-dom";
 
 export const ModeratorHome = () => {
 
-    const requestCategory = [{ "name": "Officer Onboard", "end-point": "officer-onboard" }, { "name": "Officer Offboard", "end-point": "officer-offboard" }, { "name": "Transfer Officer Branch", "end-point": "transfer-officer-branch" }, { "name": "Trustee Request", "end-point": "trustee-request" }, { "name": "Transfer Captain", "end-point": "transfer-captain" }, { "name": "Transfer Case", "end-point": "transfer-case" }];
+    const requestCategory = [{ "name": "Create Branch", "end-point": "create-branch" }, { "name": "Officer Onboard", "end-point": "officer-onboard" }, { "name": "Officer Offboard", "end-point": "officer-offboard" }, { "name": "Transfer Officer Branch", "end-point": "transfer-officer-branch" }, { "name": "Trustee Request", "end-point": "trustee-request" }, { "name": "Transfer Captain", "end-point": "transfer-captain" }, { "name": "Transfer Case", "end-point": "transfer-case" }];
     // const requestCategory = [{ "name": "Create Branch", "end-point": "create-branch" }, { "name": "Officer Onboard", "end-point": "officer-onboard" }, { "name": "Officer Offboard", "end-point": "officer-offboard" }, { "name": "Transfer Officer Branch", "end-point": "transfer-officer-branch" }, { "name": "Trustee Request", "end-point": "trustee-request" }, { "name": "Update Branch", "end-point": "update-branch" }, { "name": "Update Officer", "end-point": "update-officer" }, { "name": "Transfer Captain", "end-point": "transfer-captain" }, { "name": "Transfer Case", "end-point": "transfer-case" }];
 
     let navigate = useNavigate();
 
     function print(cardName) {
         // navigate(`/${cardEndpoint}`);
-        // if (cardName === "Create Branch"){
-        //     navigate(`/view-create-branch`);
-        // } 
-        if(cardName === "Officer Onboard") {
+        if (cardName === "Create Branch"){
+            navigate(`/view-create-branch`);
+        } else if(cardName === "Officer Onboard") {
             navigate(`/view-officer-onboard`);
         } else if(cardName === "Officer Offboard") {
             navigate(`/view-officer-offboard`);

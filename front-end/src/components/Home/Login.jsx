@@ -50,10 +50,10 @@ export const Login = () => {
         console.log("validity ::", validity)
   
         if (validity) {
-          if (userDetails.rank  === 3) { navigate('/cases-captain'); setGlobalVariables(userDetails.rank, userDetails.stateCode, userDetails.branchId, userDetails.badge); }
-          else if (userDetails.rank  === 2) { navigate('/cases-detective'); setGlobalVariables(userDetails.rank, userDetails.stateCode, userDetails.branchId, userDetails.badge); }
-          else if (userDetails.rank  === 1) { navigate('/cases-officer'); setGlobalVariables(userDetails.rank, userDetails.stateCode, userDetails.branchId, userDetails.badge); }
-          else if (userDetails.rank  === 4) { navigate('/moderator-home'); setGlobalVariables(userDetails.rank, userDetails.stateCode, userDetails.branchId, userDetails.badge); }
+          if (userDetails.rank  === 3) { navigate('/cases-captain'); setGlobalVariables(userDetails.rank, userDetails.statecode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 2) { navigate('/cases-detective'); setGlobalVariables(userDetails.rank, userDetails.statecode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 1) { navigate('/cases-officer'); setGlobalVariables(userDetails.rank, userDetails.statecode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 4) { navigate('/moderator-home'); setGlobalVariables(userDetails.rank, userDetails.statecode, userDetails.branchId, userDetails.badge); }
           else { handleValidationFail(); }
         } else {
           handleValidationFail();

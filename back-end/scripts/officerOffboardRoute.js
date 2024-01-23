@@ -43,7 +43,7 @@ router.post('/create-request/officer-offboard', async (req, res) => {
 
 // view all officer-offboard requests - page
 router.get('/view-officer-offboard', async (req, res) => {
-    // console.log("req.query:: ", req.query.userStateCode)
+    console.log("req.query:: ", req.query.userStateCode)
     const userStateCode = req.query.userStateCode;
 
     await OfficerOffboard.find({ stateCode: userStateCode })
