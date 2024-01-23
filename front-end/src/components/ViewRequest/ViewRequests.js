@@ -24,10 +24,10 @@ export const ViewRequests = () => {
 
     function print(cardId) {
         // navigate(`/case-detail/${cardId}`);
-        if (reqName === "view-create-branch") {
-            navigate(`/view-create-branch/${cardId}`);
-        } 
-        else if (reqName === "view-officer-onboard") {
+        // if (reqName === "view-create-branch") {
+        //     navigate(`/view-create-branch/${cardId}`);
+        // } 
+        if (reqName === "view-officer-onboard") {
             navigate(`/view-officer-onboard/${cardId}`);
         }
         else if (reqName === "view-officer-offboard") {
@@ -39,12 +39,12 @@ export const ViewRequests = () => {
         else if (reqName === "view-trustee-request") {
             navigate(`/view-trustee-request/${cardId}`);
         } 
-        else if (reqName === "view-update-branch") {
-            navigate(`/view-update-branch/${cardId}`);
-        } 
-        else if (reqName === "view-update-officer") {
-            navigate(`/view-update-officer/${cardId}`);
-        }
+        // else if (reqName === "view-update-branch") {
+        //     navigate(`/view-update-branch/${cardId}`);
+        // } 
+        // else if (reqName === "view-update-officer") {
+            // navigate(`/view-update-officer/${cardId}`);
+        // }
         else if (reqName === "view-transfer-captain") {
             navigate(`/view-transfer-captain/${cardId}`);
         } 
@@ -70,13 +70,13 @@ export const ViewRequests = () => {
         <>
             {/* heading */}
             <div className="d-flex justify-content-between">
-                {reqName === "view-create-branch" ? <h1 className='m-4'>Create Branch Requests</h1>
-                    : reqName === "view-officer-onboard" ? <h1 className='m-4'>Officer Onboard Requests</h1>
+                {/* {reqName === "view-create-branch" ? <h1 className='m-4'>Create Branch Requests</h1> */}
+                {reqName === "view-create-branch" ? <h1 className='m-4'>Officer Onboard Requests</h1>
                     : reqName === "view-officer-offboard" ? <h1 className='m-4'>Officer Offboard Requests</h1>
                     : reqName === "view-transfer-officer-branch" ? <h1 className='m-4'>Transfer Officer Branch Requests</h1>
                     : reqName === "view-trustee-request" ? <h1 className='m-4'>Trustee Requests</h1>
-                    : reqName === "view-update-branch" ? <h1 className='m-4'>Update Branch Requests</h1>
-                    : reqName === "view-update-officer" ? <h1 className='m-4'>Update Officer Requests</h1>
+                    // : reqName === "view-update-branch" ? <h1 className='m-4'>Update Branch Requests</h1>
+                    // : reqName === "view-update-officer" ? <h1 className='m-4'>Update Officer Requests</h1>
                     : reqName === "view-transfer-captain" ? <h1 className='m-4'>Transfer Captain Requests</h1>
                     : reqName === "view-transfer-case" ? <h1 className='m-4'>Transfer Case Requests</h1>
                     : reqName === "view-officer-requests" ? <h1 className='m-4'>Officer Requests</h1>
