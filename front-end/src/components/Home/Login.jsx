@@ -1,61 +1,23 @@
 import React from 'react'
 import './Home.css'
-import { useState, useEffect } from 'react';
-import { ethers } from 'ethers';
+import { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
 import { useConnect, useAccount, useDisconnect } from 'wagmi'
 import { readContract } from '@wagmi/core'
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import LedgerABI from "./../Ledger.json";
-import { stateCodeMap, rankMap, branchIdMap } from "../data/data.js";
+import { rankMap } from "../data/data.js";
+import { getUserDetail } from '../utils/callers/getUserDetail.js';
 
 export const Login = () => {
 
-  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
-  const { address, connector, isConnected } = useAccount()
+  const { connect, connectors, isLoading, pendingConnector } = useConnect()
+  const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
 
   let navigate = useNavigate();
   
-  const [selectedStateCode, setSelectedStateCode] = useState(null);
-  const [selectedBranchId, setSelectedBranchId] = useState(null);
-  const [selectedValue, setSelectedValue] = useState(null);
-  const [officerInfo, setOfficerInfo] = useState({
-    rank: 0,
-    branchId: 0,
-    stateCode: 0,
-    badge: "",
-  });
-
-  // Function to handle dropdown item selection
-  const handleDropdownSelect = async (value) => {
-    setSelectedValue(rankMap.get(value));
-    const name = "rank";
-    setOfficerInfo({ ...officerInfo, [name]: value });
-  };
-
-  const handleStateCodeDropdownSelect = (categoryValue) => {
-    setSelectedStateCode(categoryValue);
-    const name = "stateCode";
-    setOfficerInfo({ ...officerInfo, [name]: categoryValue });
-  }
-
-  const handleBranchIdDropdownSelect = (categoryValue) => {
-    setSelectedBranchId(categoryValue);
-    const name = "branchId";
-    setOfficerInfo({ ...officerInfo, [name]: categoryValue });
-  }
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setOfficerInfo({ ...officerInfo, [name]: value });
-    console.log("params :: ", name);
-    console.log("value :: ", value);
-  }; 
-
   const setGlobalVariables = (rank, stateCode, branchId, badge) => {
     localStorage.setItem("rank", rankMap.get(rank));
     localStorage.setItem("rankId", rank);
@@ -69,29 +31,18 @@ export const Login = () => {
 
     try {
       if (isConnected) {
-  
-        const branchId = ethers.utils.hexlify(ethers.utils.keccak256(
-          ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.branchId])
-        ));
-        const badge = ethers.utils.hexlify(ethers.utils.keccak256(
-            ethers.utils.defaultAbiCoder.encode(['string'], [officerInfo.badge])
-        ));
-        // const badge = ethers.utils.formatBytes32String(officerInfo.badge);
-  
-        // console.log("branchid ::", branchId)
-        // console.log("stateCode ::", officerInfo.stateCode)
-        // console.log("badge ::", badge)
-        // console.log("rank ::", officerInfo.rank)
+        const userDetails = await getUserDetail(address)
+        // console.log("userDetails", userDetails);
         
         const validity = await readContract({
           address: process.env.REACT_APP_LEDGER_CONTRACT,
           abi: LedgerABI,
           functionName: 'isValidEmployment',
           args: [
-            branchId, // bytes32 _branchId,
-            officerInfo.stateCode, // uint _stateCode
-            badge, // bytes32 _badge
-            officerInfo.rank //Rank _rank
+            userDetails.branchId, // bytes32 _branchId,
+            userDetails.statecode, // uint _stateCode
+            userDetails.badge, // bytes32 _badge
+            userDetails.rank //Rank _rank
           ],
           account: address,
           chainId: 11155111
@@ -99,11 +50,10 @@ export const Login = () => {
         console.log("validity ::", validity)
   
         if (validity) {
-        // if (validityRank) {
-          if (selectedValue === 'Captain') { navigate('/cases-captain'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
-          else if (selectedValue === 'Detective') { navigate('/cases-detective'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
-          else if (selectedValue === 'Officer') { navigate('/cases-officer'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
-          else if (selectedValue === 'Moderator') { navigate('/moderator-home'); setGlobalVariables(officerInfo.rank, officerInfo.stateCode, branchId, badge); }
+          if (userDetails.rank  === 3) { navigate('/cases-captain'); setGlobalVariables(userDetails.rank, userDetails.stateCode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 2) { navigate('/cases-detective'); setGlobalVariables(userDetails.rank, userDetails.stateCode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 1) { navigate('/cases-officer'); setGlobalVariables(userDetails.rank, userDetails.stateCode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 4) { navigate('/moderator-home'); setGlobalVariables(userDetails.rank, userDetails.stateCode, userDetails.branchId, userDetails.badge); }
           else { handleValidationFail(); }
         } else {
           handleValidationFail();
@@ -117,25 +67,16 @@ export const Login = () => {
   }  
   
   const handleLogin = (connector) => {
-    if (selectedValue == null) {
-      notify("error", "Rank is required");
-    } else if (!officerInfo.stateCode) {
-      notify("error", "State Code is required");
-    } else if (!officerInfo.branchId) {
-      notify("error", "Branch Id is required");
-    } else if (officerInfo.badge === "") {
-      notify("error", "Badge is required");
-    } else {
-      connect({ connector });
-    }
+    connect({ connector });
   };
 
   const handleValidationFail = () => {
-    localStorage.clear();
+    window.localStorage.clear();
     if(isConnected) {
       disconnect()
+    } else {
+      notify("error", "Rank validation failed");
     }
-    notify("error", "Rank validation failed");
   };
 
   useEffect(() => {
@@ -149,70 +90,6 @@ export const Login = () => {
     <div className='login'>
       <div className='login-container'>
         <h2 className='login-welcome'> Welcome </h2>
-        {/* rank */}
-          <div className="mb-4">
-            <Dropdown>
-              <Dropdown.Toggle variant="light" id="rank" className="dropdown">
-                {/* {selectedValue ? rankMap.get(selectedValue) : "Select Rank"} */}
-                {selectedValue ? (selectedValue) : "Select Your Rank"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown selectDropdown">
-                {Array.from(rankMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" className="page-dropdown-item-login" key={key} onClick={() => handleDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-
-        {/* state code */}
-          <div className="mb-4">
-            <Dropdown>
-              <Dropdown.Toggle variant="light" id="stateCode" className="dropdown">
-                {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown selectDropdown">
-                {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item name="stateCode" className="page-dropdown-item-login" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-
-        {/* Branch Id */}
-          <div className="mb-4">
-            <Dropdown>
-              <Dropdown.Toggle variant="light" id="branchId" className="dropdown">
-                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown selectDropdown">
-                {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="branchId" className="page-dropdown-item-login" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-
-        {/* badge */}
-          <div className="input mb-5">
-            <input
-              type="string"
-              name="badge"
-              id="badge"
-              placeholder="Your Badge Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
-          </div>
-
         {/* Login button */}
         <div>
           {connectors.map((connector) => (
