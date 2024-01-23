@@ -63,6 +63,7 @@ export const Login = () => {
     } catch (error) {
       console.log(error);
       notify("error", "Failed Authentication")
+      handleValidationFail();
     }
   }  
   
