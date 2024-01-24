@@ -154,7 +154,7 @@ export const ViewTransferOfficerBranch = () => {
         <h2>Transfer Officer Branch Request #{reqId}</h2>
         <h6
           className={`statusTag${
-            requestDetail.isOpen === true ? "Open" : "Close"
+            requestDetail.isOpen === true ? "Open" : "Closed"
           } ms-3`}
         >
           #{requestDetail.isOpen === true ? "OPEN" : "CLOSED"}

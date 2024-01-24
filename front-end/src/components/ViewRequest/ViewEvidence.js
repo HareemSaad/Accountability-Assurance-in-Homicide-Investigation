@@ -79,7 +79,7 @@ export const ViewEvidence = () => {
       <div className="m-3 mt-5 mb-4 d-flex flex-row">
         {/* <h2 className="m-3 mt-5 mb-4">Officer Onboard Request #{reqId}</h2> */}
         <h2>Case #{caseId}</h2>
-        <h6 className={`statusTag${caseEvidence.approve === true ? "Open" : "Close"} ms-3`} >
+        <h6 className={`statusTag${caseEvidence.approve === true ? "Open" : "Closed"} ms-3`} >
           #{caseEvidence.approve === true ? "APPROVED" : "NOT APPROVED"}
         </h6>
       </div>

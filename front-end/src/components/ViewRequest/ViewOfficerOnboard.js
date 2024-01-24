@@ -53,7 +53,7 @@ export const ViewOfficerOnboard = () => {
       <div className="m-3 mt-5 mb-4 d-flex flex-row">
         {/* <h2 className="m-3 mt-5 mb-4">Officer Onboard Request #{reqId}</h2> */}
         <h2>Officer Onboard Request #{reqId}</h2>
-        <h6 className={`statusTag${requestDetail.isOpen === true ? "Open" : "Close"} ms-3`} >
+        <h6 className={`statusTag${requestDetail.isOpen === true ? "Open" : "Closed"} ms-3`} >
           #{requestDetail.isOpen === true ? "OPEN" : "CLOSED"}
         </h6>
       </div>
