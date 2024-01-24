@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './Home.css'
 import { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,14 @@ export const Login = () => {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
 
+  const [isBranchExist, setIsBranchExist] = React.useState(false);
+  const [branchId, setBranchId] = React.useState('');
+  const [stateCode, setStateCode] = React.useState('');
+  const [officerInfo, setOfficerInfo] = useState({
+    "stateCode": "",
+    "branchId": ""
+  })
+
   let navigate = useNavigate();
   
   const setGlobalVariables = (rank, stateCode, branchId, badge) => {
@@ -26,9 +34,22 @@ export const Login = () => {
     localStorage.setItem("badge", badge);
   }
 
+  useEffect(() => {
+    console.log("officerInfo:: ", officerInfo)
+    console.log("isBranchExist:: ", isBranchExist)
+
+  }, [officerInfo, isBranchExist])
+  
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setOfficerInfo({ ...officerInfo, [name]: value });
+    console.log("params :: ", name);
+    console.log("value :: ", value);
+  }; 
+
   // Function to handle successful login
   const handleLoginSuccess = async () => {
-
     try {
       if (isConnected) {
         const userDetails = await getUserDetail(address)
@@ -65,10 +86,24 @@ export const Login = () => {
       notify("error", "Failed Authentication")
       handleValidationFail();
     }
+  
   }  
+
+  // Handler for checkbox change
+  const handleBranchExistChange = (e) => {
+    setIsBranchExist(e.target.checked);
+  };
   
   const handleLogin = (connector) => {
-    connect({ connector });
+    if (isBranchExist) {
+      if (!officerInfo.branchId) {
+        notify("error", "Branch Id is required");
+      } else if (!officerInfo.stateCode) {
+        notify("error", "State Code is required");
+      }
+    } else {
+      connect({ connector });
+    }
   };
 
   const handleValidationFail = () => {
@@ -91,7 +126,54 @@ export const Login = () => {
     <div className='login'>
       <div className='login-container'>
         <h2 className='login-welcome'> Welcome </h2>
-        {/* Login button */}
+
+        {/* show branchid and statecode if isBranchExists true */}
+        {isBranchExist && (
+          <div>
+            {/* branch id */}
+            <div className="input mb-4">
+              <input
+                type="text"
+                name="branchId"
+                id="branchId"
+                placeholder="Your Branch Id Here"
+                className="form-control"
+                // onChange={(e) => setBranchId(e.target.value)}
+                onChange={handleChange}
+              ></input>
+            </div>
+
+            {/* state code */}
+            <div className="input mb-4">
+              <input
+                type="number"
+                name="stateCode"
+                id="stateCode"
+                placeholder="Your State Code Here"
+                className="form-control"
+                // onChange={(e) => setStateCode(e.target.value)}
+                onChange={handleChange}
+                ></input>
+            </div>
+          </div>
+        )}
+
+        {/* isBranchExist Checkbox */}
+        <div className="form-check form-switch">
+          <input
+            className="form-check-input input mb-4"
+            type="checkbox"
+            role="switch"
+            id="isBranchExist"
+            checked={isBranchExist}
+            onChange={handleBranchExistChange}
+          />
+          <label className="form-check-label" htmlFor="isBranchExist">Branch Exists</label>
+        </div>
+
+          {/* {error && <div>{error.message}</div>} */}
+
+          {/* Login button */}
         <div>
           {connectors.map((connector) => (
             <button
@@ -110,8 +192,6 @@ export const Login = () => {
               {/* {console.log("ID:: ", isConnected)} */}
             </button>
           ))}
-    
-          {/* {error && <div>{error.message}</div>} */}
         </div>
       </div>
     </div>

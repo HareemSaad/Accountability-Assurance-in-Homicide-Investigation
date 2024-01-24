@@ -90,3 +90,20 @@
   background-color: #e8d6fa !important;
   color: black !important;
 }
+
+.form-check-input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.form-check-input {
+  border: 1px solid #ccc;
+  outline: none !important;
+  background-color: white;
+}
+
+/* Style the checkmark */
+.form-check-input:checked {
+  border: none !important;
+  background-color: #6600cc;
+}
