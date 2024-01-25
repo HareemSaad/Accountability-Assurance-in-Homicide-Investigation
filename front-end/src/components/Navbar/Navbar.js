@@ -27,7 +27,9 @@ export const NavbarComponent = () => {
   const logoNavigation = () => {
     const userRank = localStorage.getItem("rank")?.toLowerCase();
 
-    if (userRank === 'captain') {
+    if (userRank === '') {
+      navigate('/');
+    } else if(userRank === 'captain') {
       navigate('/cases-captain');
     } else if (userRank === 'detective') {
       navigate('/cases-detective');
@@ -40,14 +42,14 @@ export const NavbarComponent = () => {
   
   return (
     <Navbar className="nav">
-      {console.log("rank", localStorage.getItem("rank")?.toLowerCase())}
+      {console.log("rank navbar", localStorage.getItem("rank")?.toLowerCase())}
       <Container>
         <img className='navLogo' src="/logo.png" alt="Logo" width="50" height="50" />
         <Navbar.Brand className='text-light' onClick={logoNavigation} style={{ cursor: 'pointer' }}>Police Department</Navbar.Brand>
         <Navbar.Toggle />
         <Navbar.Collapse className="justify-content-end">
           <Navbar.Text className='text-light navAccount'>
-            {isConnected ? address : "0x00"}
+            {isConnected ? address : <> 0x00 {window.localStorage.clear()} </>}
           </Navbar.Text>
         </Navbar.Collapse>
         <button className='logout-button' onClick={disconnect}>Disconnect</button>
