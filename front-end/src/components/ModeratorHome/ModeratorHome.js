@@ -47,9 +47,7 @@ export const ModeratorHome = () => {
                 <h1 className='m-4'>Requests</h1>
                 <div className="d-flex">
                     <button className='card-add-btn' name="create-request" onClick={(e) => goto(e)}>Create Requests</button>
-                    {/* <button className='card-add-btn' name="add-officer" onClick={(e) => goto(e)}>Add Officer</button> */}
-                    <button className='card-add-btn' name="my-requests" onClick={(e) => goto(e)}>My Requests</button>
-                    {/* <button className='card-add-btn' name="archive-requests" onClick={(e) => goto(e)}>Archive Cases</button> */}
+                    {/* <button className='card-add-btn' name="my-requests" onClick={(e) => goto(e)}>My Requests</button> */}
                 </div>
             </div>
 
