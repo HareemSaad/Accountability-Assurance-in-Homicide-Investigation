@@ -18,14 +18,6 @@ export const Login = () => {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
 
-  const [isNewStateCode, setIsNewStateCode] = React.useState(false);
-  const [branchId, setBranchId] = React.useState('');
-  const [stateCode, setStateCode] = React.useState('');
-  const [officerInfo, setOfficerInfo] = useState({
-    "stateCode": "",
-    "branchId": ""
-  })
-
   let navigate = useNavigate();
   
   const setGlobalVariables = (rank, stateCode, branchId, badge) => {
@@ -36,30 +28,11 @@ export const Login = () => {
     localStorage.setItem("badge", badge);
   }
 
-  useEffect(() => {
-    console.log("officerInfo:: ", officerInfo)
-    console.log("isNewStateCode:: ", isNewStateCode)
-
-  }, [officerInfo, isNewStateCode])
-  
-
-  const handleChange = (e) => {
-    let { name, value } = e.target;
-    if (name === "branchId") {value = keccakString(value)}
-    setOfficerInfo({ ...officerInfo, [name]: value });
-  }; 
-
   // Function to handle successful login
   const handleLoginSuccess = async () => {
     try {
       if (isConnected) {
-        let userDetails;
-
-        if (isNewStateCode) {
-          userDetails = await getUserDetailExcludingBranch(address, officerInfo.branchId, officerInfo.stateCode)
-        } else { 
-          userDetails = await getUserDetail(address)
-        }
+        const userDetails = await getUserDetail(address)
 
         console.log("userDetails", userDetails);
         
@@ -96,20 +69,8 @@ export const Login = () => {
     }
   
   }  
-
-  // Handler for checkbox change
-  const handleBranchExistChange = (e) => {
-    setIsNewStateCode(e.target.checked);
-  };
   
   const handleLogin = (connector) => {
-    if (isNewStateCode) {
-      if (!officerInfo.branchId) {
-        notify("error", "Branch Id is required");
-      } else if (!officerInfo.stateCode) {
-        notify("error", "State Code is required");
-      } 
-    }
     connect({ connector });
   };
 
@@ -133,51 +94,6 @@ export const Login = () => {
     <div className='login'>
       <div className='login-container'>
         <h2 className='login-welcome'> Welcome </h2>
-
-        {/* show branchid and statecode if isBranchExists true */}
-        {isNewStateCode && (
-          <div>
-            {/* branch id */}
-            <div className="input mb-4">
-              <input
-                type="text"
-                name="branchId"
-                id="branchId"
-                placeholder="Your Branch Id Here"
-                className="form-control"
-                // onChange={(e) => setBranchId(e.target.value)}
-                onChange={handleChange}
-              ></input>
-            </div>
-
-            {/* state code */}
-            <div className="input mb-4">
-              <input
-                type="number"
-                name="stateCode"
-                id="stateCode"
-                placeholder="Your State Code Here"
-                className="form-control"
-                // onChange={(e) => setStateCode(e.target.value)}
-                onChange={handleChange}
-                ></input>
-            </div>
-          </div>
-        )}
-
-        {/* isNewStateCode Checkbox */}
-        <div className="form-check form-switch">
-          <input
-            className="form-check-input input mb-4"
-            type="checkbox"
-            role="switch"
-            id="isNewStateCode"
-            checked={isNewStateCode}
-            onChange={handleBranchExistChange}
-          />
-          <label className="form-check-label" htmlFor="isNewStateCode">New Statecode?</label>
-        </div>
-
           {/* {error && <div>{error.message}</div>} */}
 
           {/* Login button */}
