@@ -333,6 +333,7 @@ contract Ledger is EIP712 {
     /// @param _signatures Signatures from moderators to authorize the branch update.
     /// @param _signers Addresses of moderators who provided the signatures.
     /// @param _expiry expiry date
+    /// @dev can only update the _precinctAddress or the _jurisdictionArea
     function updateBranch(
         string memory _id, 
         string memory _precinctAddress,
@@ -380,6 +381,7 @@ contract Ledger is EIP712 {
     }
 
     /// @notice Adds a new moderator to a branch.
+    /// @dev if the state code does not exist a new branch is created for that state code
     /// @param _nonce A nonce for the operation to prevent replay attacks.
     /// @param _stateCode State code of the branch.
     /// @param _senderStateCode State code of the sender (moderator).
@@ -388,6 +390,8 @@ contract Ledger is EIP712 {
     /// @param _legalNumber Legal identification number of the new moderator.
     /// @param _badge Badge number of the new moderator.
     /// @param _branchId Branch ID where the moderator is being assigned.
+    /// @param _precinctAddress The new address of the branch. Only needed to be added if a new state code is being initialized.
+    /// @param _jurisdictionArea The new jurisdiction area of the branch. Only needed to be added if a new state code is being initialized.
     /// @param _signature Signature of the existing moderator authorizing the addition.
     /// @param _signer Address of the existing moderator.
     /// @param _expiry expiry date
@@ -551,6 +555,7 @@ contract Ledger is EIP712 {
 
     /// @notice Validates and processes officer transfer request between branches
     /// @dev Requires signatures from captains of both the current and target branch
+    /// @dev The first signature has to be the current captain's.
     /// @dev If branches are in different StateCodes its needs to be called by the moderator of the current state
     /// @param _nonce Nonce for signature verification
     /// @param _stateCode State code for moderator verification
