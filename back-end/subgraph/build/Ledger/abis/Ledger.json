@@ -521,6 +521,16 @@
         "type": "bytes32"
       },
       {
+        "internalType": "string",
+        "name": "_precinctAddress",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_jurisdictionArea",
+        "type": "uint256"
+      },
+      {
         "internalType": "uint256",
         "name": "_expiry",
         "type": "uint256"

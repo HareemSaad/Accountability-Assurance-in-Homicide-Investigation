@@ -932,16 +932,24 @@ export class AddModeratorCall__Inputs {
     return this._call.inputValues[7].value.toBytes();
   }
 
+  get _precinctAddress(): string {
+    return this._call.inputValues[8].value.toString();
+  }
+
+  get _jurisdictionArea(): BigInt {
+    return this._call.inputValues[9].value.toBigInt();
+  }
+
   get _expiry(): BigInt {
-    return this._call.inputValues[8].value.toBigInt();
+    return this._call.inputValues[10].value.toBigInt();
   }
 
   get _signature(): Bytes {
-    return this._call.inputValues[9].value.toBytes();
+    return this._call.inputValues[11].value.toBytes();
   }
 
   get _signer(): Address {
-    return this._call.inputValues[10].value.toAddress();
+    return this._call.inputValues[12].value.toAddress();
   }
 }
 

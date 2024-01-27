@@ -9,9 +9,9 @@ dataSources:
     name: Ledger
     network: sepolia
     source:
-      address: "0x20678D7ecEbB99507Bea3d0dbf3976A2BCdC68D6"
+      address: "0x75730ce5997e911b7905D5874C14288f86658085"
       abi: Ledger
-      startBlock: 5119235
+      startBlock: 5164585
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7
@@ -54,9 +54,9 @@ dataSources:
     name: Cases
     network: sepolia
     source:
-      address: "0x0C6ddc6E0da74e7493E7f0d53e06551426D9ec5f"
+      address: "0xE0A90A92fD767DC62C1F92465eA8f0053d42533C"
       abi: Cases
-      startBlock: 5119235
+      startBlock: 5164586
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.7

@@ -362,6 +362,16 @@
       { "internalType": "bytes32", "name": "_legalNumber", "type": "bytes32" },
       { "internalType": "bytes32", "name": "_badge", "type": "bytes32" },
       { "internalType": "bytes32", "name": "_branchId", "type": "bytes32" },
+      {
+        "internalType": "string",
+        "name": "_precinctAddress",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_jurisdictionArea",
+        "type": "uint256"
+      },
       { "internalType": "uint256", "name": "_expiry", "type": "uint256" },
       { "internalType": "bytes", "name": "_signature", "type": "bytes" },
       { "internalType": "address", "name": "_signer", "type": "address" }
