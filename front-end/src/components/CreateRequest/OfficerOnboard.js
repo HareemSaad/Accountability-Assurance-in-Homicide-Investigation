@@ -30,6 +30,7 @@ export const OfficerOnboard = () => {
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedRankValue, setSelectedRankValue] = useState(null);
   const [toCaptainStateCode, setToCaptainStateCode] = useState(null);
+  const [isNewStateCode, setIsNewStateCode] = React.useState(false);
   const [officerOnboardInfo, setOfficerOnboardInfo] = useState({
     verifiedAddress: "",
     name: "",
@@ -43,7 +44,9 @@ export const OfficerOnboard = () => {
     signature: "",
     signers: address,
     isOpen: true,
-    nonce: 0
+    nonce: 0,
+    precinctAddress: "",
+    jurisdictionArea: 0
   });
 
   const handleChange = (e) => {
@@ -51,6 +54,11 @@ export const OfficerOnboard = () => {
     setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: value });
     console.log("params :: ", name);
     console.log("value :: ", value);
+  };
+  
+  // Handler for checkbox change
+  const handleBranchExistChange = (e) => {
+    setIsNewStateCode(e.target.checked);
   };
 
   const handleSubmit = async (e) => {
@@ -219,6 +227,8 @@ export const OfficerOnboard = () => {
             legalNumber,
             badge,
             branchId,
+            officerOnboardInfo.precinctAddress,
+            officerOnboardInfo.jurisdictionArea,
             officerOnboardInfo.expiry,
             signature,
             address
@@ -237,6 +247,8 @@ export const OfficerOnboard = () => {
               legalNumber,
               badge,
               branchId,
+              officerOnboardInfo.precinctAddress,
+              officerOnboardInfo.jurisdictionArea,
               officerOnboardInfo.expiry,
               signature,
               address
@@ -409,7 +421,7 @@ export const OfficerOnboard = () => {
             </label>
           </div>
           {
-            officerOnboardInfo.rank === 4 ? 
+            isNewStateCode && officerOnboardInfo.rank === 4 ? 
             <div className="col-9 input">
               <input
                 type="number"
@@ -448,37 +460,84 @@ export const OfficerOnboard = () => {
             </label>
           </div>
           {
-            officerOnboardInfo.rank === 4 ? 
+            isNewStateCode && officerOnboardInfo.rank === 4 ? 
             <div className="col-9 input">
               <input
                 type="text"
                 name="branchId"
                 id="branchId"
-                placeholder="Enter BranchId Here"
+                placeholder="Enter branch Id Here"
                 className="form-control"
                 onChange={handleChange}
               ></input>
             </div> :
             <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle id="branchId" className="dropdown customBackground">
-                {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
-              </Dropdown.Toggle>
+              <Dropdown>
+                <Dropdown.Toggle id="branchId" className="dropdown customBackground">
+                  {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+                </Dropdown.Toggle>
 
-              <Dropdown.Menu className="dropdown selectDropdown">
-                {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
+                <Dropdown.Menu className="dropdown selectDropdown">
+                  {Array.from(branchIdMap).map(([key, value]) => (
+                    <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
+                      {value}
+                    </Dropdown.Item>
+                  ))}
+                </Dropdown.Menu>
+              </Dropdown>
+            </div>
           }
-          
         </div>
 
-        {/* Officer Rank dropdown */}
+        {/* Precinct address*/}
+        {isNewStateCode && selectedRankValue === 4 && (
+          <div>
+            {/* Precinct Address */}
+            <div className="row g-3 align-items-center m-3">
+              <div className="col-2">
+                <label htmlFor="precinctAddress" className="col-form-label">
+                  <b>
+                    <em>Precinct Address:</em>
+                  </b>
+                </label>
+              </div>
+              <div className="col-9 input">
+                <input
+                  type="text"
+                  name="precinctAddress"
+                  id="precinctAddress"
+                  placeholder="Enter Precinct Address Here"
+                  className="form-control"
+                  onChange={handleChange}
+                ></input>
+              </div>
+            </div>
+
+
+            {/* Jurisdiction Area */}
+            <div className="row g-3 align-items-center m-3">
+              <div className="col-2">
+                <label htmlFor="jurisdictionArea" className="col-form-label">
+                  <b>
+                    <em>Jurisdiction Area:</em>
+                  </b>
+                </label>
+              </div>
+              <div className="col-9 input">
+                <input
+                  type="number"
+                  name="jurisdictionArea"
+                  id="jurisdictionArea"
+                  placeholder="Enter Jurisdiction Area Here"
+                  className="form-control"
+                  onChange={handleChange}
+                ></input>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Officer Rank */}
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
             <label htmlFor="officerRank" className="col-form-label">
@@ -562,6 +621,19 @@ export const OfficerOnboard = () => {
               />
             </label>
           </div>
+        </div>
+
+        {/* isNewStateCode Checkbox */}
+        <div className="form-check form-switch">
+          <input
+            className="form-check-input input mb-4"
+            type="checkbox"
+            role="switch"
+            id="isNewStateCode"
+            checked={isNewStateCode}
+            onChange={handleBranchExistChange}
+          />
+          <label className="form-check-label" htmlFor="isNewStateCode">New Statecode?</label>
         </div>
 
         {/* Submit button */}
