@@ -50,6 +50,7 @@ contract BaseTest is Test {
     bytes32 PRECINCT1 = keccak256(abi.encode("PRECINCT 1"));
     bytes32 PRECINCT2 = keccak256(abi.encode("PRECINCT 2"));
     bytes32 PRECINCT3 = keccak256(abi.encode("PRECINCT 3"));
+    bytes32 PRECINCT3_1 = keccak256(abi.encode("PRECINCT 3_1"));
 
     Branch branch1 = Branch(
         PRECINCT1,
@@ -69,6 +70,13 @@ contract BaseTest is Test {
         PRECINCT3,
         "Chicago Police Department - CPD HQ",
         5983,
+        88888
+    );
+
+    Branch branch3_1 = Branch(
+        PRECINCT3_1,
+        "Chicago Police Department 1 - CPD HQ",
+        5984,
         88888
     );
 

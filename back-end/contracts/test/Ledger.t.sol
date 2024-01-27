@@ -35,37 +35,6 @@ contract OfficersTest is BaseTest {
         assertEq(jurisdictionArea, branch1.jurisdictionArea);
         assertEq(numberOfOfficers, 1);
 
-        // create a new branch
-        // bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
-        //     1,
-        //     "9th Avenue",
-        //     123456,
-        //     88888,
-        //     PRECINCT3
-        // ));
-
-        // bytes[] memory signatures = new bytes[](1);
-
-        // (uint8 v, bytes32 r, bytes32 s) = vm.sign(_moderator2PrivateKey, _hashTypedDataV4(messageHash));
-        // bytes memory moderator2Signature = abi.encodePacked(r, s, v);
-
-        // signatures[0] = moderator2Signature;
-
-        // address[] memory signers = new address[](1);
-
-        // signers[0] = moderator2;
-        
-        // vm.prank(moderator2);
-        // ledger.createBranch(
-        //     "PRECINCT 3",
-        //     "9th Avenue",
-        //     123456,
-        //     88888,
-        //     1,
-        //     signatures,
-        //     signers
-        // );
-
         // add moderator
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
             moderator3.publicKey,
@@ -92,6 +61,8 @@ contract OfficersTest is BaseTest {
             moderator3.legalNumber,
             moderator3.badge,
             moderator3.branch.branchId,
+            moderator3.branch.precinctAddress,
+            moderator3.branch.jurisdictionArea,
             expiry,
             moderator1Signature,
             moderator1.publicKey
@@ -102,10 +73,10 @@ contract OfficersTest is BaseTest {
     function testNewBranch() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
-            branch3.precinctAddress,
-            branch3.jurisdictionArea,
-            branch3.stateCode,
-            branch3.branchId,
+            branch3_1.precinctAddress,
+            branch3_1.jurisdictionArea,
+            branch3_1.stateCode,
+            branch3_1.branchId,
             expiry
         ));
 
@@ -123,10 +94,10 @@ contract OfficersTest is BaseTest {
         vm.startPrank(moderator3.publicKey);
 
         ledger.createBranch(
-            "PRECINCT 3",
-            branch3.precinctAddress,
-            branch3.jurisdictionArea,
-            branch3.stateCode,
+            "PRECINCT 3_1",
+            branch3_1.precinctAddress,
+            branch3_1.jurisdictionArea,
+            branch3_1.stateCode,
             1,
             expiry,
             signatures,
@@ -138,12 +109,12 @@ contract OfficersTest is BaseTest {
             uint jurisdictionArea,
             uint stateCode,
             uint numberOfOfficers
-        ) = ledger.branches(PRECINCT3);
+        ) = ledger.branches(PRECINCT3_1);
 
-        assertEq(precinctAddress, branch3.precinctAddress);
-        assertEq(stateCode, branch3.stateCode);
-        assertEq(jurisdictionArea, branch3.jurisdictionArea);
-        assertEq(numberOfOfficers, 1);
+        assertEq(precinctAddress, branch3_1.precinctAddress);
+        assertEq(stateCode, branch3_1.stateCode);
+        assertEq(jurisdictionArea, branch3_1.jurisdictionArea);
+        assertEq(numberOfOfficers, 0);
 
         vm.stopPrank();
     }
@@ -153,10 +124,10 @@ contract OfficersTest is BaseTest {
         
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
-            branch3.precinctAddress,
-            branch3.jurisdictionArea,
-            branch3.stateCode,
-            branch3.branchId,
+            branch3_1.precinctAddress,
+            branch3_1.jurisdictionArea,
+            branch3_1.stateCode,
+            branch3_1.branchId,
             expiry
         ));
 
@@ -176,10 +147,10 @@ contract OfficersTest is BaseTest {
         vm.expectRevert(SignatureReplay.selector);
 
         ledger.createBranch(
-            "PRECINCT 3",
-            branch3.precinctAddress,
-            branch3.jurisdictionArea,
-            branch3.stateCode,
+            "PRECINCT 3_1",
+            branch3_1.precinctAddress,
+            branch3_1.jurisdictionArea,
+            branch3_1.stateCode,
             1,
             expiry,
             signatures,
@@ -194,10 +165,10 @@ contract OfficersTest is BaseTest {
         
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             2,
-            branch3.precinctAddress,
-            branch3.jurisdictionArea,
-            branch3.stateCode,
-            branch3.branchId,
+            branch3_1.precinctAddress,
+            branch3_1.jurisdictionArea,
+            branch3_1.stateCode,
+            branch3_1.branchId,
             expiry
         ));
 
@@ -217,10 +188,10 @@ contract OfficersTest is BaseTest {
         vm.expectRevert(BranchAlreadyExists.selector);
 
         ledger.createBranch(
-            "PRECINCT 3",
-            branch3.precinctAddress,
-            branch3.jurisdictionArea,
-            branch3.stateCode,
+            "PRECINCT 3_1",
+            branch3_1.precinctAddress,
+            branch3_1.jurisdictionArea,
+            branch3_1.stateCode,
             2,
             expiry,
             signatures,
@@ -634,6 +605,8 @@ contract OfficersTest is BaseTest {
             moderator2.legalNumber,
             moderator2.badge,
             moderator2.branch.branchId,
+            moderator3.branch.precinctAddress,
+            moderator3.branch.jurisdictionArea,
             expiry,
             moderator1Signature,
             moderator1.publicKey
@@ -863,7 +836,7 @@ contract OfficersTest is BaseTest {
             detective1.name,
             detective1.legalNumber,
             detective1.badge,
-            PRECINCT3,
+            PRECINCT3_1,
             detective1.rank,
             expiry,
             moderator1Signature,
@@ -1275,7 +1248,7 @@ contract OfficersTest is BaseTest {
     }
 
     function testTransferBranch() public {
-        addBranch3();
+        addBranch3_1();
         addCaptain1();
         addCaptain3();
         addDetective1();
@@ -1358,7 +1331,7 @@ contract OfficersTest is BaseTest {
     }
     
     function testTransferOfficerByNonModerator() public {
-        addBranch3();
+        addBranch3_1();
         addCaptain1();
         addDetective1();
 
@@ -1380,7 +1353,7 @@ contract OfficersTest is BaseTest {
     }
 
     function testTransferOfficerInconsistentStateCode() public {
-        addBranch3();
+        addBranch3_1();
         addCaptain1();
         addDetective1();
 
@@ -1402,7 +1375,7 @@ contract OfficersTest is BaseTest {
     }
 
     function testTransferOfficerSignersNotCaptains() public {
-        addBranch3();
+        addBranch3_1();
         addCaptain1();
         addCaptain3();
         addDetective1();
@@ -1426,8 +1399,6 @@ contract OfficersTest is BaseTest {
 
     function testTransferOfficerInvalidBranch() public {
         addModerator2();
-        addBranch3();
-        addBranch2();
         addCaptain1();
         addCaptain2();
         addCaptain3();
@@ -1777,7 +1748,7 @@ contract OfficersTest is BaseTest {
         vm.prank(captain1.publicKey);
         cases.addCase(
             213,
-            captain3.branch.branchId
+            branch3_1.branchId
         );
 
         vm.prank(captain1.publicKey);
@@ -1842,7 +1813,6 @@ contract OfficersTest is BaseTest {
 
         addDetective1();
         addModerator2();
-        addBranch2();
         addCaptain2();
         addDetective2();
 
@@ -2144,7 +2114,7 @@ contract OfficersTest is BaseTest {
             address(9879),
             moderator1.publicKey,
             captain1.publicKey,
-            PRECINCT3,
+            PRECINCT3_1,
             expiry
         );
 
@@ -2167,7 +2137,7 @@ contract OfficersTest is BaseTest {
             moderator1Signature
         );
 
-         request = TrusteeRequestLib.TrusteeRequest(
+        request = TrusteeRequestLib.TrusteeRequest(
             2153,
             address(9879),
             moderator1.publicKey,
@@ -2270,6 +2240,43 @@ contract OfficersTest is BaseTest {
         assertFalse(cases.officerInCase(213, captain1.publicKey));
     }
 
+    function addBranch3_1() public {
+        bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
+            1,
+            branch3_1.precinctAddress,
+            branch3_1.jurisdictionArea,
+            branch3_1.stateCode,
+            branch3_1.branchId,
+            expiry
+        ));
+
+        bytes[] memory signatures = new bytes[](1);
+
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(moderator3.privateKey, _hashTypedDataV4(messageHash));
+        bytes memory moderator3Signature = abi.encodePacked(r, s, v);
+
+        signatures[0] = moderator3Signature;
+
+        address[] memory signers = new address[](1);
+
+        signers[0] = moderator3.publicKey;
+        
+        vm.startPrank(moderator3.publicKey);
+
+        ledger.createBranch(
+            "PRECINCT 3_1",
+            branch3_1.precinctAddress,
+            branch3_1.jurisdictionArea,
+            branch3_1.stateCode,
+            1,
+            expiry,
+            signatures,
+            signers
+        );
+
+        vm.stopPrank();
+    }
+
     function addBranch3() public {
         bytes32 messageHash = CreateBranch.hash(CreateBranch.CreateBranchVote(
             1,
@@ -2370,6 +2377,8 @@ contract OfficersTest is BaseTest {
             moderator2.legalNumber,
             moderator2.badge,
             moderator2.branch.branchId,
+            moderator3.branch.precinctAddress,
+            moderator3.branch.jurisdictionArea,
             expiry,
             moderator1Signature,
             moderator1.publicKey
@@ -2402,6 +2411,8 @@ contract OfficersTest is BaseTest {
             moderator4.legalNumber,
             moderator4.badge,
             moderator4.branch.branchId,
+            moderator3.branch.precinctAddress,
+            moderator3.branch.jurisdictionArea,
             expiry,
             moderator1Signature,
             moderator1.publicKey

@@ -400,10 +400,22 @@ contract Ledger is EIP712 {
         bytes32 _legalNumber, 
         bytes32 _badge, 
         bytes32 _branchId,
+        string memory _precinctAddress,
+        uint _jurisdictionArea,
         uint _expiry,
         bytes memory _signature,
         address _signer
     ) external onlyModerator(_senderStateCode) {
+
+        if(branches[_branchId].stateCode == 0) {
+            //create a branch
+            _initializeBranch(
+                _branchId, 
+                _precinctAddress,
+                _jurisdictionArea,
+                _stateCode
+            );
+        }
         
         // moderator cannot hire officers or detectives
         _onboard(_nonce, _stateCode, _officer, _name, _legalNumber, _badge, _branchId, Rank.MODERATOR, _expiry, _signature, _signer);
