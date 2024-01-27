@@ -1,6 +1,8 @@
 import { client } from "../../data/data";
 
 export async function getUserDetail(address) {
+
+  console.log("calling subgraph for: ", address);
     
     const userDetail = {
         name: "",

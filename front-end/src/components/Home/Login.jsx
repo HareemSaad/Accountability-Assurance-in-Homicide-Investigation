@@ -8,7 +8,9 @@ import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import LedgerABI from "./../Ledger.json";
 import { rankMap } from "../data/data.js";
-import { getUserDetail } from '../utils/callers/getUserDetail.js';
+import { getUserDetail } from '../utils/queries/getUserDetail.js';
+import { keccakString } from './../utils/hashing/keccak-hash.js'
+import { getUserDetailExcludingBranch } from './../utils/queries/getUserDetailExcludingBranch.js'
 
 export const Login = () => {
 
@@ -16,7 +18,7 @@ export const Login = () => {
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
 
-  const [isBranchExist, setIsBranchExist] = React.useState(false);
+  const [isNewStateCode, setIsNewStateCode] = React.useState(false);
   const [branchId, setBranchId] = React.useState('');
   const [stateCode, setStateCode] = React.useState('');
   const [officerInfo, setOfficerInfo] = useState({
@@ -36,24 +38,30 @@ export const Login = () => {
 
   useEffect(() => {
     console.log("officerInfo:: ", officerInfo)
-    console.log("isBranchExist:: ", isBranchExist)
+    console.log("isNewStateCode:: ", isNewStateCode)
 
-  }, [officerInfo, isBranchExist])
+  }, [officerInfo, isNewStateCode])
   
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === "branchId") {value = keccakString(value)}
     setOfficerInfo({ ...officerInfo, [name]: value });
-    console.log("params :: ", name);
-    console.log("value :: ", value);
   }; 
 
   // Function to handle successful login
   const handleLoginSuccess = async () => {
     try {
       if (isConnected) {
-        const userDetails = await getUserDetail(address)
-        // console.log("userDetails", userDetails);
+        let userDetails;
+
+        if (isNewStateCode) {
+          userDetails = await getUserDetailExcludingBranch(address, officerInfo.branchId, officerInfo.stateCode)
+        } else { 
+          userDetails = await getUserDetail(address)
+        }
+
+        console.log("userDetails", userDetails);
         
         const validity = await readContract({
           address: process.env.REACT_APP_LEDGER_CONTRACT,
@@ -91,19 +99,18 @@ export const Login = () => {
 
   // Handler for checkbox change
   const handleBranchExistChange = (e) => {
-    setIsBranchExist(e.target.checked);
+    setIsNewStateCode(e.target.checked);
   };
   
   const handleLogin = (connector) => {
-    if (isBranchExist) {
+    if (isNewStateCode) {
       if (!officerInfo.branchId) {
         notify("error", "Branch Id is required");
       } else if (!officerInfo.stateCode) {
         notify("error", "State Code is required");
-      }
-    } else {
-      connect({ connector });
+      } 
     }
+    connect({ connector });
   };
 
   const handleValidationFail = () => {
@@ -128,7 +135,7 @@ export const Login = () => {
         <h2 className='login-welcome'> Welcome </h2>
 
         {/* show branchid and statecode if isBranchExists true */}
-        {isBranchExist && (
+        {isNewStateCode && (
           <div>
             {/* branch id */}
             <div className="input mb-4">
@@ -158,17 +165,17 @@ export const Login = () => {
           </div>
         )}
 
-        {/* isBranchExist Checkbox */}
+        {/* isNewStateCode Checkbox */}
         <div className="form-check form-switch">
           <input
             className="form-check-input input mb-4"
             type="checkbox"
             role="switch"
-            id="isBranchExist"
-            checked={isBranchExist}
+            id="isNewStateCode"
+            checked={isNewStateCode}
             onChange={handleBranchExistChange}
           />
-          <label className="form-check-label" htmlFor="isBranchExist">Branch Exists</label>
+          <label className="form-check-label" htmlFor="isNewStateCode">New Statecode?</label>
         </div>
 
           {/* {error && <div>{error.message}</div>} */}
