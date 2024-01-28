@@ -50,10 +50,16 @@ export const OfficerOnboard = () => {
     jurisdictionArea: 0
   });
 
-  useEffect(async () => {
-    const name = "stateCode"
-    setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: await getUserStateCode(address) });
+  useEffect(() => {
+    handleStateCodeSelect()
   }, [])
+
+  // Function to handle state code dropdown selection
+  const handleStateCodeSelect = async () => {
+    const value =  await getUserStateCode(address);
+    const name = "stateCode";
+    setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: value });
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
