@@ -18,6 +18,8 @@ import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core"
 import { officerOffboardHash } from "../utils/hashing/officerOffboard.js";
 import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
 import { keccakInt, keccakString } from "../utils/hashing/keccak-hash.js";
+import { getUserStateCode } from "../utils/queries/getUserStateCode.js";
+import { getOfficersByStateCode } from "../utils/queries/getOfficersByStateCode.js";
 
 export const OfficerOffboard = () => {
   let navigate = useNavigate();
@@ -27,9 +29,8 @@ export const OfficerOffboard = () => {
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   // use states for dropdowns
   const [selectedStateCode, setSelectedStateCode] = useState(null);
-  const [selectedRankValue, setSelectedRankValue] = useState(null);
-  const [selectedStatusValue, setSelectedStatusValue] = useState(null);
-  const [selectedBranchId, setSelectedBranchId] = useState(null);
+  const [officerData, setOfficerData] = useState([]);
+  const [selectedOfficer, setSelectedOfficer] = useState({});
 
   const [OfficerOffboardInfo, setOfficerOffboardInfo] = useState({
     verifiedAddress: "",
@@ -45,19 +46,49 @@ export const OfficerOffboard = () => {
     expiry: "",
     isOpen: true,
   });
+  
+  useEffect(() => {
+    // 1- get state code of user
+    handleStateCodeDropdownSelect();
+  }, [])
+  
+  useEffect(() => {
+    // 2- once state code is updated get all officers from that state code
+    getInfo();
+  }, [OfficerOffboardInfo.stateCode])
 
-  // const rankArray = ["Null", "Officer", "Detective", "Captain"];
+  const getInfo = async () => {
+    setOfficerData(await getOfficersByStateCode(OfficerOffboardInfo.stateCode))
+  }
 
-  const statusArray = Array.from(employmentStatusMap).slice(-2);
-  // const statusArray = ["Select a Status", "Fired", "Retired"];
+  useEffect(() => {
+    console.log("OD: ", officerData);
+  }, [officerData])
 
-  // handling inputs
-  const handleChange = (e) => {
-    const { name, value } = e.target;
+  useEffect(() => {
+    console.log("OfficerOffboardInfo: ", OfficerOffboardInfo);
+  }, [OfficerOffboardInfo])
+
+  // Function to handle state code dropdown selection
+  const handleStateCodeDropdownSelect = async () => {
+    const value =  await getUserStateCode(address);
+    setSelectedStateCode(value);
+    const name = "stateCode";
     setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: value });
-    console.log("params :: ", name);
-    console.log("value :: ", value);
-  };
+  }
+  
+  // 3- set selected officer 
+  const handleOfficerDropdownSelect = async (value) => {
+    console.log("value: ", value);
+    setSelectedOfficer(value);
+    OfficerOffboardInfo.verifiedAddress = value.id;
+    OfficerOffboardInfo.name = value.name;
+    OfficerOffboardInfo.legalNumber= value.legalNumber
+    OfficerOffboardInfo.badge = value.badge
+    OfficerOffboardInfo.branchId = value.branch.id
+    OfficerOffboardInfo.rank = value.rank
+    OfficerOffboardInfo.employmentStatus = value.employmentStatus
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -92,21 +123,15 @@ export const OfficerOffboard = () => {
       }, 5000);
 
       const client = await getWalletClient({ account, connector });
-
-      const branchId = keccakString(OfficerOffboardInfo.branchId)
-
-      const badge = keccakString(OfficerOffboardInfo.badge)
-
-      const legalNumber = keccakInt(OfficerOffboardInfo.legalNumber)
   
       try {
         const hash = officerOffboardHash (
           OfficerOffboardInfo.verifiedAddress,
           OfficerOffboardInfo.nonce,
           OfficerOffboardInfo.name,
-          legalNumber,
-          badge,
-          branchId,
+          OfficerOffboardInfo.legalNumber,
+          OfficerOffboardInfo.badge,
+          OfficerOffboardInfo.branchId,
           OfficerOffboardInfo.employmentStatus,
           OfficerOffboardInfo.rank,
           OfficerOffboardInfo.expiry
@@ -146,37 +171,6 @@ export const OfficerOffboard = () => {
         notify("error", `An Error Occured when Creating Officer Offboard Request`);
       }
     }
-  };
-
-  // Function to handle state code dropdown selection
-  const handleStateCodeDropdownSelect = (categoryValue) => {
-    setSelectedStateCode(categoryValue);
-    const name = "stateCode";
-    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
-  };
-
-  // Function to handle dropdown item selection
-  const handleRankDropdownSelect = (categoryValue) => {
-    setSelectedRankValue(categoryValue);
-    console.log("rank :: ", categoryValue);
-    const name = "rank";
-    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
-  };
-
-  // Function to handle employment status dropdown selection
-  const handleStatusDropdownSelect = (categoryValue) => {
-    setSelectedStatusValue(categoryValue);
-    const name = "employmentStatus";
-    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
-    console.log("params :: ", name);
-    console.log("value :: ", categoryValue);
-  };
-
-  // Function to handle branch id dropdown selection
-  const handleBranchIdDropdownSelect = (categoryValue) => {
-    setSelectedBranchId(categoryValue);
-    const name = "branchId";
-    setOfficerOffboardInfo({ ...OfficerOffboardInfo, [name]: categoryValue });
   };
 
   // handle date field only
@@ -223,14 +217,30 @@ export const OfficerOffboard = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <input
-              type="text"
-              name="verifiedAddress"
-              id="verifiedAddress"
-              placeholder="Enter Precinct Address Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
+          <Dropdown>
+              <Dropdown.Toggle
+                id="verifiedAddress"
+                className="dropdown customBackground"
+              >
+                {selectedOfficer ? selectedOfficer.name : "Select Verified Address"}
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className="dropdown selectDropdown">
+                {officerData && officerData.length > 0 ?
+                (officerData.map((officer, index) => (
+                  <Dropdown.Item
+                    name="verifiedAddress"
+                    key={index}
+                    onClick={() => handleOfficerDropdownSelect(officer)}
+                  >
+                    {`${officer.name} (${rankMap.get(officer.rank)}) - ${officer.id}`}
+                  </Dropdown.Item>
+                ))
+                ) : (
+                  <Dropdown.Item disabled>Loading officers...</Dropdown.Item>
+                )}
+              </Dropdown.Menu>
+            </Dropdown>
           </div>
         </div>
 
@@ -250,7 +260,8 @@ export const OfficerOffboard = () => {
               id="name"
               placeholder="Enter Name Here"
               className="form-control"
-              onChange={handleChange}
+              value={OfficerOffboardInfo.name}
+              disabled
             ></input>
           </div>
         </div>
@@ -266,12 +277,13 @@ export const OfficerOffboard = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="legalNumber"
               id="legalNumber"
               placeholder="Enter Legal Number Here"
               className="form-control"
-              onChange={handleChange}
+              value={OfficerOffboardInfo.legalNumber}
+              disabled
             ></input>
           </div>
         </div>
@@ -292,7 +304,8 @@ export const OfficerOffboard = () => {
               id="badge"
               placeholder="Enter Badge Here"
               className="form-control"
-              onChange={handleChange}
+              value={OfficerOffboardInfo.badge}
+              disabled
             ></input>
           </div>
         </div>
@@ -307,28 +320,15 @@ export const OfficerOffboard = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle
-                id="stateCode"
-                className="dropdown customBackground"
-              >
-                {selectedStateCode
-                  ? stateCodeMap.get(selectedStateCode)
-                  : "Select State Code"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown selectDropdown">
-                {Array.from(stateCodeMap).map(([key, value]) => (
-                  <Dropdown.Item
-                    name="stateCode"
-                    key={key}
-                    onClick={() => handleStateCodeDropdownSelect(key)}
-                  >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+            <input
+              type="number"
+              name="stateCode"
+              id="stateCode"
+              placeholder="Enter State Code Here"
+              className="form-control"
+              value={OfficerOffboardInfo.stateCode}
+              disabled
+            ></input>
           </div>
         </div>
 
@@ -342,28 +342,15 @@ export const OfficerOffboard = () => {
             </label>
           </div>
           <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle
-                id="branchId"
-                className="dropdown customBackground"
-              >
-                {selectedBranchId
-                  ? branchIdMap.get(selectedBranchId)
-                  : "Select Branch Id"}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown selectDropdown">
-                {Array.from(branchIdMap).map(([key, value]) => (
-                  <Dropdown.Item
-                    name="branchId"
-                    key={key}
-                    onClick={() => handleBranchIdDropdownSelect(key)}
-                  >
-                    {value}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+            <input
+              type="text"
+              name="branchId"
+              id="branchId"
+              placeholder="Enter BranchId Here"
+              className="form-control"
+              value={OfficerOffboardInfo.branchId}
+              disabled
+            ></input>
           </div>
         </div>
 
@@ -377,68 +364,16 @@ export const OfficerOffboard = () => {
             </label>
           </div>
 
-          <div className="col-9">
-            <Dropdown>
-              <Dropdown.Toggle
-                id="rank"
-                className="dropdown customBackground"
-              >
-                {" "}
-                {selectedRankValue
-                  ? rankMap.get(selectedRankValue)
-                  : "Select a Rank"}{" "}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown selectDropdown">
-                {Array.from(rankMap).map(([key, value]) => (
-                  <Dropdown.Item
-                    name="rank"
-                    key={key}
-                    onClick={() => handleRankDropdownSelect(key)}
-                  >
-                    {" "}
-                    {value}{" "}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
-          </div>
-        </div>
-
-        {/* Employment Status */}
-        <div className="row g-3 align-items-center m-3">
-          <div className="col-2">
-            <label htmlFor="employmentStatus" className="col-form-label">
-              <b>
-                <em>Employment Status:</em>
-              </b>
-            </label>
-          </div>
           <div className="col-9 input">
-            <Dropdown>
-              <Dropdown.Toggle
-                id="employmentStatus"
-                className="dropdown customBackground"
-              >
-                {" "}
-                {selectedStatusValue
-                  ? employmentStatusMap.get(selectedStatusValue)
-                  : "Select Status"}{" "}
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu className="dropdown selectDropdown">
-                {statusArray.map(([key, value]) => (
-                  <Dropdown.Item
-                    name="category"
-                    key={key}
-                    onClick={() => handleStatusDropdownSelect(key)}
-                  >
-                    {" "}
-                    {value}{" "}
-                  </Dropdown.Item>
-                ))}
-              </Dropdown.Menu>
-            </Dropdown>
+            <input
+              type="text"
+              name="rank"
+              id="rank"
+              placeholder="Enter BranchId Here"
+              className="form-control"
+              value={rankMap.get(OfficerOffboardInfo.rank)}
+              disabled
+            ></input>
           </div>
         </div>
 

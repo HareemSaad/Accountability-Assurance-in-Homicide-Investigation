@@ -61,7 +61,7 @@ export const EmployeeDetails = () => {
                     <h6 className={`statusTag${employeeDetail.employmentStatus} ms-4`}>#{employmentStatusMap.get(`${employeeDetail.employmentStatus}`)}</h6>
                 </div>
 
-                <button className='case-nav-btn m-4' name="change-employee-status" onClick={(e) => goto(e)}>Change Status</button>
+                {/* <button className='case-nav-btn m-4' name="change-employee-status" onClick={(e) => goto(e)}>Change Status</button> */}
             </div>
 
             {/* Employee Address */}
