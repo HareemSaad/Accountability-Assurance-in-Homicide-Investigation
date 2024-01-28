@@ -963,11 +963,12 @@ contract Ledger is EIP712 {
         if (_branchId == keccak256(abi.encode(""))) { revert InvalidBranch(); }
         if (_legalNumber == keccak256(abi.encode(""))) { revert InvalidLegalNumber(); }
         if (badge[_badge]) { revert InvalidBadge(); }
-        if (officers[_officer].legalNumber == keccak256(abi.encode("")) && legalNumber[_legalNumber]) { revert InvalidLegalNumber(); }
         if (_rank == Rank.NULL) { revert InvalidRank(); }
         if (!isValidBranch(_branchId) && _rank != Rank.MODERATOR ) { revert BranchDoesNotExists(); }
         if (_stateCode != branches[_branchId].stateCode && _rank != Rank.MODERATOR) revert ModeratorOfDifferentState();
         if (officers[_signer].rank != Rank.MODERATOR) revert InvalidSigner();
+        if (officers[_officer].legalNumber == bytes32(0) && legalNumber[_legalNumber]) { revert InvalidLegalNumber(); } // if new officer check legalNumber is not a duplicate
+        if (officers[_officer].legalNumber != bytes32(0) && officers[_officer].legalNumber != _legalNumber) revert InvalidLegalNumber(); // if returning officer check if legalNumber is original
 
         bytes32 messageHash = OfficerOnboard.hash(OfficerOnboard.OnboardVote(
             _officer,
