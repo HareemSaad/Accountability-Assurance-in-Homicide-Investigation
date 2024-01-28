@@ -1,6 +1,5 @@
-type BranchUpdate @entity(immutable: true) {
+type BranchUpdate @entity(immutable: false) {
   id: Bytes!
-  Ledger_id: Bytes! # bytes32
   precinctAddress: String! # string
   jurisdictionArea: BigInt! # uint256
   stateCode: BigInt! # uint256
@@ -191,3 +190,119 @@ type Trustee @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
+
+type TrusteeTable @entity(immutable: false) {
+  id: Bytes! # address
+  caseId: BigInt! # uint256
+  branchId: Bytes! # bytes32
+  approved: Boolean! # bool
+}
+
+type Case @entity(immutable: false) {
+  id: String! # uint256
+  status: Int! # uint8
+  branch: BranchUpdate!
+  officers: [Officer!] # array of addresses
+  participants: [Participant!] # array of participants
+  evidences: [Evidence!] # array of evidences
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Officer @entity(immutable: false) {
+  id: Bytes! # address
+  name: String!
+  legalNumber: Bytes!
+  badge: Bytes!
+  branch: BranchUpdate!
+  rank: Int! # uint8
+  employmentStatus: Int! # uint8
+  from: Bytes! # address
+  cases: [Case!] @derivedFrom (field:"officers") # array of cases assigned
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type Participant @entity(immutable: false) {
+  id: String! # suspectId
+  from: Bytes!
+  cases: [Case!] @derivedFrom (field:"participants") # array of cases they are a part of
+  data: Bytes!
+  category: Int! # uint8
+  approve: Boolean!
+}
+
+type Evidence @entity(immutable: false) {
+  id: String! # evidenceId
+  from: Bytes!
+  cases: [Case!] @derivedFrom (field:"evidences") # array of cases assigned
+  data: Bytes!
+  category: Int! # uint8
+  approve: Boolean!
+}
+
+type _Schema_
+  # @fulltext(
+  #   name: "officerSearch"
+  #   language: en
+  #   algorithm: rank
+  #   include: [
+  #     {
+  #       entity: "Officers", 
+  #       fields: [
+  #         { name: "id" }, 
+  #         { name: "rank" }, 
+  #         { name: "employmentStatus" }
+  #       ]
+  #     }
+  #   ]
+  # )
+  @fulltext(
+    name: "caseSearch"
+    language: en
+    algorithm: rank
+    include: [
+      {
+        entity: "Case", 
+        fields: [
+          { name: "id" }, 
+          # { name: "captain" }, 
+          # { name: "status" }
+        ]
+      }
+    ]
+  )
+  # @fulltext(
+  #   name: "evidenceSearch"
+  #   language: en
+  #   algorithm: rank
+  #   include: [
+  #     {
+  #       entity: "NewEvidenceInCase", 
+  #       fields: [
+  #         { name: "caseId" }, 
+  #         { name: "evidenceId" },
+  #         { name: "initiator" }, 
+  #         { name: "category" }
+  #       ]
+  #     }
+  #   ]
+  # )
+  # @fulltext(
+  #   name: "participantSearch"
+  #   language: en
+  #   algorithm: rank
+  #   include: [
+  #     {
+  #       entity: "NewParticipantInCase", 
+  #       fields: [
+  #         { name: "caseId" },
+  #         { name: "suspectId" },
+  #         { name: "initiator" }, 
+  #         { name: "category" }
+  #       ]
+  #     }
+  #   ]
+  # )
