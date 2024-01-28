@@ -29,6 +29,7 @@ export const OfficerOffboard = () => {
   const [isButtonDisabled, setButtonDisabled] = useState(false);
   // use states for dropdowns
   const [selectedStateCode, setSelectedStateCode] = useState(null);
+  const [selectedStatusValue, setSelectedStatusValue] = useState(null);
   const [officerData, setOfficerData] = useState([]);
   const [selectedOfficer, setSelectedOfficer] = useState({});
 
@@ -87,8 +88,12 @@ export const OfficerOffboard = () => {
     OfficerOffboardInfo.badge = value.badge
     OfficerOffboardInfo.branchId = value.branch.id
     OfficerOffboardInfo.rank = value.rank
-    OfficerOffboardInfo.employmentStatus = value.employmentStatus
-  }
+  }    
+  
+  const handleDropdownSelect = (statusValue) => {
+    setSelectedStatusValue(statusValue);
+    OfficerOffboardInfo.employmentStatus = statusValue
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,9 +116,10 @@ export const OfficerOffboard = () => {
       notify("error", `Select Officer Rank`);
     } else if (
       OfficerOffboardInfo.employmentStatus === "" ||
-      OfficerOffboardInfo.employmentStatus === 0
+      OfficerOffboardInfo.employmentStatus === "0" || 
+      OfficerOffboardInfo.employmentStatus === "1"
     ) {
-      notify("error", `Select Employment Status`);
+      notify("error", `Invalid Employment Status`);
     } else if (OfficerOffboardInfo.expiry === "") {
       notify("error", `Select an Expiry Date`);
     } else {
@@ -374,6 +380,24 @@ export const OfficerOffboard = () => {
               value={rankMap.get(OfficerOffboardInfo.rank)}
               disabled
             ></input>
+          </div>
+        </div>
+
+        {/* Change employment Status */}
+        <div className="row g-3 align-items-center m-3">
+          <div className="col-2">
+              <label htmlFor="category-type" className="col-form-label"><b><em>Select Status</em></b></label>
+          </div>
+          <div className="col-9">
+              <Dropdown>
+                  <Dropdown.Toggle id="category-type" className='dropdown customBackground'> {selectedStatusValue ? employmentStatusMap.get(selectedStatusValue) : "Select Employment Status"} </Dropdown.Toggle>
+
+                  <Dropdown.Menu className='dropdown selectDropdown'>
+                      {Array.from(employmentStatusMap).map(([key, value]) => (
+                          <Dropdown.Item name='category' key={key} onClick={() => handleDropdownSelect(key)}> {value} </Dropdown.Item>
+                      ))}
+                  </Dropdown.Menu>
+              </Dropdown>
           </div>
         </div>
 

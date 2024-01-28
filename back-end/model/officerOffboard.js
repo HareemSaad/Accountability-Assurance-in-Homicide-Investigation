@@ -18,7 +18,7 @@ const OfficerOffboardSchema = new mongoose.Schema ({
         required: true,
     },
     legalNumber: {
-        type: Number,
+        type: String,
         required: true,
     },
     badge: {

@@ -51,7 +51,7 @@ export const ViewCreateBranch = () => {
 
             if (modCount !== 0n) {
               const signersCount = BigInt(result.data.document.signers.length);
-              const calculateModerator = (signersCount / modCount) * 100n;
+              const calculateModerator = (signersCount * 100n/ modCount);
 
               if (calculateModerator >= 51n) {
                 // hareem todo - send request

@@ -54,7 +54,9 @@ export const ViewOfficerOffboard = () => {
 
             if (modCount !== 0n) {
               const signersCount = BigInt(result.data.document.signers.length);
-              const calculateModerator = (signersCount / modCount) * 100n;
+              const calculateModerator = (signersCount * 100n / modCount);
+
+              console.log(signersCount, calculateModerator);
 
               if (calculateModerator >= 51n) {
                 // hareem todo - send request
@@ -87,20 +89,16 @@ export const ViewOfficerOffboard = () => {
     // creating signature
     const client = await getWalletClient({ account, connector });
 
-    const branchId = keccakString(requestDetail.branchId);
-
-    const badge = keccakString(requestDetail.badge);
-
-    const legalNumber = keccakInt(requestDetail.legalNumber);
+    console.log("RD: ", requestDetail);
 
     try {
       const hash = officerOffboardHash(
         requestDetail.verifiedAddress,
         requestDetail.nonce,
         requestDetail.name,
-        legalNumber,
-        badge,
-        branchId,
+        requestDetail.legalNumber,
+        requestDetail.badge,
+        requestDetail.branchId,
         requestDetail.employmentStatus,
         requestDetail.rank,
         requestDetail.expiry
@@ -135,6 +133,68 @@ export const ViewOfficerOffboard = () => {
     } catch (err) {
       console.log("Error message:: ", err.message);
       notify("error", err.message);
+    }
+  };
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    setButtonDisabled(true);
+    setTimeout(() => {
+      setButtonDisabled(false);
+    }, 5000);
+
+    let functionName = "";
+
+    if (requestDetail.rank === 1 || requestDetail.rank === 2) {
+      functionName = "offboard";
+    } else if (requestDetail.rank === 3) {
+      functionName = "offboardCaptain";
+    } else {
+      functionName = "offboardModerator";
+    }
+
+    try {
+      const { hash } = await writeContract({
+        address: process.env.REACT_APP_LEDGER_CONTRACT,
+        abi: LedgerABI,
+        functionName: functionName,
+        args: [
+          requestDetail.nonce,
+          requestDetail.verifiedAddress,
+          requestDetail.stateCode,
+          requestDetail.branchId,
+          requestDetail.employmentStatus,
+          requestDetail.rank,
+          requestDetail.expiry,
+          requestDetail.signature,
+          requestDetail.signers,
+        ],
+        account: address,
+        chainId: 11155111
+      })
+      console.log("hash :: ", hash)
+
+      // wait for txn
+      const result = await waitForTransaction({
+        hash: hash,
+      })
+      console.log("Transaction result:", result);
+
+      axios.delete(`http://localhost:3000/delete-officer-offboard/:${reqId}`)
+      .then(response => {
+        console.log(response.data); // Handle the response from the server
+      })
+      .catch(error => {
+        console.error(error); // Handle errors
+      });
+
+      notify("success", "Offboard Successful")
+    } catch (err) {
+      console.log("Error message:: ", err.message);
+      notify(
+        "error",
+        `An Error Occured While Offboarding`
+      );
     }
   };
 
@@ -211,7 +271,7 @@ export const ViewOfficerOffboard = () => {
           </div>
           <div className="col-9 input">
             <input
-              type="number"
+              type="text"
               name="legalNumber"
               id="legalNumber"
               className="form-control"
@@ -382,7 +442,7 @@ export const ViewOfficerOffboard = () => {
         </div>
 
         {/* sign button */}
-        {requestDetail && requestDetail.isOpen ? (
+        {requestDetail && requestDetail.isOpen && !isPassed ? (
           <button
             className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
             type="submit"
@@ -394,8 +454,10 @@ export const ViewOfficerOffboard = () => {
           </button>
         ) : (
           <button
-            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2"
-            disabled="true"
+            className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
+            type="submit"
+            onClick={async (e) => await handleSend(e)}
+            disabled={isButtonDisabled}
           >
             {isPassedMessage}
           </button>
