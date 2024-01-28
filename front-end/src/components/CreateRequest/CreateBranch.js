@@ -12,8 +12,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import Dropdown from "react-bootstrap/Dropdown";
-import { stateCodeMap, branchIdMap } from "../data/data.js";
+import { stateCodes } from "../data/data.js";
 import { writeContract, waitForTransaction, getWalletClient } from "@wagmi/core";
+import { getUserStateCode } from "../utils/queries/getUserStateCode.js";
 // hashes
 import { createBranchHash } from "../utils/hashing/createBranch.js";
 import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
@@ -39,6 +40,12 @@ export const CreateBranch = () => {
     signers: address,
     isOpen: true,
   });  
+  
+  useEffect(async () => {
+    const name = "stateCode"
+    setCreateBranchInfo({ ...createBranchInfo, [name]: await getUserStateCode(address) });
+    console.log(stateCodes);
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,6 +53,13 @@ export const CreateBranch = () => {
     console.log("params :: ", name);
     console.log("value :: ", value);
   };
+
+  // Function to handle state code dropdown selection
+  const handleStateCodeDropdownSelect = (categoryValue) => {
+    setSelectedStateCode(categoryValue);
+    const name = "stateCode";
+    setCreateBranchInfo({ ...createBranchInfo, [name]: categoryValue });
+  }
 
   const handleDateChange = (fullDateTime) => {
     let unixTimestamp = moment(fullDateTime).unix();
@@ -206,16 +220,19 @@ export const CreateBranch = () => {
               </b>
             </label>
           </div>
-          <div className="col-9 input">
-            <input
-              type="number"
-              name="stateCode"
-              id="stateCode"
-              placeholder="Enter State Code Here"
-              className="form-control"
-              onChange={handleChange}
-            ></input>
-          </div>
+          
+            <div className="col-9 input">
+              <input
+                type="number"
+                name="stateCode"
+                id="stateCode"
+                placeholder="Enter State Code Here"
+                className="form-control"
+                value={createBranchInfo.stateCode}
+                disabled
+              ></input>
+            </div>
+          
         </div>
 
         {/* Branch Id */}

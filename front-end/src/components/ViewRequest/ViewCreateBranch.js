@@ -74,6 +74,13 @@ export const ViewCreateBranch = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    console.log(requestDetail, requestDetail.isOpen, isPassed);
+    console.log("RD: ",  requestDetail);
+    console.log("isOpen: ", requestDetail.isOpen);
+    console.log("passed: ", isPassed);
+  }, [requestDetail, requestDetail.isOpen, isPassed])
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setButtonDisabled(true);
@@ -135,6 +142,49 @@ export const ViewCreateBranch = () => {
     setTimeout(() => {
       setButtonDisabled(false);
     }, 5000);
+
+    try {
+      const { hash } = await writeContract({
+        address: process.env.REACT_APP_LEDGER_CONTRACT,
+        abi: LedgerABI,
+        functionName: 'createBranch',
+        args: [
+          requestDetail.branchId,
+          requestDetail.precinctAddress,
+          requestDetail.jurisdictionArea,
+          requestDetail.stateCode,
+          requestDetail.nonce,
+          requestDetail.expiry,
+          requestDetail.signature,
+          requestDetail.signers,
+        ],
+        account: address,
+        chainId: 11155111
+      })
+      console.log("hash :: ", hash)
+
+      // wait for txn
+      const result = await waitForTransaction({
+        hash: hash,
+      })
+      console.log("Transaction result:", result);
+
+      axios.delete(`http://localhost:3000/delete-create-branch/:${reqId}`)
+      .then(response => {
+        console.log(response.data); // Handle the response from the server
+      })
+      .catch(error => {
+        console.error(error); // Handle errors
+      });
+
+      notify("success", "Onboard Successful")
+    } catch (err) {
+      console.log("Error message:: ", err.message);
+      notify(
+        "error",
+        `An Error Occured While Creating Branch`
+      );
+    }
   };
 
   const getDate = (expiryDate) => {
@@ -295,11 +345,11 @@ export const ViewCreateBranch = () => {
         </div>
 
         {/* sign button */}
-        {requestDetail && requestDetail.isOpen ? (
+        {requestDetail && requestDetail.isOpen && isPassed ? (
           <button
             className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
             type="submit"
-            onClick={async (e) => await handleSubmit(e)}
+            onClick={async (e) => await handleSend(e)}
             disabled={isButtonDisabled}
           >
             {/* Sign */}
@@ -308,7 +358,9 @@ export const ViewCreateBranch = () => {
         ) : (
           <button
             className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
-            disabled="true"
+            type="submit"
+            onClick={async (e) => await handleSubmit(e)}
+            disabled={isButtonDisabled}
           >
             {isPassedMessage}
           </button>

@@ -1,4 +1,5 @@
 import { createClient, cacheExchange, fetchExchange } from "urql";
+import { getStateCodes } from "./../utils/queries/getStateCodes";
 
 const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/12";
 
@@ -30,6 +31,7 @@ stateCodeMap.set("8888", "8888")
 
 export const branchIdMap = new Map();
 branchIdMap.set("PRECINCT 1", "PRECINCT 1")
+branchIdMap.set("PRECINCT 2", "PRECINCT 2")
 
 export const updateTypeMap = new Map();
 updateTypeMap.set("0", "Address")
@@ -66,6 +68,9 @@ export const caseStatusTypeMap = {
   2: 'CLOSED',
   3: 'COLD'
 }
+
+export const stateCodes = await getStateCodes()
+console.log("stateCodes: ", stateCodes);
 
 export const ONBOARD_REQUEST_TYPEHASH = "0xa65232949d0eaed8dfcb6f03cec2c2ac850c9b714568c8ddfe9a736d734b3c60";
 export const OFFICER_OFFBOARD_REQUEST_TYPEHASH = "0xa5de1a8881030aeaf83f1cbe710e1e505bc6db1c1348d9cfa9d4ea411590b36e";

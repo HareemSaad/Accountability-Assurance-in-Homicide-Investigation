@@ -9,8 +9,9 @@ import { writeContract, waitForTransaction, getWalletClient } from '@wagmi/core'
 import { useAccount } from 'wagmi'
 import LedgerABI from "./../Ledger.json";
 import axios from "axios";
-import { employmentStatusMap, rankMap } from "../data/data.js";
-import { stateCodeMap, branchIdMap } from "../data/data.js";
+import { rankMap } from "../data/data.js";
+import { branchIdMap } from "../data/data.js";
+import { getUserStateCode } from "../utils/queries/getUserStateCode.js";
 import { onboardHash } from "../utils/hashing/onboardHash.js";
 import { toLedgerTypedDataHash } from "../utils/hashing/ledgerDomainHash.js";
 import "./createRequests.css";
@@ -36,7 +37,7 @@ export const OfficerOnboard = () => {
     name: "",
     legalNumber: "",
     badge: "",
-    stateCode: localStorage.getItem("statecode"),
+    stateCode: 0,
     branchId: "",
     rank: "",
     employmentStatus: 1,
@@ -48,6 +49,11 @@ export const OfficerOnboard = () => {
     precinctAddress: "",
     jurisdictionArea: 0
   });
+
+  useEffect(async () => {
+    const name = "stateCode"
+    setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: await getUserStateCode(address) });
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -433,19 +439,15 @@ export const OfficerOnboard = () => {
               ></input>
             </div> :
             <div className="col-9 input">
-              <Dropdown>
-                <Dropdown.Toggle id="stateCode" className="dropdown customBackground">
-                  {selectedStateCode ? stateCodeMap.get(selectedStateCode) : "Select State Code"}
-                </Dropdown.Toggle>
-
-                <Dropdown.Menu className="dropdown selectDropdown">
-                  {Array.from(stateCodeMap).map(([key, value]) => (
-                    <Dropdown.Item name="stateCode" key={key} onClick={() => handleStateCodeDropdownSelect(key)} >
-                      {value}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
+              <input
+                type="number"
+                name="stateCode"
+                id="stateCode"
+                placeholder="Enter State Code Here"
+                className="form-control"
+                value={officerOnboardInfo.stateCode}
+                disabled
+              ></input>
             </div>
           }
         </div>
@@ -460,7 +462,7 @@ export const OfficerOnboard = () => {
             </label>
           </div>
           {
-            isNewStateCode && officerOnboardInfo.rank === 4 ? 
+            officerOnboardInfo.rank === 4 ? 
             <div className="col-9 input">
               <input
                 type="text"
