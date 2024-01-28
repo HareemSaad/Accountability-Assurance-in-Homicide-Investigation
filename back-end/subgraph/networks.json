@@ -3,6 +3,9 @@
     "Ledger": {
       "address": "0xea165D170495A93d0ae448523aB2CeD889289975",
       "startBlock": 5172249
+    },
+    "Cases": {
+      "address": "0x959CfbDAF2366a7115aD0739b0FAc2D2014c5781"
     }
   }
 }

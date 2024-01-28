@@ -1,0 +1,677 @@
+[
+  {
+    "type": "constructor",
+    "inputs": [
+      {
+        "name": "_ledgersContract",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "_case",
+    "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+    "outputs": [
+      {
+        "name": "status",
+        "type": "uint8",
+        "internalType": "enum Cases.CaseStatus"
+      },
+      { "name": "branch", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "addCase",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_branch", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "addEvidence",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      {
+        "name": "_evidence",
+        "type": "tuple",
+        "internalType": "struct Evidences.Evidence",
+        "components": [
+          { "name": "evidenceId", "type": "uint48", "internalType": "uint48" },
+          {
+            "name": "category",
+            "type": "uint8",
+            "internalType": "enum Evidences.EvidenceCategory"
+          },
+          { "name": "data", "type": "bytes", "internalType": "bytes" },
+          { "name": "approved", "type": "bool", "internalType": "bool" }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "addEvidence",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      {
+        "name": "_evidence",
+        "type": "tuple",
+        "internalType": "struct Evidences.Evidence",
+        "components": [
+          { "name": "evidenceId", "type": "uint48", "internalType": "uint48" },
+          {
+            "name": "category",
+            "type": "uint8",
+            "internalType": "enum Evidences.EvidenceCategory"
+          },
+          { "name": "data", "type": "bytes", "internalType": "bytes" },
+          { "name": "approved", "type": "bool", "internalType": "bool" }
+        ]
+      },
+      { "name": "_signature", "type": "bytes", "internalType": "bytes" },
+      { "name": "_signer", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "addOfficerInCase",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_officer", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "addParticipant",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      {
+        "name": "_participant",
+        "type": "tuple",
+        "internalType": "struct Participants.Participant",
+        "components": [
+          {
+            "name": "participantId",
+            "type": "uint48",
+            "internalType": "uint48"
+          },
+          {
+            "name": "category",
+            "type": "uint8",
+            "internalType": "enum Participants.ParticipantCategory"
+          },
+          { "name": "data", "type": "bytes", "internalType": "bytes" },
+          { "name": "approved", "type": "bool", "internalType": "bool" }
+        ]
+      },
+      { "name": "_signature", "type": "bytes", "internalType": "bytes" },
+      { "name": "_signer", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "addParticipant",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      {
+        "name": "_participant",
+        "type": "tuple",
+        "internalType": "struct Participants.Participant",
+        "components": [
+          {
+            "name": "participantId",
+            "type": "uint48",
+            "internalType": "uint48"
+          },
+          {
+            "name": "category",
+            "type": "uint8",
+            "internalType": "enum Participants.ParticipantCategory"
+          },
+          { "name": "data", "type": "bytes", "internalType": "bytes" },
+          { "name": "approved", "type": "bool", "internalType": "bool" }
+        ]
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "approveEvidence",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_evidenceId", "type": "uint48", "internalType": "uint48" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "approveParticipant",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_participantId", "type": "uint48", "internalType": "uint48" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "domainSeparator",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "eip712Domain",
+    "inputs": [],
+    "outputs": [
+      { "name": "fields", "type": "bytes1", "internalType": "bytes1" },
+      { "name": "name", "type": "string", "internalType": "string" },
+      { "name": "version", "type": "string", "internalType": "string" },
+      { "name": "chainId", "type": "uint256", "internalType": "uint256" },
+      {
+        "name": "verifyingContract",
+        "type": "address",
+        "internalType": "address"
+      },
+      { "name": "salt", "type": "bytes32", "internalType": "bytes32" },
+      { "name": "extensions", "type": "uint256[]", "internalType": "uint256[]" }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "evidenceInCase",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_id", "type": "uint48", "internalType": "uint48" }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct Evidences.Evidence",
+        "components": [
+          { "name": "evidenceId", "type": "uint48", "internalType": "uint48" },
+          {
+            "name": "category",
+            "type": "uint8",
+            "internalType": "enum Evidences.EvidenceCategory"
+          },
+          { "name": "data", "type": "bytes", "internalType": "bytes" },
+          { "name": "approved", "type": "bool", "internalType": "bool" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "grantTrusteeAccess",
+    "inputs": [
+      {
+        "name": "_params",
+        "type": "tuple",
+        "internalType": "struct TrusteeRequestLib.TrusteeRequest",
+        "components": [
+          { "name": "caseId", "type": "uint256", "internalType": "uint256" },
+          { "name": "trustee", "type": "address", "internalType": "address" },
+          { "name": "moderator", "type": "address", "internalType": "address" },
+          { "name": "captain", "type": "address", "internalType": "address" },
+          { "name": "branchId", "type": "bytes32", "internalType": "bytes32" },
+          { "name": "expiry", "type": "uint256", "internalType": "uint256" }
+        ]
+      },
+      { "name": "_signature", "type": "bytes", "internalType": "bytes" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "hashTypedDataV4",
+    "inputs": [
+      { "name": "calculatedHash", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "officerInCase",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_officer", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "participantInCase",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_id", "type": "uint48", "internalType": "uint48" }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "tuple",
+        "internalType": "struct Participants.Participant",
+        "components": [
+          {
+            "name": "participantId",
+            "type": "uint48",
+            "internalType": "uint48"
+          },
+          {
+            "name": "category",
+            "type": "uint8",
+            "internalType": "enum Participants.ParticipantCategory"
+          },
+          { "name": "data", "type": "bytes", "internalType": "bytes" },
+          { "name": "approved", "type": "bool", "internalType": "bool" }
+        ]
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "removeOfficerInCase",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_officer", "type": "address", "internalType": "address" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "replay",
+    "inputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "revokeTrusteeAccess",
+    "inputs": [
+      { "name": "_trustee", "type": "address", "internalType": "address" },
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      { "name": "_branchId", "type": "bytes32", "internalType": "bytes32" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferCase",
+    "inputs": [
+      {
+        "name": "_params",
+        "type": "tuple",
+        "internalType": "struct TransferCase.TransferCaseRequest",
+        "components": [
+          {
+            "name": "fromCaptain",
+            "type": "address",
+            "internalType": "address"
+          },
+          { "name": "toCaptain", "type": "address", "internalType": "address" },
+          { "name": "nonce", "type": "uint256", "internalType": "uint256" },
+          { "name": "caseId", "type": "uint256", "internalType": "uint256" },
+          {
+            "name": "fromBranchId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "toBranchId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          { "name": "reciever", "type": "bool", "internalType": "bool" },
+          { "name": "expiry", "type": "uint256", "internalType": "uint256" }
+        ]
+      },
+      { "name": "_signatures", "type": "bytes[2]", "internalType": "bytes[2]" },
+      { "name": "_signers", "type": "address[2]", "internalType": "address[2]" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "transferCaseCaptain",
+    "inputs": [
+      {
+        "name": "params",
+        "type": "tuple",
+        "internalType": "struct TransferCaptain.TransferCaptainRequest",
+        "components": [
+          { "name": "moderator", "type": "address", "internalType": "address" },
+          {
+            "name": "fromCaptain",
+            "type": "address",
+            "internalType": "address"
+          },
+          { "name": "toCaptain", "type": "address", "internalType": "address" },
+          { "name": "branchId", "type": "bytes32", "internalType": "bytes32" },
+          { "name": "nonce", "type": "uint256", "internalType": "uint256" },
+          { "name": "caseId", "type": "uint256", "internalType": "uint256" },
+          { "name": "reciever", "type": "bool", "internalType": "bool" },
+          { "name": "expiry", "type": "uint256", "internalType": "uint256" }
+        ]
+      },
+      { "name": "_signatures", "type": "bytes[2]", "internalType": "bytes[2]" },
+      { "name": "_signers", "type": "address[2]", "internalType": "address[2]" }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "trusteeLedger",
+    "inputs": [
+      { "name": "", "type": "address", "internalType": "address" },
+      { "name": "", "type": "uint256", "internalType": "uint256" }
+    ],
+    "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "updateCaseStatus",
+    "inputs": [
+      { "name": "_caseId", "type": "uint256", "internalType": "uint256" },
+      {
+        "name": "_status",
+        "type": "uint8",
+        "internalType": "enum Cases.CaseStatus"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "event",
+    "name": "AddOfficerInCase",
+    "inputs": [
+      {
+        "name": "caseId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "initiator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "officer",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "CaseUpdated",
+    "inputs": [
+      {
+        "name": "caseId",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "initiator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "branch",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "status",
+        "type": "uint8",
+        "indexed": true,
+        "internalType": "enum Cases.CaseStatus"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "EIP712DomainChanged",
+    "inputs": [],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "EvidenceApproved",
+    "inputs": [
+      {
+        "name": "evidenceId",
+        "type": "uint48",
+        "indexed": false,
+        "internalType": "uint48"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewEvidenceInCase",
+    "inputs": [
+      {
+        "name": "caseId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "initiator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "evidenceId",
+        "type": "uint48",
+        "indexed": false,
+        "internalType": "uint48"
+      },
+      {
+        "name": "category",
+        "type": "uint8",
+        "indexed": false,
+        "internalType": "enum Evidences.EvidenceCategory"
+      },
+      {
+        "name": "dataHash",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "NewParticipantInCase",
+    "inputs": [
+      {
+        "name": "caseId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "initiator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "suspectId",
+        "type": "uint48",
+        "indexed": false,
+        "internalType": "uint48"
+      },
+      {
+        "name": "category",
+        "type": "uint8",
+        "indexed": false,
+        "internalType": "enum Participants.ParticipantCategory"
+      },
+      {
+        "name": "dataHash",
+        "type": "bytes32",
+        "indexed": false,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "ParticipantApproved",
+    "inputs": [
+      {
+        "name": "participantId",
+        "type": "uint48",
+        "indexed": false,
+        "internalType": "uint48"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RemoveOfficerInCase",
+    "inputs": [
+      {
+        "name": "caseId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "initiator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "officer",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "Trustee",
+    "inputs": [
+      {
+        "name": "caseId",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "branchId",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "initiator",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "trustree",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "approved",
+        "type": "bool",
+        "indexed": false,
+        "internalType": "bool"
+      }
+    ],
+    "anonymous": false
+  },
+  { "type": "error", "name": "AccessAlreadyGranted", "inputs": [] },
+  { "type": "error", "name": "AlreadyApproved", "inputs": [] },
+  { "type": "error", "name": "BranchMismatch", "inputs": [] },
+  { "type": "error", "name": "CannotBePreApproved", "inputs": [] },
+  { "type": "error", "name": "Expired", "inputs": [] },
+  { "type": "error", "name": "HasToBeApproved", "inputs": [] },
+  { "type": "error", "name": "InactiveOfficer", "inputs": [] },
+  { "type": "error", "name": "InvalidAddress", "inputs": [] },
+  { "type": "error", "name": "InvalidBranch", "inputs": [] },
+  { "type": "error", "name": "InvalidCaptain", "inputs": [] },
+  { "type": "error", "name": "InvalidCase", "inputs": [] },
+  { "type": "error", "name": "InvalidModerator", "inputs": [] },
+  { "type": "error", "name": "InvalidOfficer", "inputs": [] },
+  { "type": "error", "name": "InvalidRank", "inputs": [] },
+  { "type": "error", "name": "InvalidSender", "inputs": [] },
+  { "type": "error", "name": "InvalidShortString", "inputs": [] },
+  { "type": "error", "name": "InvalidSignature", "inputs": [] },
+  { "type": "error", "name": "InvalidSigner", "inputs": [] },
+  { "type": "error", "name": "NoAccessToRevoke", "inputs": [] },
+  { "type": "error", "name": "SignatureReplay", "inputs": [] },
+  {
+    "type": "error",
+    "name": "StringTooLong",
+    "inputs": [{ "name": "str", "type": "string", "internalType": "string" }]
+  }
+]
