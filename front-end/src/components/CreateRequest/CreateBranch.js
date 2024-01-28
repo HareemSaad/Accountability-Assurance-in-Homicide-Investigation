@@ -41,10 +41,8 @@ export const CreateBranch = () => {
     isOpen: true,
   });  
   
-  useEffect(async () => {
-    const name = "stateCode"
-    setCreateBranchInfo({ ...createBranchInfo, [name]: await getUserStateCode(address) });
-    console.log(stateCodes);
+  useEffect(() => {
+    handleStateCodeDropdownSelect()
   }, [])
 
   const handleChange = (e) => {
@@ -55,10 +53,11 @@ export const CreateBranch = () => {
   };
 
   // Function to handle state code dropdown selection
-  const handleStateCodeDropdownSelect = (categoryValue) => {
-    setSelectedStateCode(categoryValue);
+  const handleStateCodeDropdownSelect = async () => {
+    const value =  await getUserStateCode(address);
+    setSelectedStateCode(value);
     const name = "stateCode";
-    setCreateBranchInfo({ ...createBranchInfo, [name]: categoryValue });
+    setCreateBranchInfo({ ...createBranchInfo, [name]: value });
   }
 
   const handleDateChange = (fullDateTime) => {
