@@ -1,5 +1,6 @@
 import { createClient, cacheExchange, fetchExchange } from "urql";
 import { getStateCodes } from "./../utils/queries/getStateCodes";
+import { getBranchesAndStateCodes } from "../utils/queries/getBranchesAndStateCodes";
 
 const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/14";
 
@@ -70,7 +71,8 @@ export const caseStatusTypeMap = {
 }
 
 export const stateCodes = await getStateCodes()
-console.log("stateCodes: ", stateCodes);
+
+export const branchesAndStateCodes = await getBranchesAndStateCodes()
 
 export const ONBOARD_REQUEST_TYPEHASH = "0xa65232949d0eaed8dfcb6f03cec2c2ac850c9b714568c8ddfe9a736d734b3c60";
 export const OFFICER_OFFBOARD_REQUEST_TYPEHASH = "0xa5de1a8881030aeaf83f1cbe710e1e505bc6db1c1348d9cfa9d4ea411590b36e";
@@ -82,8 +84,8 @@ export const TRANSFER_OFFICER_BRANCH_REQUEST_TYPEHASH = "0x28496ec67da6dc0ee1ee6
 export const CREATE_BRANCH_REQUEST_TYPEHASH = "0x10dee30fcfda96e9c3f212db3b4a550963f852b22e449c97c7bf988eaf47b220";
 export const UPDATE_BRANCH_REQUEST_TYPEHASH = "0x9ebbcd696613d6a691010a70d9b61f70fc3b74e4e16999ba3fc98c083f292c03";
 
-export const LEDGER_DOMAIN_HASH = "0x4613d8668c8c586535dc3b533eba7d280074d7ca9d8bee5763e8251f902a7b66";
-export const CASE_DOMAIN_HASH = "0xab99e2af6cd39021f1171c7b28b9e4b7d4faf6888111e310da84af5b08fd097a"
+export const LEDGER_DOMAIN_HASH = "0x84dd086c82173f1cdf956087e9e71ae6e8f3c680f5bf6f1657ad025b5b02e261";
+export const CASE_DOMAIN_HASH = "0x06e2dc7d7ad0805eb4118d7e231af9f4a7b4450b95fa6f8d901bde4f4a3f3537"
 export const TRUSTEE_REQUEST_TYPEHASH = "0xd4bd3acb1e03e876ac88bb8ace1f77605c6cae1f2ace59109161c892048741f3"
 
 // 0x1f27a4c30ebdfe4d5a0bb20d2a6c8681791b7470b195ab0e6ff1eabf846f607d
