@@ -16,7 +16,8 @@ export function createBranchUpdateEvent(
   id: Bytes,
   precinctAddress: string,
   jurisdictionArea: BigInt,
-  stateCode: BigInt
+  stateCode: BigInt,
+  title: string
 ): BranchUpdate {
   let branchUpdateEvent = changetype<BranchUpdate>(newMockEvent())
 
@@ -42,6 +43,9 @@ export function createBranchUpdateEvent(
       "stateCode",
       ethereum.Value.fromUnsignedBigInt(stateCode)
     )
+  )
+  branchUpdateEvent.parameters.push(
+    new ethereum.EventParam("title", ethereum.Value.fromString(title))
   )
 
   return branchUpdateEvent

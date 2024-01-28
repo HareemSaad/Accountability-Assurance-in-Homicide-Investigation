@@ -1,7 +1,7 @@
 [
   {
     "inputs": [
-      { "internalType": "bytes32", "name": "_branchId", "type": "bytes32" },
+      { "internalType": "string", "name": "_branchTitle", "type": "string" },
       {
         "internalType": "string",
         "name": "_precinctAddress",
@@ -77,6 +77,12 @@
         "internalType": "uint256",
         "name": "stateCode",
         "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "title",
+        "type": "string"
       }
     ],
     "name": "BranchUpdate",
@@ -361,7 +367,7 @@
       { "internalType": "string", "name": "_name", "type": "string" },
       { "internalType": "bytes32", "name": "_legalNumber", "type": "bytes32" },
       { "internalType": "bytes32", "name": "_badge", "type": "bytes32" },
-      { "internalType": "bytes32", "name": "_branchId", "type": "bytes32" },
+      { "internalType": "string", "name": "_branchTitle", "type": "string" },
       {
         "internalType": "string",
         "name": "_precinctAddress",
@@ -410,7 +416,7 @@
   },
   {
     "inputs": [
-      { "internalType": "string", "name": "_id", "type": "string" },
+      { "internalType": "string", "name": "_branchTitle", "type": "string" },
       {
         "internalType": "string",
         "name": "_precinctAddress",
