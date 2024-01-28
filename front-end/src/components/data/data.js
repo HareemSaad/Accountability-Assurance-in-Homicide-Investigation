@@ -1,7 +1,7 @@
 import { createClient, cacheExchange, fetchExchange } from "urql";
 import { getStateCodes } from "./../utils/queries/getStateCodes";
 
-const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/12";
+const APIURL = "https://api.studio.thegraph.com/query/56707/fyp-aaihi/13";
 
 export const client = createClient({
   url: APIURL,

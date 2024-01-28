@@ -79,12 +79,6 @@ export function handleOffboard(event: OffboardEvent): void {
   } else {
     officer.employmentStatus = event.params.employmentStatus
     officer.from = event.params.from
-
-    const zeroBytes = new Bytes(0)
-
-    officer.badge = zeroBytes
-    officer.branch = zeroBytes
-    officer.rank = 0
   }
 
   officer.save()

@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { employmentStatusMap, rankMap } from "../data/data.js";
 import { client } from '../data/data';
 import { useAccount } from 'wagmi';
+import { getUserBranchId } from '../utils/queries/getUserBranchId.js';
 
 export const ArchiveEmployees = () => {
     const { address, connector, isConnected, account } = useAccount();  
@@ -31,8 +32,8 @@ export const ArchiveEmployees = () => {
 
     async function fetchData() {
         const query = `
-        {
-            officers(where: {branch: "${localStorage.getItem("branchid")}", employmentStatus: ${statusValue}}) {
+          {
+            officers(where: {branch: "${await getUserBranchId(address)}", employmentStatus: ${statusValue}}) {
               name
               id
               rank
@@ -40,8 +41,8 @@ export const ArchiveEmployees = () => {
           }
         `;
         const response = await client.query(query).toPromise();
-        const { data, fetching, error } = response;
-        console.log(data.officers);
+        const { data } = response;
+        console.log("officers: ", data.officers, query);
         setEmpCardResponse(data.officers);
     }
 
