@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import Dropdown from 'react-bootstrap/Dropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { ethers } from 'ethers';
-import CasesABI from '../CasesABI.json';
+import CasesABI from '../Cases.json';
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
-import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
+import { waitForTransaction, writeContract } from '@wagmi/core'
 
 const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, caseId, name }) => {
 
@@ -35,112 +35,94 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-
-      // converting the details field from formInfo into bytes
-      const message = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)).toString()
-      // console.log("message: ", message);
-
-      // signing the transaction
-      const signature = await signMessage({ message })
-      // console.log("SIG :: ", signature)
-
-      // calling the functions from contract
-      if (name === "Evidence") {
-        try {
-
-          // get typed hash data
-          const hashTypedData = await readContract({
-            address: casesContractAddress,
-            abi: CasesABI.abi,
-            functionName: 'hashTypedDataV4',
-            args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
-            chainId: 11155111
-          })
-          // console.log("hashTypedData: ", hashTypedData);
-
-          // create evidence struct
-          const evidence = {
-            evidenceId: formInfo.id,
-            category: formInfo.category - 1,
-            data: message,
-            signature: signature
-          }
-          // console.log("evidence :: ", evidence)
-
-          // call contract
-          const { hash } = await writeContract({
-            address: casesContractAddress,
-            abi: CasesABI.abi,
-            functionName: 'addEvidence',
-            args: [caseId, 0, evidence, hashTypedData],
-            chainId: 11155111
-          })
-          console.log("hash :: ", hash)
-
-          // wait for txn
-          const result = await waitForTransaction({
-            hash: hash,
-          })
-          console.log("Transaction result:", result);
-        } catch (error) {
-          console.error("Error calling contract function:", error);
-          notify("error", `Transaction Failed`);
-        }
-      }
-      else if (name === "Participant") {
-        try {
-          // get typed hash data
-          const hashTypedData = await readContract({
-            address: casesContractAddress,
-            abi: CasesABI.abi,
-            functionName: 'hashTypedDataV4',
-            args: [ethers.utils.keccak256(ethers.utils.defaultAbiCoder.encode(['bytes'], [message]))],
-            chainId: 11155111
-          })
-          // console.log("hashTypedData: ", hashTypedData);
-
-          // create evidence struct
-          const participant = {
-            suspectId: formInfo.id,
-            category: formInfo.category - 1,
-            data: message,
-            signature: signature
-          }
-          console.log("participant :: ", participant)
-
-          // call contract
-          const { hash } = await writeContract({
-            address: casesContractAddress,
-            abi: CasesABI.abi,
-            functionName: 'addParticipant',
-            args: [caseId, 0, participant, hashTypedData],
-            chainId: 11155111
-          })
-          console.log("hash :: ", hash)
-
-          // wait for txn
-          const result = await waitForTransaction({
-            hash: hash,
-          })
-          console.log("Transaction result:", result);
-        } catch (error) {
-          console.error("Error calling contract function:", error);
-          notify("error", `Transaction Failed`);
-        }
-      } else {
-        notify("error", `Case Number is empty`);
-      }
+    if (formInfo.id === "") {
+      notify("error", `Please enter a valid ${name} ID`);
     }
-    catch (error) {
-      console.error(error);
-      notify("error", `Submission Failed`);
+    else if (formInfo.detail === "") {
+      notify("error", `${name} detail cannot be empty.`);
+    }
+    else if (formInfo.category === "") {
+      notify("error", `${name} category cannot be empty.`);
+    }
+    else {
+      try {
+        // calling the functions from contract
+        if (name === "Evidence") {
+          try {
+            // create evidence struct
+            const evidence = {
+              evidenceId: formInfo.id,
+              category: formInfo.category - 1,
+              data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)),
+              approved: false
+            }
+            // console.log("evidence :: ", evidence)
+
+            // call contract
+            const { hash } = await writeContract({
+              address: casesContractAddress,
+              abi: CasesABI,
+              functionName: 'addEvidence',
+              args: [caseId, evidence],
+              chainId: 11155111
+            })
+            console.log("hash :: ", hash)
+
+            // wait for txn
+            const result = await waitForTransaction({
+              hash: hash,
+            })
+            console.log("Transaction result:", result);
+          } catch (error) {
+            console.error("Error calling contract function:", error);
+            notify("error", `Transaction Failed`);
+          }
+        }
+        else if (name === "Participant") {
+          try {
+            // create evidence struct
+            const participant = {
+              participantId: formInfo.id,
+              category: formInfo.category - 1,
+              data: ethers.utils.hexlify(ethers.utils.toUtf8Bytes(formInfo.detail)),
+              approved: false
+            }
+            console.log("participant :: ", participant)
+
+            // call contract
+            const { hash } = await writeContract({
+              address: casesContractAddress,
+              abi: CasesABI,
+              functionName: 'addParticipant',
+              args: [caseId, participant],
+              chainId: 11155111
+            })
+            console.log("hash :: ", hash)
+
+            // wait for txn
+            const result = await waitForTransaction({
+              hash: hash,
+            })
+            console.log("Transaction result:", result);
+          } catch (error) {
+            console.error("Error calling contract function:", error);
+            notify("error", `Transaction Failed`);
+          }
+        } else {
+          notify("error", `Case Number is empty`);
+        }
+        notify("success", "Transaction Success")
+      }
+      catch (error) {
+        console.error(error);
+        notify("error", `Submission Failed`);
+      }
     }
   };
 
   return (
     <div className='container'>
-      <h2 className='m-3'>{heading}</h2>
+      <h2 className='m-3 mt-5 mb-4'>{heading}</h2>
       <form>
         <div className="row g-3 align-items-center m-3">
           <div className="col-2">
@@ -168,9 +150,9 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
 
           <div className="col-9">
             <Dropdown>
-              <Dropdown.Toggle variant="secondary" id="category-type" className='dropdown'> {selectedValue ? categoryArray[selectedValue] : 'Select a Category'} </Dropdown.Toggle>
+              <Dropdown.Toggle id="category-type" className='dropdown customBackground'> {selectedValue ? categoryArray[selectedValue] : 'Select a Category'} </Dropdown.Toggle>
 
-              <Dropdown.Menu className='dropdown'>
+              <Dropdown.Menu className='dropdown selectDropdown'>
                 {categoryArray.map((category, index) => (
                   <Dropdown.Item name='category' key={index} onClick={() => handleDropdownSelect(index)}> {category} </Dropdown.Item>
                 ))}
@@ -179,7 +161,7 @@ const AddInfo = ({ heading, IdPlaceholder, detailPlaceholder, categoryArray, cas
           </div>
         </div>
 
-        <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
+        <button className='btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background' type="submit" onClick={async (e) => await handleSubmit(e)}>
           Save
         </button>
       </form>

@@ -1,87 +1,159 @@
-import React, { useState, useEffect } from 'react'
-import './CaseCard.css'
-import CaseDetailsPage from '../CaseDetails/CaseDetails';
-import Card from 'react-bootstrap/Card';
+import React, { useState, useEffect } from "react";
+import "./CaseCard.css";
+import Card from "react-bootstrap/Card";
 import { useNavigate } from "react-router-dom";
-import { createClient, cacheExchange, fetchExchange } from 'urql';
-import { useAccount } from 'wagmi';
+import { useAccount } from "wagmi";
+import Dropdown from "react-bootstrap/Dropdown";
+import { IoNavigateCircleOutline } from "react-icons/io5";
+import { client } from "../data/data";
 
-const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
+export const CaseCardCaptain = () => {
+  // const [CaptainCard, setCaptainCard] = useState([]);
+  const casePageArray = [ "Add Case", "Archive Cases", "Employees"];
+  const requestsPage = ["Create Trustee Request", "View Trustee Request", "Trustee Access", "View Transfer Case", "View Transfer Captain", "View Transfer Officer Branch"];
+//   const employeesPage = [ "Employees", "Archive Cases"];
+  const [cardResponse, setCardResponse] = useState([]);
+  const { address } = useAccount();
+  let navigate = useNavigate();
 
-const client = createClient({
-    url: APIURL,
-    exchanges: [cacheExchange, fetchExchange]
-})
+  useEffect(() => {
+    // const CaptainCards = [213, 192, 615, 888, 999];
+    // setCaptainCard(CaptainCards)
+    fetchData();
+  }, []);
 
-export const CaseCard_Captain = () => {
-
-    // const [CaptainCard, setCaptainCard] = useState([]);
-    const [cardResponse, setCardResponse] = useState([]);
-    const { address, connector, isConnected } = useAccount()
-    let navigate = useNavigate();
-
-    useEffect(() => {
-        // const CaptainCards = [213, 192, 615, 888, 999];
-        // setCaptainCard(CaptainCards)
-        fetchData();
-    }, []);
-
-    async function fetchData() {
-
-        const query = `
-        query {
-            cases(where: { captain: "0x86d5ca9d24ece1d8c35a45b83ba15b1b9e11bd50" }) {
-              id
-              officers {
-                id
-                rank
-              }
-              status
-            }
+  async function fetchData() {
+    const query = `
+      {
+        officer(id: "${address}") {
+          cases (where: {status: 1}) {
+            id
           }
-        `
-        const response = await client.query(query).toPromise();
-        const { data, fetching, error } = response;
-        setCardResponse(data.cases);
+        }
+      }
+    `;
+    try {
+      const response = await client.query(query).toPromise();
+      const { data } = response;
+      // console.log("data", data, address);
+      setCardResponse(data.officer.cases);
+    } catch (error) {
+      console.log("error", error);
     }
-    
-    function print(cardId) {
-        navigate(`/case-detail/${cardId}`);
+  }
+
+  function print(cardId) {
+    navigate(`/case-detail/${cardId}`);
+  }
+
+  const goto = (e, pageName) => {
+    const { name } = e.target;
+    // console.log("pageName: ", pageName);
+    console.log("params ::", name);
+
+    switch (pageName) {
+      case "Add Case":
+        navigate("/add-case");
+        break;
+      case "View Trustee Request":
+        navigate("/view-trustee-request");
+        break;
+      case "Create Trustee Request":
+        navigate("/create-request/trustee-request");
+        break;
+      case "Trustee Access":
+        navigate("/trustee-access");
+        break;
+      case "View Transfer Captain":
+        navigate("/captain/view-transfer-captain");
+        break;
+      case "View Transfer Case":
+        navigate("/captain/view-transfer-case");
+        break;
+      case "View Transfer Officer Branch":
+        navigate("/captain/view-transfer-officer-branch");
+        break;
+      case "Employees":
+        navigate("/employees");
+        break;
+      case "Archive Cases":
+        navigate("/archive-cases");
+        break;
+      default:
+        break;
     }
+  };
 
-    const goto = (e) => {
-        const { name } = e.target;
-        console.log("params ::", name)
-        navigate(`/${name}`);
-    }
+  return (
+    <>
+      <div className="d-flex justify-content-between">
+        <h1 className="m-4">Cases</h1>
+        {/* <h1 className='m-4'>Cases -- {localStorage.getItem("rank")}</h1> */}
+        <div className="d-flex justify-content-around col-5 mb-4 page-dropdown">
+          {/* Case or Employees */}
+          <div className="col-5">
+            <Dropdown>
+              <Dropdown.Toggle
+                id="stateCode"
+                className="dropdown page-dropdown-toggle customBackground"
+              >
+                Case or Employees <IoNavigateCircleOutline />
+              </Dropdown.Toggle>
 
-    return (
-        <>
-            <div className="d-flex justify-content-between">
-                <h1 className='m-4'>Cases</h1>
-                <div className="d-flex">
-                    <button className='card-add-btn' name="add-case" onClick={(e) => goto(e)}>Add Case</button>
-                    <button className='card-add-btn' name="add-officer" onClick={(e) => goto(e)}>Add Officer</button>
-                </div>
-            </div>
-
-            <div className='card-container'>
-                {cardResponse.map((card, index) => (
-                    <Card className='case-card'>
-                        <h2 className='mb-3 mt-3 pb-5'>Case# {card.id}</h2>
-                        <button className='card-btn' onClick={() => print(card.id, card.status)}>View</button>
-                    </Card>
+              <Dropdown.Menu className="dropdown selectDropdown">
+                {casePageArray.map((page, index) => (
+                  <Dropdown.Item
+                    name="stateCode"
+                    className="page-dropdown-item"
+                    key={index}
+                    onClick={(e) => goto(e, page)}
+                  >
+                    {page}
+                  </Dropdown.Item>
                 ))}
-            </div>
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+          {/* Requests */}
+          <div className="col-5">
+            <Dropdown>
+              <Dropdown.Toggle
+                id="requestsPage"
+                className="dropdown page-dropdown-toggle customBackground"
+              >
+                Requests <IoNavigateCircleOutline />
+              </Dropdown.Toggle>
 
-            {/* <div className='card-container'>
-                {CaptainCard.map((card, index) => (
-                    <Card className='case-card'>
-                        <h2 className='mb-3 mt-3 pb-5'>Case# {card}</h2>
-                        <button className='card-btn' onClick={() => print(card)}>View</button>
-                    </Card>
+              <Dropdown.Menu className="dropdown selectDropdown">
+                {requestsPage.map((page, index) => (
+                  <Dropdown.Item
+                    name="requestsPage"
+                    className="page-dropdown-item"
+                    key={index}
+                    onClick={(e) => goto(e, page)}
+                  >
+                    {page}
+                  </Dropdown.Item>
                 ))}
-            </div> */}
-        </>
-    )
-}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+        </div>
+      </div>
+
+      <div className="card-container">
+        {cardResponse.map((card, index) => (
+          <Card className="case-card">
+            <h2 className="mb-3 mt-3 pb-5">Case# {card.id}</h2>
+            <button
+              className="card-btn"
+              onClick={() => print(card.id, card.status)}
+            >
+              View
+            </button>
+          </Card>
+        ))}
+      </div>
+    </>
+  );
+};

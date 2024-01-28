@@ -1,0 +1,49 @@
+[
+  {
+    "type": "function",
+    "name": "REQUEST_TYPE_HASH",
+    "inputs": [],
+    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "hash",
+    "inputs": [
+      {
+        "name": "request",
+        "type": "tuple",
+        "internalType": "struct OfficerOnboard.OnboardVote",
+        "components": [
+          {
+            "name": "verifiedAddress",
+            "type": "address",
+            "internalType": "address"
+          },
+          { "name": "nonce", "type": "uint256", "internalType": "uint256" },
+          { "name": "name", "type": "string", "internalType": "string" },
+          {
+            "name": "legalNumber",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          { "name": "badge", "type": "bytes32", "internalType": "bytes32" },
+          {
+            "name": "branchId",
+            "type": "bytes32",
+            "internalType": "bytes32"
+          },
+          {
+            "name": "employmentStatus",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          { "name": "rank", "type": "uint256", "internalType": "uint256" },
+          { "name": "expiry", "type": "uint256", "internalType": "uint256" }
+        ]
+      }
+    ],
+    "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+    "stateMutability": "pure"
+  }
+]

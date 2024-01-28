@@ -4,8 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
 import './AddCase.css';
-import CaseABI from "./../CasesABI.json";
-import { readContract, signMessage, waitForTransaction, writeContract } from '@wagmi/core'
+import CaseABI from "./../Cases.json";
+import { waitForTransaction, writeContract } from '@wagmi/core';
 
 export const AddCase = () => {
 
@@ -18,7 +18,6 @@ export const AddCase = () => {
         console.log("params :: ", name)
         console.log("value :: ", value)
     };
-    const caseContractAddress = process.env.REACT_APP_CASE_CONTRACT;
 
     const handleNavigate = (e) => {
         e.preventDefault();
@@ -38,28 +37,35 @@ export const AddCase = () => {
         if (caseNum.id === '') {
             // console.log("null");
             notify("error", `Case Number is empty`);
-        } 
-        
-        // call contract
-        const { hash } = await writeContract({
-            address: caseContractAddress,
-            abi: CaseABI.abi,
-            functionName: 'addCase',
-            args: [caseNum.id],
-            chainId: 11155111
-        })
-        console.log("hash :: ", hash)
+        } else {
+            try {
+                console.log(caseNum.id, localStorage.getItem("branchid"));
+                // call contract
+                const { hash } = await writeContract({
+                    address: process.env.REACT_APP_CASE_CONTRACT,
+                    abi: CaseABI,
+                    functionName: 'addCase',
+                    args: [caseNum.id, localStorage.getItem("branchid")],
+                    chainId: 11155111
+                })
+                console.log("hash :: ", hash)
 
-        // wait for txn
-        const result = await waitForTransaction({
-            hash: hash,
-        })
-        console.log("Transaction result:", result);
+                // wait for txn
+                const result = await waitForTransaction({
+                    hash: hash,
+                })
+                console.log("Transaction result:", result);
+                notify('success', "Added case successfully");
+            } catch (error) {
+                console.log(error);
+                notify('error', "Failed to add case");
+            }
+        }
     }
 
     return (
         <div className='container'>
-            <h2 className='m-3'>Add Case</h2>
+            <h2 className='m-3 mt-5 mb-4'>Add Case</h2>
             <form>
                 <div className="row g-3 align-items-center m-3">
                     <div className="col-2">
@@ -79,12 +85,12 @@ export const AddCase = () => {
                     </div>
                 </div>
 
-                <div className='d-flex justify-content-around mt-4 ms-5'>
+                {/* <div className='d-flex justify-content-around mt-4 ms-5'>
                     <button className='case-add-btn' name="add-evidence" onClick={(e) => handleNavigate(e)}>Add Evidence</button>
                     <button className='case-add-btn' name="add-participant" onClick={(e) => handleNavigate(e)}>Add Participant</button>
-                </div>
+                </div> */}
                 
-                <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2' type="submit" onClick={async (e) => await handleSubmit(e)}>
+                <button className='btn btn-primary d-grid gap-2 col-6 mx-auto m-5 p-2 btn-background' type="submit" onClick={async (e) => await handleSubmit(e)}>
                     Save Case
                 </button>
                 

@@ -3,14 +3,9 @@ import { useParams } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 import Card from 'react-bootstrap/Card';
 import "./CaseDetails.css"
-import { createClient, cacheExchange, fetchExchange } from 'urql';
-
-const APIURL = "https://api.studio.thegraph.com/query/56707/fyp/version/latest";
-
-const client = createClient({
-  url: APIURL,
-  exchanges: [cacheExchange, fetchExchange]
-})
+import { client } from '../data/data';
+import { participantTypeMap, evidenceTypeMap, officerTypeMap, caseStatusMap } from '../data/data';
+import { notify } from '../utils/error-box/notify';
 
 const CaseDetailsPage = () => {
   const { caseId } = useParams();
@@ -19,30 +14,8 @@ const CaseDetailsPage = () => {
   const [caseOfficer, setCaseOfficer] = useState([]);
   const [caseEvidence, setCaseEvidence] = useState([]);
   const [caseParticipant, setCaseParticipant] = useState([]);
+  const [caseStatus, setCaseStatus] = useState(null);
 
-  const evidenceList = {
-    '0': 'WEAPON', 
-    '1': 'PHYSICAL', 
-    '2': 'DRUG', 
-    '3': 'DOCUMENTARY', 
-    '4': 'DEMONSTRATIVE', 
-    '5': 'HEARSAY', 
-    '6': 'MURDER_WEAPON'
-  }
-
-  const participantList = {
-    '0': 'SUSPECT', 
-    '1': 'WITNESS', 
-    '2': 'PERPETRATOR', 
-    '3': 'VICTIM'
-  }
-
-  const officerList = {
-    '0': 'NULL', 
-    '1': 'OFFICER', 
-    '2': 'DETECTIVE', 
-    '3': 'CAPTAIN'
-  }
 
   useEffect(() => {
     fetchData();
@@ -56,49 +29,93 @@ const CaseDetailsPage = () => {
   // }, [caseOfficer, caseEvidence, caseParticipant]);
 
   async function fetchData() {
-
-    const query = `
-    query {
-      cases(where: {id: "${caseId}"}) {
-        officers {
-          id
-        }
-        participants {
-          id
-          category
-        }
-        evidences {
-          id
-          category
+    try {
+      const query = `
+      query {
+        cases(where: {id: "${caseId}"}) {
+          status
+          officers {
+            id
+            name
+            rank
+          }
+          participants {
+            id
+            category
+            approve
+          }
+          evidences {
+            id
+            category
+            approve
+          }
         }
       }
+      `
+      const response = await client.query(query).toPromise();
+      const { data, fetching, error } = response;
+      // console.log("data:: ", data.cases[0].status)
+      // console.log("data evidence:: ", data.cases[0].evidences)
+      // console.log("data participant:: ", data.cases[0].participants)
+      if (data.cases.length > 0) {
+        console.log("first")
+        setCaseOfficer(data.cases[0].officers);
+        setCaseEvidence(data.cases[0].evidences);
+        setCaseParticipant(data.cases[0].participants);
+        setCaseStatus(data.cases[0].status);
+      } else {
+        console.log("No data received.")
+      }
+    } catch (error) {
+      console.log(error);
+      notify("error", "Failed to get case details")
     }
-    `
-    const response = await client.query(query).toPromise();
-    const { data, fetching, error } = response;
-    console.log("data:: ", data)
-    // console.log("data evidence:: ", data.cases[0].evidences)
-    // console.log("data participant:: ", data.cases[0].participants)
- 
-    setCaseOfficer(data.cases[0].officers);
-    setCaseEvidence(data.cases[0].evidences);
-    setCaseParticipant(data.cases[0].participants);
   }
 
   const goto = (e) => {
     const { name } = e.target;
     console.log("params ::", name, caseId)
-    navigate(`/${name}/${caseId}`);
+    
+    switch (name) {
+      case "change-case-status":
+        navigate(`/${name}/${caseId}`);
+        break;
+      case "add-officer-in-case":
+        navigate(`/add-officer-in-case/${caseId}`);
+        break;
+      case "drop-officer-from-case":
+        navigate(`/drop-officer-from-case/${caseId}`);
+        break;
+      case "add-participant":
+        navigate(`/add-participant/${caseId}`);
+        break;
+      case "add-evidence":
+        navigate(`/add-evidence/${caseId}`);
+        break;
+      default:
+        break;
+    }
   }
+
+  const toParticipant = async (id) => {
+    navigate(`/view-participant/${caseId}/${id}`);
+  };
+
+  const toEvidence = async (id) => {
+    navigate(`/view-evidence/${caseId}/${id}`);
+  };
 
   return (
     <div className=''>
-      {/* case Number  */}
-      <div className='m-4 d-flex flex-row'>
-        <h2>Case Number: {caseId}</h2>
-        {/* case status */}
-        <h6 className='statusTagOpen ms-4'>#OPEN</h6>
+      {/* case Number and change status button */}
+      <div className="d-flex justify-content-between">
+        <div className='m-4 d-flex flex-row'> 
+          {/* heading and case status */}
+          <h2 className='headingCase'>Case Number: {caseId} <span className={`statusTag${caseStatusMap.get(caseStatus)} ms-4`}>#{(caseStatusMap.get(caseStatus))}</span> </h2>
+        </div>
+        {localStorage.getItem("rank") && (<button className='case-nav-btn m-4' name="change-case-status" onClick={(e) => goto(e)}>Change Status</button>)}
       </div>
+
 
       {/* officer, detective on case */}
       <div className='backgound-div'>
@@ -107,8 +124,8 @@ const CaseDetailsPage = () => {
           {caseOfficer.length > 0 ? caseOfficer.map((employee, index) => (
             <Card style={{ width: '18rem', height: '9rem' }} className='case-info-card'>
               <Card.Body>
-                <Card.Title>{employee.id}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">{officerList[employee.category]}</Card.Subtitle>
+                <Card.Title>{employee.name}</Card.Title>
+                <Card.Subtitle className="mb-2 text-muted">{officerTypeMap[employee.rank]}</Card.Subtitle>
               </Card.Body>
             </Card>
           )) :
@@ -116,10 +133,11 @@ const CaseDetailsPage = () => {
           }
         </div>
 
-        <div className='d-flex justify-content-around mt-5'>
+        {localStorage.getItem("rank") === "Captain" && (<div className='d-flex justify-content-around mt-5'>
           <button className='case-nav-btn' name="add-officer-in-case" onClick={(e) => goto(e)}>Add to Team</button>
           <button className='case-nav-btn' name="drop-officer-from-case" onClick={(e) => goto(e)}>Drop from Team</button>
-        </div>
+        </div>)
+        }
       </div>
 
       {/* list of participant */}
@@ -127,10 +145,10 @@ const CaseDetailsPage = () => {
         <h3 style={{ textAlign: 'center' }} className='mb-4 mt-4'>Participants</h3>
         <div className='card-info-container'>
           {caseParticipant.length > 0 ? caseParticipant.map((participant, index) => (
-            <Card style={{ width: '18rem', height: '5rem' }} className='case-info-card'>
+            <Card style={{ width: '18rem', height: 'auto' }} className='case-info-card' onClick={() => toParticipant(participant.id)}>
               <Card.Body>
                 <Card.Title>{participant.id}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">{participantList[participant.category]}</Card.Subtitle>
+                <Card.Subtitle className="mb-2 text-muted">{participantTypeMap[participant.category]}</Card.Subtitle>
               </Card.Body>
             </Card>
           )) :
@@ -143,21 +161,22 @@ const CaseDetailsPage = () => {
           <button className='case-nav-btn' name="add-participant" onClick={(e) => goto(e)}>Add Participant</button>
         </div>
       </div>
+
       {/* list of evidence */}
       <div className='backgound-div'>
         <h3 style={{ textAlign: 'center' }} className='mb-4 mt-4'>
           Evidence</h3>
         <div className='card-info-container'>
           {caseEvidence.length > 0 ? caseEvidence.map((evidence, index) => (
-            <Card style={{ width: '18rem', height: '5rem' }} className='case-info-card'>
+            <Card style={{ width: '18rem', height: '5rem' }} className='case-info-card' onClick={() => toEvidence(evidence.id)}>
               <Card.Body>
                 <Card.Title>{evidence.id}</Card.Title>
-                <Card.Subtitle className="mb-2 text-muted">{evidenceList[evidence.category]}</Card.Subtitle>
+                <Card.Subtitle className="mb-2 text-muted">{evidenceTypeMap[evidence.category]}</Card.Subtitle>
               </Card.Body>
             </Card>
-          )): 
-          <h4 style={{ textAlign: 'center' }} className='mb-2 mt-4'><em>No Evidence in this Case</em></h4>
-        }
+          )) :
+            <h4 style={{ textAlign: 'center' }} className='mb-2 mt-4'><em>No Evidence in this Case</em></h4>
+          }
         </div>
 
         <div className='div-btn'>

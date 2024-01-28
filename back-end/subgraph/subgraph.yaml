@@ -1,0 +1,96 @@
+specVersion: 0.0.5
+features: 
+  - fullTextSearch
+  - ipfsOnEthereumContracts
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: Ledger
+    network: sepolia
+    source:
+      address: "0x75730ce5997e911b7905D5874C14288f86658085"
+      abi: Ledger
+      startBlock: 5164585
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BranchUpdate
+        - EIP712DomainChanged
+        - Offboard
+        - OfficerAddressUpdated
+        - OfficerBadgeUpdated
+        - OfficerNameUpdated
+        - OfficerTransferred
+        - Onboard
+        - Promotion
+      abis:
+        - name: Ledger
+          file: ./abis/Ledger.json
+      eventHandlers:
+        - event: BranchUpdate(indexed bytes32,string,indexed uint256,indexed uint256)
+          handler: handleBranchUpdate
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: Offboard(indexed address,indexed uint8,uint256,address)
+          handler: handleOffboard
+        - event: OfficerAddressUpdated(indexed address,indexed address,bytes32,uint256,address)
+          handler: handleOfficerAddressUpdated
+        - event: OfficerBadgeUpdated(indexed address,indexed bytes32,bytes32,uint256,address)
+          handler: handleOfficerBadgeUpdated
+        - event: OfficerNameUpdated(indexed address,indexed string,bytes32,uint256,address)
+          handler: handleOfficerNameUpdated
+        - event: OfficerTransferred(indexed address,indexed bytes32,indexed bytes32)
+          handler: handleOfficerTransferred
+        - event: Onboard(indexed address,string,bytes32,bytes32,indexed bytes32,indexed
+            uint8,uint256,address)
+          handler: handleOnboard
+        - event: Promotion(indexed address,indexed uint8,indexed uint8)
+          handler: handlePromotion
+      file: ./src/ledger.ts
+  - kind: ethereum
+    name: Cases
+    network: sepolia
+    source:
+      address: "0xE0A90A92fD767DC62C1F92465eA8f0053d42533C"
+      abi: Cases
+      startBlock: 5164586
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - AddOfficerInCase
+        - CaseUpdated
+        - CasesEIP712DomainChanged
+        - EvidenceApproved
+        - NewEvidenceInCase
+        - NewParticipantInCase
+        - ParticipantApproved
+        - RemoveOfficerInCase
+        - Trustee
+      abis:
+        - name: Cases
+          file: ./abis/Cases.json
+      eventHandlers:
+        - event: AddOfficerInCase(uint256,indexed address,indexed address)
+          handler: handleAddOfficerInCase
+        - event: CaseUpdated(indexed uint256,indexed address,bytes32,indexed uint8)
+          handler: handleCaseUpdated
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: EvidenceApproved(uint48)
+          handler: handleEvidenceApproved
+        - event: NewEvidenceInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewEvidenceInCase
+        - event: NewParticipantInCase(uint256,indexed address,uint48,uint8,bytes32,bytes)
+          handler: handleNewParticipantInCase
+        - event: ParticipantApproved(uint48)
+          handler: handleParticipantApproved
+        - event: RemoveOfficerInCase(uint256,indexed address,indexed address)
+          handler: handleRemoveOfficerInCase
+        - event: Trustee(uint256,indexed bytes32,indexed address,indexed address,bool)
+          handler: handleTrustee
+      file: ./src/cases.ts

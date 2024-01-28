@@ -1,88 +1,102 @@
-import React from 'react'
+import React, { useState } from 'react'
 import './Home.css'
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import Dropdown from 'react-bootstrap/Dropdown';
-import DropdownButton from 'react-bootstrap/DropdownButton';
 import { useConnect, useAccount, useDisconnect } from 'wagmi'
 import { readContract } from '@wagmi/core'
 import { notify } from "./../utils/error-box/notify";
 import "react-toastify/dist/ReactToastify.css";
-import OfficersABI from "./../OfficersABI.json"
+import LedgerABI from "./../Ledger.json";
+import { rankMap } from "../data/data.js";
+import { getUserDetail } from '../utils/queries/getUserDetail.js';
+import { keccakString } from './../utils/hashing/keccak-hash.js'
+import { getUserDetailExcludingBranch } from './../utils/queries/getUserDetailExcludingBranch.js'
 
 export const Login = () => {
 
-  const { connect, connectors, error, isLoading, pendingConnector } = useConnect()
-  const { address, connector, isConnected } = useAccount()
+  const { connect, connectors, isLoading, pendingConnector } = useConnect()
+  const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
+
   let navigate = useNavigate();
-  const [selectedValue, setSelectedValue] = useState(null);
-  const RoleBytes = {
-    Captain: "0xd1caa20fe64a17576895d331b6b815baf91df37730e70e788978bc77ac7559b4",
-    Detective: "0x9bcceb74634ac977676ecaf8900febd8cc8358719b06c206b86e9e10f6758bc2",
-    Officer: "0xbbecb2568601cb27e6ced525237c463da94c4fb7a9b98ac79fd30fd56d8e1b53",
+  
+  const setGlobalVariables = (rank, stateCode, branchId, badge) => {
+    localStorage.setItem("rank", rankMap.get(rank));
+    localStorage.setItem("rankId", rank);
+    localStorage.setItem("statecode", stateCode);
+    localStorage.setItem("branchid", branchId);
+    localStorage.setItem("badge", badge);
   }
 
-  // Function to handle dropdown item selection
-  const handleDropdownSelect = async (value) => {
-    setSelectedValue(value);
-  };
-
-   // Function to handle successful login
+  // Function to handle successful login
   const handleLoginSuccess = async () => {
+    try {
+      if (isConnected) {
+        const userDetails = await getUserDetail(address)
 
-    if (isConnected) {
-
-      const validity = await readContract({
-        address: process.env.REACT_APP_OFFICER_CONTRACT,
-        abi: OfficersABI.abi,
-        functionName: 'isValidRank',
-        args: [address, RoleBytes[selectedValue]],
-        chainId: 11155111
-      })
-      console.log("validity ::", validity)
-
-      if (validity) {
-        if (selectedValue == 'Captain') { navigate('/cases-captain') }
-        else if (selectedValue == 'Detective') { navigate('/cases-detective') }
-        else if (selectedValue == 'Officer') { navigate('/cases-officer') }
-        else { handleValidationFail(); }
-      } else {
-        handleValidationFail();
-      }
-    };
-  }
-
-  const handleLogin = (connector) => {
-    if (selectedValue == null) {
-      notify("error", "Rank is required");
-    } else {
-      connect({ connector });
+        console.log("userDetails", userDetails);
+        
+        const validity = await readContract({
+          address: process.env.REACT_APP_LEDGER_CONTRACT,
+          abi: LedgerABI,
+          functionName: 'isValidEmployment',
+          args: [
+            userDetails.branchId, // bytes32 _branchId,
+            userDetails.statecode, // uint _stateCode
+            userDetails.badge, // bytes32 _badge
+            userDetails.rank //Rank _rank
+          ],
+          account: address,
+          chainId: 11155111
+        })
+        console.log("validity ::", validity)
+  
+        if (validity) {
+          if (userDetails.rank  === 3) { navigate('/cases-captain'); setGlobalVariables(userDetails.rank, userDetails.statecode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 2) { navigate('/cases-detective'); setGlobalVariables(userDetails.rank, userDetails.statecode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 1) { navigate('/cases-officer'); setGlobalVariables(userDetails.rank, userDetails.statecode, userDetails.branchId, userDetails.badge); }
+          else if (userDetails.rank  === 4) { navigate('/moderator-home'); setGlobalVariables(userDetails.rank, userDetails.statecode, userDetails.branchId, userDetails.badge); }
+          else { handleValidationFail(); }
+        } else {
+          handleValidationFail();
+        }
+      };
+      
+    } catch (error) {
+      console.log(error);
+      notify("error", "Failed Authentication")
+      handleValidationFail();
     }
+  
+  }  
+  
+  const handleLogin = (connector) => {
+    connect({ connector });
   };
 
   const handleValidationFail = () => {
+    window.localStorage.clear();
     if(isConnected) {
       disconnect()
+    } else {
+      notify("error", "Rank validation failed");
     }
-    notify("error", "Rank validation failed");
   };
 
   useEffect(() => {
     if (isConnected) {
       handleLoginSuccess();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConnected]);
 
   return (
     <div className='login'>
       <div className='login-container'>
         <h2 className='login-welcome'> Welcome </h2>
-        <DropdownButton variant="light" id="rank" title={selectedValue ? selectedValue : "Select Your Rank"} className='mb-4 dropdown-rank'>
-          <Dropdown.Item onClick={() => handleDropdownSelect('Captain')}>Captain</Dropdown.Item>
-          <Dropdown.Item onClick={() => handleDropdownSelect('Officer')}>Officer</Dropdown.Item>
-          <Dropdown.Item onClick={() => handleDropdownSelect('Detective')}>Detective</Dropdown.Item>
-        </DropdownButton>
+          {/* {error && <div>{error.message}</div>} */}
+
+          {/* Login button */}
         <div>
           {connectors.map((connector) => (
             <button
@@ -101,8 +115,6 @@ export const Login = () => {
               {/* {console.log("ID:: ", isConnected)} */}
             </button>
           ))}
-    
-          {/* {error && <div>{error.message}</div>} */}
         </div>
       </div>
     </div>

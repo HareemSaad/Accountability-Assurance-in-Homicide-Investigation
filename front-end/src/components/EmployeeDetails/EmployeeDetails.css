@@ -1,0 +1,39 @@
+/* active */
+.statusTag1 {
+    align-self: center;
+    padding: 0.1rem 0.7rem 0.1rem 0.7rem;
+    background-color: #1CAC78;
+    border: 0.2rem solid #039e65;
+    border-radius: 0.3rem;
+    color: white;
+}
+
+/* inactive */
+.statusTag0 {
+    align-self: center;
+    padding: 0.1rem 0.7rem 0.1rem 0.7rem;
+    background-color: #848884;
+    border: 0.2rem solid #717471;
+    border-radius: 0.3rem;
+    color: white;
+}
+
+/* fired */
+.statusTag3 {
+    align-self: flex-end;
+    padding: 0.1rem 0.7rem 0.1rem 0.7rem;
+    background-color: #D2122E;
+    border: 0.2rem solid #d42a44;
+    border-radius: 0.3rem;
+    color: white;
+}
+
+/* retired */
+.statusTag2{
+    align-self: flex-end;
+    padding: 0.1rem 0.7rem 0.1rem 0.7rem;
+    background-color: #2d88c9;
+    border: 0.2rem solid #3f8cc4;
+    border-radius: 0.3rem;
+    color: white;
+}
