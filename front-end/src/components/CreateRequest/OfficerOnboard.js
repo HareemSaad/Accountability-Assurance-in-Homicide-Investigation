@@ -119,8 +119,6 @@ export const OfficerOnboard = () => {
       officerOnboardInfo.nonce = Math.floor(Math.random() * 10000)
       console.log("nonce: ", officerOnboardInfo.nonce);
 
-      // const stateCode = 8888; //TODO: Amaim change to dynamic statecode
-
       const branchId = keccakString(officerOnboardInfo.branchId)
 
       const badge = keccakString(officerOnboardInfo.badge)
@@ -134,7 +132,7 @@ export const OfficerOnboard = () => {
           officerOnboardInfo.name,
           legalNumber,
           badge,
-          branchId,
+          officerOnboardInfo.branchId,
           officerOnboardInfo.employmentStatus,
           officerOnboardInfo.rank,
           officerOnboardInfo.expiry
@@ -223,7 +221,7 @@ export const OfficerOnboard = () => {
               officerOnboardInfo.name,
               legalNumber,
               badge,
-              branchId,
+              officerOnboardInfo.branchId,
               officerOnboardInfo.expiry,
               signature,
               address
@@ -504,7 +502,7 @@ export const OfficerOnboard = () => {
                   {branches && branches.length > 0 ?
                   (branches.map((branch, index) => (
                     <Dropdown.Item
-                      name="verifiedAddress"
+                      name="branchId"
                       key={index}
                       onClick={() => handleBranchIdDropdownSelect(branch.id, branch.title)}
                     >
