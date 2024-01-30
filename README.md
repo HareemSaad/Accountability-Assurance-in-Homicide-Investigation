@@ -18,7 +18,17 @@ forge: 0.2.0 (2335dea 2024-01-19T00:18:45.919964404Z)
 anvil: 0.2.0 (2335dea 2024-01-19T00:18:45.906048625Z)
 cast: 0.2.0 (2335dea 2024-01-19T00:18:45.910635745Z)
 ```
+## About
+High-stakes investigations like homicide investigations require the highest standards of accountability to ensure justice and the public’s trust. A slip-up could stain an entire investigation, deeming all collected information worthless. The current record-keeping practices in law enforcement, involving physical files and centralized databases, are vulnerable to issues such as data manipulation, misplacement of crucial information, and susceptibility to environmental damage. Therefore, a solution that tackles these issues, and promotes accountability is needed. Accountability Assurance in Homicide Investigation, leverages blockchain for immutable records, accountability, and decentralized trust. This ensures data integrity, prevents tampering, and strengthens the overall reliability of the legal process. It aims to create a transparent and traceable system, reinforcing trust in justice.
 
+## Run App
+```bash
+cd back-end
+npm run start
+
+cd front-end
+npm run start
+```
 ## Deploy & Verify Contracts
 
 ```bash
