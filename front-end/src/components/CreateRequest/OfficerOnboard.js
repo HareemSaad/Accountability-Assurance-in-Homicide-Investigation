@@ -58,13 +58,12 @@ export const OfficerOnboard = () => {
 
   useEffect(() => {
     getBranches()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [officerOnboardInfo.stateCode])
 
   const getBranches = async () => {
-    // branches = 
-    setBranches(await getBranchByStateCode(officerOnboardInfo.stateCode))
-    console.log("branches: ", await getBranchByStateCode(officerOnboardInfo.stateCode), officerOnboardInfo.stateCode)
+    const branches = await getBranchByStateCode(officerOnboardInfo.stateCode);
+    setBranches(branches)
+    console.log("branches: ", branches, officerOnboardInfo.stateCode)
   }
 
   // Function to handle state code dropdown selection
