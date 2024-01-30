@@ -20,6 +20,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaCalendarAlt } from "react-icons/fa";
 import { keccakInt, keccakString } from "../utils/hashing/keccak-hash.js";
+import { getBranchByStateCode } from "../utils/queries/getBranchByStateCode.js";
 
 export const OfficerOnboard = () => {
   let navigate = useNavigate();
@@ -31,7 +32,8 @@ export const OfficerOnboard = () => {
   const [selectedBranchId, setSelectedBranchId] = useState(null);
   const [selectedRankValue, setSelectedRankValue] = useState(null);
   const [toCaptainStateCode, setToCaptainStateCode] = useState(null);
-  const [isNewStateCode, setIsNewStateCode] = React.useState(false);
+  const [isNewStateCode, setIsNewStateCode] = useState([null]);
+  const [branches, setBranches] = React.useState([]);
   const [officerOnboardInfo, setOfficerOnboardInfo] = useState({
     verifiedAddress: "",
     name: "",
@@ -53,6 +55,16 @@ export const OfficerOnboard = () => {
   useEffect(() => {
     handleStateCodeSelect()
   }, [])
+
+  useEffect(() => {
+    getBranches()
+  }, [officerOnboardInfo.stateCode])
+
+  const getBranches = async () => {
+    const branches = await getBranchByStateCode(officerOnboardInfo.stateCode);
+    setBranches(branches)
+    console.log("branches: ", branches, officerOnboardInfo.stateCode)
+  }
 
   // Function to handle state code dropdown selection
   const handleStateCodeSelect = async () => {
@@ -107,8 +119,6 @@ export const OfficerOnboard = () => {
       officerOnboardInfo.nonce = Math.floor(Math.random() * 10000)
       console.log("nonce: ", officerOnboardInfo.nonce);
 
-      // const stateCode = 8888; //TODO: Amaim change to dynamic statecode
-
       const branchId = keccakString(officerOnboardInfo.branchId)
 
       const badge = keccakString(officerOnboardInfo.badge)
@@ -122,7 +132,7 @@ export const OfficerOnboard = () => {
           officerOnboardInfo.name,
           legalNumber,
           badge,
-          branchId,
+          officerOnboardInfo.branchId,
           officerOnboardInfo.employmentStatus,
           officerOnboardInfo.rank,
           officerOnboardInfo.expiry
@@ -211,7 +221,7 @@ export const OfficerOnboard = () => {
               officerOnboardInfo.name,
               legalNumber,
               badge,
-              branchId,
+              officerOnboardInfo.branchId,
               officerOnboardInfo.expiry,
               signature,
               address
@@ -258,7 +268,7 @@ export const OfficerOnboard = () => {
               officerOnboardInfo.name,
               legalNumber,
               badge,
-              branchId,
+              officerOnboardInfo.branchId,
               officerOnboardInfo.precinctAddress,
               officerOnboardInfo.jurisdictionArea,
               officerOnboardInfo.expiry,
@@ -302,10 +312,10 @@ export const OfficerOnboard = () => {
   };
 
   // Function to handle branch id dropdown selection
-  const handleBranchIdDropdownSelect = (categoryValue) => {
-    setSelectedBranchId(categoryValue);
+  const handleBranchIdDropdownSelect = (id, title) => {
+    setSelectedBranchId(title);
     const name = "branchId";
-    setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: categoryValue });
+    setOfficerOnboardInfo({ ...officerOnboardInfo, [name]: id });
   }
 
   // handle date field only
@@ -481,16 +491,27 @@ export const OfficerOnboard = () => {
             </div> :
             <div className="col-9 input">
               <Dropdown>
-                <Dropdown.Toggle id="branchId" className="dropdown customBackground">
-                  {selectedBranchId ? branchIdMap.get(selectedBranchId) : "Select Branch Id"}
+                <Dropdown.Toggle
+                  id="branchId"
+                  className="dropdown customBackground"
+                >
+                  {selectedBranchId ? selectedBranchId : "Select Branch Id"}
                 </Dropdown.Toggle>
-
+  
                 <Dropdown.Menu className="dropdown selectDropdown">
-                  {Array.from(branchIdMap).map(([key, value]) => (
-                    <Dropdown.Item name="branchId" key={key} onClick={() => handleBranchIdDropdownSelect(key)} >
-                      {value}
+                  {branches && branches.length > 0 ?
+                  (branches.map((branch, index) => (
+                    <Dropdown.Item
+                      name="branchId"
+                      key={index}
+                      onClick={() => handleBranchIdDropdownSelect(branch.id, branch.title)}
+                    >
+                      {`${branch.title} `}
                     </Dropdown.Item>
-                  ))}
+                  ))
+                  ) : (
+                    <Dropdown.Item disabled>Loading branches...</Dropdown.Item>
+                  )}
                 </Dropdown.Menu>
               </Dropdown>
             </div>
@@ -632,9 +653,9 @@ export const OfficerOnboard = () => {
         </div>
 
         {/* isNewStateCode Checkbox */}
-        <div className="form-check form-switch">
+        <div className="form-check form-switch container d-flex justify-content-center mt-5">
           <input
-            className="form-check-input input mb-4"
+            className="form-check-input input me-2"
             type="checkbox"
             role="switch"
             id="isNewStateCode"
@@ -646,7 +667,7 @@ export const OfficerOnboard = () => {
 
         {/* Submit button */}
         <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
+          className="btn btn-primary d-grid gap-2 col-4 mx-auto mt-4 mb-5 p-2 btn-background"
           type="submit"
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}

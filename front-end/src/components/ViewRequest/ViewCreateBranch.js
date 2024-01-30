@@ -66,7 +66,8 @@ export const ViewCreateBranch = () => {
               setIsPassedMessage("No moderator in the State Code");
             }
           } else {
-            setIsPassedMessage("Request not approved. Less than 51% support.");
+            // setIsPassedMessage("Request not approved. Less than 51% support.");
+            setIsPassedMessage("Request Closed.");
           }
         })
         .catch((err) => console.log("error:: ", err));

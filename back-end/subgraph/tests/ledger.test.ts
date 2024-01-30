@@ -21,11 +21,13 @@ describe("Describe entity assertions", () => {
     let precinctAddress = "Example string value"
     let jurisdictionArea = BigInt.fromI32(234)
     let stateCode = BigInt.fromI32(234)
+    let title = "Example string value"
     let newBranchUpdateEvent = createBranchUpdateEvent(
       id,
       precinctAddress,
       jurisdictionArea,
-      stateCode
+      stateCode,
+      title
     )
     handleBranchUpdate(newBranchUpdateEvent)
   })
@@ -58,6 +60,12 @@ describe("Describe entity assertions", () => {
       "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
       "stateCode",
       "234"
+    )
+    assert.fieldEquals(
+      "BranchUpdate",
+      "0xa16081f360e3847006db660bae1c6d1b2e17ec2a-1",
+      "title",
+      "Example string value"
     )
 
     // More assert options:

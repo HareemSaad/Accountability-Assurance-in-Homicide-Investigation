@@ -405,7 +405,8 @@ export const ViewTrusteeRequest = () => {
             disabled="true"
           >
             {/* cant sign or send */}
-            {isPassedMessage}
+            {/* {isPassedMessage} */}
+            Request Closed.
           </button>
         )}
       </form>

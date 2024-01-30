@@ -38,6 +38,10 @@ export class BranchUpdate__Params {
   get stateCode(): BigInt {
     return this._event.parameters[3].value.toBigInt();
   }
+
+  get title(): string {
+    return this._event.parameters[4].value.toString();
+  }
 }
 
 export class EIP712DomainChanged extends ethereum.Event {
@@ -842,8 +846,8 @@ export class ConstructorCall__Inputs {
     this._call = call;
   }
 
-  get _branchId(): Bytes {
-    return this._call.inputValues[0].value.toBytes();
+  get _branchTitle(): string {
+    return this._call.inputValues[0].value.toString();
   }
 
   get _precinctAddress(): string {
@@ -928,8 +932,8 @@ export class AddModeratorCall__Inputs {
     return this._call.inputValues[6].value.toBytes();
   }
 
-  get _branchId(): Bytes {
-    return this._call.inputValues[7].value.toBytes();
+  get _branchTitle(): string {
+    return this._call.inputValues[7].value.toString();
   }
 
   get _precinctAddress(): string {
@@ -978,7 +982,7 @@ export class CreateBranchCall__Inputs {
     this._call = call;
   }
 
-  get _id(): string {
+  get _branchTitle(): string {
     return this._call.inputValues[0].value.toString();
   }
 

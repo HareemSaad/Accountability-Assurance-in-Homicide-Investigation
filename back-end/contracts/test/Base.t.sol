@@ -42,6 +42,7 @@ contract BaseTest is Test {
         string precinctAddress;
         uint jurisdictionArea;
         uint stateCode;
+        string title;
     }
 
     Ledger ledger;
@@ -56,28 +57,32 @@ contract BaseTest is Test {
         PRECINCT1,
         "New York City Police Department - NYPD HQ",
         5981,
-        88886
+        88886,
+        "PRECINCT 1"
     );
 
     Branch branch2 = Branch(
         PRECINCT2,
         "Los Angeles County Sheriff's Office - LASD HQ",
         5982,
-        88887
+        88887,
+        "PRECINCT 2"
     );
 
     Branch branch3 = Branch(
         PRECINCT3,
         "Chicago Police Department - CPD HQ",
         5983,
-        88888
+        88888,
+        "PRECINCT 3"
     );
 
     Branch branch3_1 = Branch(
         PRECINCT3_1,
         "Chicago Police Department 1 - CPD HQ",
         5984,
-        88888
+        88888,
+        "PRECINCT 3_1"
     );
 
     Officer moderator1 = Officer(

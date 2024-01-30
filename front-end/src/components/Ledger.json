@@ -2,7 +2,7 @@
   {
     "type": "constructor",
     "inputs": [
-      { "name": "_branchId", "type": "bytes32", "internalType": "bytes32" },
+      { "name": "_branchTitle", "type": "string", "internalType": "string" },
       {
         "name": "_precinctAddress",
         "type": "string",
@@ -57,7 +57,7 @@
         "internalType": "bytes32"
       },
       { "name": "_badge", "type": "bytes32", "internalType": "bytes32" },
-      { "name": "_branchId", "type": "bytes32", "internalType": "bytes32" },
+      { "name": "_branchTitle", "type": "string", "internalType": "string" },
       {
         "name": "_precinctAddress",
         "type": "string",
@@ -110,7 +110,7 @@
     "type": "function",
     "name": "createBranch",
     "inputs": [
-      { "name": "_id", "type": "string", "internalType": "string" },
+      { "name": "_branchTitle", "type": "string", "internalType": "string" },
       {
         "name": "_precinctAddress",
         "type": "string",
@@ -533,6 +533,12 @@
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
+      },
+      {
+        "name": "title",
+        "type": "string",
+        "indexed": false,
+        "internalType": "string"
       }
     ],
     "anonymous": false

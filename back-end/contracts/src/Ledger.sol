@@ -24,11 +24,13 @@ contract Ledger is EIP712 {
     /// @param precinctAddress Address of the branch
     /// @param jurisdictionArea Jurisdiction area code of the branch
     /// @param stateCode State code of the branch
+    /// @param title branch title which is hashed to obtain id. If emitted to be empty, don't update it in subgraph
     event BranchUpdate(
         bytes32 indexed id,
         string precinctAddress,
         uint indexed jurisdictionArea,
-        uint indexed stateCode
+        uint indexed stateCode,
+        string title
     );
 
     /// @dev Emitted when a new officer is onboarded
@@ -126,7 +128,7 @@ contract Ledger is EIP712 {
     );
 
     /// @notice Initializes a new Ledger contract with a branch and a moderator
-    /// @param _branchId Unique identifier for the initial branch
+    /// @param _branchTitle Branch title which is hashed to obtain id
     /// @param _precinctAddress Address of the initial branch
     /// @param _jurisdictionArea Jurisdiction area of the initial branch
     /// @param _stateCode State code of the initial branch
@@ -137,7 +139,7 @@ contract Ledger is EIP712 {
     /// @dev creates a branch using `_branchId`
     /// @dev creates a moderator for said branch for `_officer`
     constructor(
-        bytes32 _branchId, 
+        string memory _branchTitle, 
         string memory _precinctAddress,
         uint _jurisdictionArea,
         uint _stateCode,
@@ -147,12 +149,15 @@ contract Ledger is EIP712 {
         bytes32 _badge
     ) EIP712("Ledger", "1") {
 
+        bytes32 _branchId = keccak256(abi.encode(_branchTitle));
+
         //create a branch
         _initializeBranch(
-            _branchId, 
+            _branchId,
             _precinctAddress,
             _jurisdictionArea,
-            _stateCode
+            _stateCode,
+            _branchTitle
         );
 
         //create a moderator
@@ -272,7 +277,7 @@ contract Ledger is EIP712 {
     }
 
     /// @notice Creates a new branch with required signatures from moderators
-    /// @param _id Unique string identifier for the new branch
+    /// @param _branchTitle Unique string identifier for the new branch
     /// @param _precinctAddress Address of the new branch
     /// @param _jurisdictionArea Jurisdiction area code of the new branch
     /// @param _stateCode State code of the new branch
@@ -284,7 +289,7 @@ contract Ledger is EIP712 {
     /// @dev needs to be signed by more than half of the state's moderators to be passed
     /// @dev moderator's should sign `CreateBranch` struct
     function createBranch(
-        string memory _id, 
+        string memory _branchTitle, 
         string memory _precinctAddress,
         uint _jurisdictionArea,
         uint _stateCode,
@@ -295,9 +300,9 @@ contract Ledger is EIP712 {
     ) external onlyModerator(_stateCode) {
         _validateExpiry(_expiry);
 
-        if(_id.equal("") || _precinctAddress.equal("") || _jurisdictionArea == 0 || _stateCode == 0) revert InvalidInput();
+        if(_branchTitle.equal("") || _precinctAddress.equal("") || _jurisdictionArea == 0 || _stateCode == 0) revert InvalidInput();
 
-        bytes32 id = keccak256(abi.encode(_id));
+        bytes32 _id = keccak256(abi.encode(_branchTitle));
 
         if(_signatures.length != _signers.length) revert LengthMismatch();
         if((moderatorCount[_stateCode] / 2) + 1  > _signers.length) revert NotEnoughSignatures();
@@ -308,17 +313,18 @@ contract Ledger is EIP712 {
             _precinctAddress,
             _jurisdictionArea,
             _stateCode,
-            id,
+            _id,
             _expiry
         ));
 
         _validateSignatures(messageHash, _signatures, _signers);
 
         _initializeBranch(
-            id,
+            _id,
             _precinctAddress,
             _jurisdictionArea,
-            _stateCode
+            _stateCode,
+            _branchTitle
         );
 
     }
@@ -375,7 +381,8 @@ contract Ledger is EIP712 {
             id,
             _precinctAddress,
             _jurisdictionArea,
-            _stateCode
+            _stateCode,
+            ""
         );
 
     }
@@ -389,7 +396,7 @@ contract Ledger is EIP712 {
     /// @param _name Name of the new moderator.
     /// @param _legalNumber Legal identification number of the new moderator.
     /// @param _badge Badge number of the new moderator.
-    /// @param _branchId Branch ID where the moderator is being assigned.
+    /// @param _branchTitle Branch title which will be hashed to for id where the moderator is being assigned.
     /// @param _precinctAddress The new address of the branch. Only needed to be added if a new state code is being initialized.
     /// @param _jurisdictionArea The new jurisdiction area of the branch. Only needed to be added if a new state code is being initialized.
     /// @param _signature Signature of the existing moderator authorizing the addition.
@@ -403,7 +410,7 @@ contract Ledger is EIP712 {
         string memory _name, 
         bytes32 _legalNumber, 
         bytes32 _badge, 
-        bytes32 _branchId,
+        string memory _branchTitle,
         string memory _precinctAddress,
         uint _jurisdictionArea,
         uint _expiry,
@@ -411,13 +418,16 @@ contract Ledger is EIP712 {
         address _signer
     ) external onlyModerator(_senderStateCode) {
 
+        bytes32 _branchId = keccak256(abi.encode(_branchTitle));
+
         if(branches[_branchId].stateCode == 0) {
             //create a branch
             _initializeBranch(
                 _branchId, 
                 _precinctAddress,
                 _jurisdictionArea,
-                _stateCode
+                _stateCode,
+                _branchTitle
             );
         }
         
@@ -1016,11 +1026,13 @@ contract Ledger is EIP712 {
     /// @param _precinctAddress Physical address of the branch.
     /// @param _jurisdictionArea Jurisdiction area of the branch.
     /// @param _stateCode State code of the branch.
+    /// @param _title title of branch that is hashed into the id
     function _initializeBranch(
         bytes32 _id, 
         string memory _precinctAddress,
         uint _jurisdictionArea,
-        uint _stateCode
+        uint _stateCode,
+        string memory _title
     ) private {
         Branch storage _branch = branches[_id];
 
@@ -1033,7 +1045,8 @@ contract Ledger is EIP712 {
             _id,
             _precinctAddress,
             _jurisdictionArea,
-            _stateCode
+            _stateCode,
+            _title
         );
     }
 

@@ -27,13 +27,19 @@ import {
 } from "../generated/schema"
 
 export function handleBranchUpdate(event: BranchUpdateEvent): void {
-  let entity = new BranchUpdate(
-    event.params.id
-  )
+
+  let entity = BranchUpdate.load(event.params.id)
+
+  if(!entity) {
+    entity = new BranchUpdate(
+      event.params.id
+    );
+    entity.stateCode = event.params.stateCode;
+    entity.title = event.params.title;
+  }
+  
   entity.precinctAddress = event.params.precinctAddress
   entity.jurisdictionArea = event.params.jurisdictionArea
-  entity.stateCode = event.params.stateCode
-
   entity.blockNumber = event.block.number
   entity.blockTimestamp = event.block.timestamp
   entity.transactionHash = event.transaction.hash

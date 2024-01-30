@@ -1,8 +1,9 @@
-type BranchUpdate @entity(immutable: true) {
+type BranchUpdate @entity(immutable: false) {
   id: Bytes!
   precinctAddress: String! # string
   jurisdictionArea: BigInt! # uint256
   stateCode: BigInt! # uint256
+  title: String! # string
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!

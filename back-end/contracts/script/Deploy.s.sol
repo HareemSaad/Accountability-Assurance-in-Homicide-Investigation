@@ -12,14 +12,14 @@ contract OfficerScript is Script {
         uint256 deployer = vm.envUint("MODERATOR_KEY");
         Ledger ledger;
         Cases cases;
-        bytes32 PRECINCT1 = keccak256(abi.encode("PRECINCT 1"));
+        // bytes32 PRECINCT1 = keccak256(abi.encode("PRECINCT 1"));
         // bytes32 PRECINCT2 = keccak256(abi.encode("PRECINCT 2"));
         // bytes32 PRECINCT3 = keccak256(abi.encode("PRECINCT 3"));
 
         vm.startBroadcast(deployer);
 
         ledger = new Ledger(
-            PRECINCT1,
+            "PRECINCT 1",
             "New York City Police Department - NYPD HQ",
             5981,
             8888,
