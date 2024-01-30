@@ -653,9 +653,9 @@ export const OfficerOnboard = () => {
         </div>
 
         {/* isNewStateCode Checkbox */}
-        <div className="form-check form-switch">
+        <div className="form-check form-switch container d-flex justify-content-center mt-5">
           <input
-            className="form-check-input input mb-4"
+            className="form-check-input input me-2"
             type="checkbox"
             role="switch"
             id="isNewStateCode"
@@ -667,7 +667,7 @@ export const OfficerOnboard = () => {
 
         {/* Submit button */}
         <button
-          className="btn btn-primary d-grid gap-2 col-4 mx-auto m-5 p-2 btn-background"
+          className="btn btn-primary d-grid gap-2 col-4 mx-auto mt-4 mb-5 p-2 btn-background"
           type="submit"
           onClick={async (e) => await handleSubmit(e)}
           disabled={isButtonDisabled}
