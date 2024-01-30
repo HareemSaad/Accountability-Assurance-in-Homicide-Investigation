@@ -48,7 +48,7 @@ export const ViewDetectiveRequests = () => {
           requestDetail.name,
           keccakInt(requestDetail.legalNumber),
           keccakString(requestDetail.badge),
-          keccakString(requestDetail.branchId),
+          requestDetail.branchId,
           requestDetail.rank,
           requestDetail.expiry,
           requestDetail.signature,

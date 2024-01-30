@@ -33,7 +33,7 @@ export const OfficerOnboard = () => {
   const [selectedRankValue, setSelectedRankValue] = useState(null);
   const [toCaptainStateCode, setToCaptainStateCode] = useState(null);
   const [isNewStateCode, setIsNewStateCode] = useState([null]);
-  const [branches, setBranches] = React.useState(false);
+  const [branches, setBranches] = React.useState([]);
   const [officerOnboardInfo, setOfficerOnboardInfo] = useState({
     verifiedAddress: "",
     name: "",
@@ -62,6 +62,7 @@ export const OfficerOnboard = () => {
   }, [officerOnboardInfo.stateCode])
 
   const getBranches = async () => {
+    // branches = 
     setBranches(await getBranchByStateCode(officerOnboardInfo.stateCode))
     console.log("branches: ", await getBranchByStateCode(officerOnboardInfo.stateCode), officerOnboardInfo.stateCode)
   }
@@ -510,7 +511,7 @@ export const OfficerOnboard = () => {
                     </Dropdown.Item>
                   ))
                   ) : (
-                    <Dropdown.Item disabled>Loading officers...</Dropdown.Item>
+                    <Dropdown.Item disabled>Loading branches...</Dropdown.Item>
                   )}
                 </Dropdown.Menu>
               </Dropdown>
